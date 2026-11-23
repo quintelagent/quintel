@@ -1,0 +1,10 @@
+import { runScenarios, deriveSeed, outputHash } from './src/index';
+import { baseInputs } from './test/fixtures';
+const inp = baseInputs();
+const seed = deriveSeed(inp);
+const t0 = performance.now();
+const out = runScenarios(inp, seed);
+console.log(`1,000,000 paths in ${(performance.now() - t0).toFixed(0)} ms`);
+console.log('hash', outputHash(out));
+console.log(JSON.stringify({ spot: out.spot, p1m: out.combined.horizons[2].pct, probs1m: { ...out.combined.probs[2], below: undefined }, agreement: out.agreement, crisis: out.crisis, calib: out.calib, mdd: out.combined.expMaxDrawdown1m }, null, 1));
+console.log('bytes', JSON.stringify(out).length);

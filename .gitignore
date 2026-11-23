@@ -1,0 +1,10 @@
+node_modules
+dist
+.wrangler
+.dev.vars
+.env*
+*.log
+test-results
+playwright-report
+web/test/engine.bundle.js
+.DS_Store

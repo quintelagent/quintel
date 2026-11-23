@@ -1,0 +1,25 @@
+{
+  "name": "quintel",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": ["engine", "worker", "web"],
+  "scripts": {
+    "test": "vitest run",
+    "test:browsers": "node web/test/build-engine.mjs && playwright test",
+    "build": "npm run build -w web",
+    "dev": "npm run dev -w web",
+    "deploy": "npm test && npm run build && wrangler deploy",
+    "verify": "tsx engine/verify.ts",
+    "typecheck": "tsc -p engine && tsc -p worker && tsc -p web"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261119.1",
+    "@playwright/test": "^1.56.0",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0",
+    "wrangler": "^4.166.0"
+  }
+}
