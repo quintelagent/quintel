@@ -114,7 +114,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
   await setMeta(env, 'news_intensity', intensity);
 
   // 3. Decide whether to run
-  const last = await env.DB.prepare('SELECT id, ts, spot, crisis FROM runs ORDER BY id DESC LIMIT 1').first<{ id: number; ts: string; spot: number; crisis: number }>();
+  const last = await env.DB.prepare('SELECT id, ts, spot, crisis, price_source FROM runs ORDER BY id DESC LIMIT 1').first<{ id: number; ts: string; spot: number; crisis: number; price_source: string }>();
   const minsSinceLast = last ? (now.getTime() - new Date(last.ts).getTime()) / 60000 : Infinity;
   const onClosedCadence = et.minute % (10 * SCHEDULE.closedRunEveryTicks) < 10;
   const shouldRun = opts.force || session === 'open' || onClosedCadence || minsSinceLast > 35;
@@ -202,7 +202,8 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
     try {
       const lastB = await env.DB.prepare('SELECT ts FROM briefings ORDER BY id DESC LIMIT 1').first<{ ts: string }>();
       const minsSinceB = lastB ? (now.getTime() - new Date(lastB.ts).getTime()) / 60000 : Infinity;
-      const bigMove = last ? Math.abs(out.spot / last.spot - 1) > SCHEDULE.bigMovePct : false;
+      // only compare like with like: a switch between stock / token / last-close pricing is not a market move
+      const bigMove = last && last.price_source === priceSource ? Math.abs(out.spot / last.spot - 1) > SCHEDULE.bigMovePct : false;
       if (minsSinceB >= SCHEDULE.briefingEveryMin - 1 || bigNews || bigMove) {
         const prevOut = last ? await loadRunOutput(env, last.id) : null;
         const newsRows = await env.DB.prepare('SELECT title, url, ts, one_line AS oneLine, score, category FROM news WHERE relevant = 1 AND ts >= ? ORDER BY score DESC, ts DESC LIMIT 12')
