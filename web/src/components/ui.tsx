@@ -147,7 +147,7 @@ export function Stat({ label, value, sub, tone }: { label: string; value: ReactN
 /** Reserved-height placeholder shown while data loads, so the page never jumps. */
 export function Skeleton({ h, panel = true, label }: { h: number; panel?: boolean; label?: string }) {
   const inner = (
-    <div aria-busy="true" aria-label={label ?? 'Loading'}>
+    <div role="status" aria-busy="true" aria-label={label ?? 'Loading'}>
       <div className="skel" style={{ height: 14, width: '28%', marginBottom: 16 }} />
       <div className="skel" style={{ height: Math.max(20, h - 30) }} />
     </div>
