@@ -5,6 +5,10 @@ import { tick } from './cron';
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
+    if (url.hostname === 'www.quintelagent.com') {
+      url.hostname = 'quintelagent.com';
+      return Response.redirect(url.toString(), 301);
+    }
     if (url.pathname.startsWith('/api/')) {
       return handleApi(req, env, ctx, (e, force) => tick(e, new Date(), { force }));
     }
