@@ -52,7 +52,7 @@ export function stepDesk(prev: DeskState, sig: DeskSignal, rules = DESK_RULES): 
     const ret = p.side === 'long' ? sig.price / p.entryPrice - 1 : 1 - sig.price / p.entryPrice;
     let reason = '';
     if (ret <= rules.stopLoss) reason = `stop-loss: position ${(ret * 100).toFixed(1)}% vs entry`;
-    else if (p.side === 'long' && sig.pUp1w < rules.exitPUp1w) reason = `P(up, 1w) ${(sig.pUp1w * 100).toFixed(1)}% fell below ${rules.exitPUp1w * 100}%`;
+    else if (p.side === 'long' && sig.pUp1w < rules.exitPUp1w) reason = `P(up, 1w) ${(sig.pUp1w * 100).toFixed(1)}% fell below ${Math.round(rules.exitPUp1w * 100)}%`;
     if (reason) {
       const pnl = p.side === 'long' ? p.qty * (sig.price - p.entryPrice) : p.qty * (p.entryPrice - sig.price);
       s.cash = p.side === 'long' ? s.cash + p.qty * sig.price : s.cash - p.qty * sig.price;
@@ -70,7 +70,7 @@ export function stepDesk(prev: DeskState, sig: DeskSignal, rules = DESK_RULES): 
       s.position = { side: 'long', qty, entryPrice: sig.price, entryTs: sig.ts, entryRunId: sig.runId };
       trades.push({
         action: 'enter', side: 'long', price: sig.price, qty, pnl: null,
-        reason: `P(up, 1w) ${(sig.pUp1w * 100).toFixed(1)}% ≥ ${rules.enterLongPUp1w * 100}% and Crisis Level fell ${sig.prevCrisis}→${sig.crisis}`,
+        reason: `P(up, 1w) ${(sig.pUp1w * 100).toFixed(1)}% ≥ ${Math.round(rules.enterLongPUp1w * 100)}% and Crisis Level fell ${sig.prevCrisis}→${sig.crisis}`,
       });
     }
   }

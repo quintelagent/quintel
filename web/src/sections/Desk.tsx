@@ -30,8 +30,8 @@ export function Desk() {
                 {pts.length > 1 ? <LineChart points={pts} baseline={100000} height={220} /> : <Empty>The curve starts with the first marked run.</Empty>}
                 <div className="label" style={{ marginTop: 18, marginBottom: 8 }}>Rules</div>
                 <ul className="muted" style={{ fontSize: 14, margin: 0, paddingLeft: 18, display: 'grid', gap: 4 }}>
-                  <li>Enter long when P(up, 1 week) ≥ {Number(d.rules.enterLongPUp1w) * 100}% and Crisis Level is falling.</li>
-                  <li>Exit when P(up, 1 week) &lt; {Number(d.rules.exitPUp1w) * 100}% or the position is down {Math.abs(Number(d.rules.stopLoss)) * 100}%.</li>
+                  <li>Enter long when P(up, 1 week) ≥ {Math.round(Number(d.rules.enterLongPUp1w) * 100)}% and Crisis Level is falling.</li>
+                  <li>Exit when P(up, 1 week) &lt; {Math.round(Number(d.rules.exitPUp1w) * 100)}% or the position is down {Math.round(Math.abs(Number(d.rules.stopLoss)) * 100)}%.</li>
                   <li>Fills only while the stock market is open, at the stock price. Marked to market every run.</li>
                 </ul>
               </div>
