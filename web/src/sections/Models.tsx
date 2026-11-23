@@ -1,6 +1,6 @@
 import { useData } from '../lib/data';
 import { MiniDist } from '../components/charts';
-import { Empty, SectionHead } from '../components/ui';
+import { Num, SectionHead, Skeleton } from '../components/ui';
 import { MODEL_COLORS, pct, usd } from '../lib/format';
 import { MODEL_INFO } from '@engine/models/common';
 
@@ -10,12 +10,12 @@ export function Models() {
     <section className="block" id="models" style={{ borderTop: '1px solid var(--border)' }}>
       <div className="wrap">
         <SectionHead eyebrow="Five models × 200,000 paths" title="Five ways to imagine the next month." lede="Each model sees the same price history and makes different assumptions. Where they agree, the odds are sturdier. Where they don’t, you see it." />
-        {!output ? <Empty>Waiting for the first run…</Empty> : (
-          <>
+        {!output ? <Skeleton h={420} label="Loading model results" /> : (
+          <div className="fade-in">
             <div className="panel reveal" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
               <div style={{ minWidth: 180 }}>
                 <div className="label">Model agreement</div>
-                <div className="mono" style={{ fontSize: 34 }}>{output.agreement}<span className="dim" style={{ fontSize: 16 }}>/100</span></div>
+                <div className="mono" style={{ fontSize: 34 }}><Num value={output.agreement} fmt={(x) => String(Math.round(x))} /><span className="dim" style={{ fontSize: 16 }}>/100</span></div>
               </div>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ height: 6, background: 'var(--border)', borderRadius: 6, overflow: 'hidden' }}>
@@ -45,7 +45,7 @@ export function Models() {
                 );
               })}
             </div>
-          </>
+          </div>
         )}
       </div>
       <style>{`.models-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; } @media (max-width: 1100px) { .models-grid { grid-template-columns: repeat(2, 1fr); } } @media (max-width: 560px) { .models-grid { grid-template-columns: 1fr; } }`}</style>

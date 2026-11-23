@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { HorizonStats } from '@engine/types';
 import { useData } from '../lib/data';
 import { DistDrag } from '../components/charts';
-import { Empty, SectionHead } from '../components/ui';
+import { SectionHead, Skeleton } from '../components/ui';
 import { pct, usd } from '../lib/format';
 
 /** P(price < v) from a histogram, interpolating linearly inside a bucket. */
@@ -36,8 +36,8 @@ export function DragPrice() {
     <section className="block" id="tools">
       <div className="wrap">
         <SectionHead eyebrow="Tool 01 · Drag a price" title="Pick a price. See how many futures end below it." lede="Drag the line across the combined one-month distribution of the latest 1,000,000 scenarios. The odds update for every horizon as you move." />
-        {!output || price === null ? <Empty>Waiting for the first run…</Empty> : (
-          <div className="panel reveal drag-grid">
+        {!output || price === null ? <Skeleton h={330} label="Loading the latest run" /> : (
+          <div className="panel reveal drag-grid fade-in">
             <div>
               <DistDrag hist={output.combined.horizons[2].hist} spot={output.spot} value={price} onChange={(v) => setPrice(Math.round(v * 100) / 100)} />
               <div className="muted mono" style={{ fontSize: 12, marginTop: 10 }}>← drag · red = scenarios ending below your line (1-month distribution shown)</div>

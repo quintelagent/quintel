@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useApi, type Proof as P, type Scorecard } from '../lib/api';
 import { useData } from '../lib/data';
-import { Empty, SectionHead } from '../components/ui';
+import { Empty, SectionHead, Skeleton } from '../components/ui';
 import { etTime, pct, short } from '../lib/format';
 import { navigate } from '../lib/router';
 
@@ -65,7 +65,7 @@ export function Proof() {
         </div>
         <div className="panel reveal" style={{ marginTop: 18 }}>
           <div className="label" style={{ marginBottom: 6 }}>Latest hourly fingerprints · Robinhood Chain</div>
-          {fps.length === 0 ? <Empty>The first fingerprint is written at the top of the first full hour of runs.</Empty> : (
+          {!p ? <Skeleton h={160} panel={false} /> : fps.length === 0 ? <Empty>The first fingerprint is written at the top of the first full hour of runs.</Empty> : (
             <div className="scroll-x">
               <table className="data">
                 <thead><tr><th>Hour</th><th>Fingerprint</th><th>On-chain</th><th>Transaction</th></tr></thead>

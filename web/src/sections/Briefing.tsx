@@ -1,6 +1,6 @@
 import { useApi, type Briefing as B } from '../lib/api';
 import { useData } from '../lib/data';
-import { Countdown, Empty, SectionHead } from '../components/ui';
+import { Countdown, Empty, SectionHead, Skeleton } from '../components/ui';
 import { etTime, short } from '../lib/format';
 import { onLink } from '../lib/router';
 
@@ -51,7 +51,7 @@ export function Briefing() {
     <section className="block" id="briefing" style={{ borderTop: '1px solid var(--border)' }}>
       <div className="wrap">
         <SectionHead eyebrow="Research agent · Briefing" title="What changed, in plain English." lede="An AI research agent reads the news, compares the latest run with the previous one and writes a short briefing. Code — not the prompt — checks every number against the run and blocks advice language before it is published." />
-        {b ? <div className="reveal"><BriefingCard b={b} /></div> : <Empty>The first briefing is written right after the first run.</Empty>}
+        {!items ? <Skeleton h={340} label="Loading the latest briefing" /> : b ? <div className="reveal fade-in"><BriefingCard b={b} /></div> : <Empty>The first briefing is written right after the first run.</Empty>}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16, flexWrap: 'wrap', gap: 12 }}>
           <span className="mono muted" style={{ fontSize: 13 }}>Next briefing in <Countdown to={latest?.nextBriefingAt} /></span>
           <a href="/briefings" onClick={onLink} className="mono" style={{ fontSize: 13 }}>Briefing archive →</a>

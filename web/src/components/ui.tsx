@@ -19,20 +19,21 @@ export function Logo({ size = 22 }: { size?: number }) {
 }
 
 /** Animated number that counts toward `value`. */
-export function CountUp({ value, format = (x: number) => Math.round(x).toLocaleString('en-US'), duration = 1200 }: { value: number; format?: (x: number) => string; duration?: number }) {
-  const [shown, setShown] = useState(value);
-  const from = useRef(value);
+export function CountUp({ value, format = (x: number) => Math.round(x).toLocaleString('en-US'), duration = 1200, start }: { value: number; format?: (x: number) => string; duration?: number; start?: number }) {
+  const [shown, setShown] = useState(start ?? value);
+  const from = useRef(start ?? value);
   useEffect(() => {
-    if (reducedMotion()) { setShown(value); return; }
-    const start = performance.now();
+    if (reducedMotion()) { setShown(value); from.current = value; return; }
+    const t0 = performance.now();
     const a = from.current;
     let raf = 0;
     const step = (t: number) => {
-      const k = Math.min(1, (t - start) / duration);
+      const k = Math.min(1, (t - t0) / duration);
       const e = 1 - Math.pow(1 - k, 3);
-      setShown(a + (value - a) * e);
+      const v = a + (value - a) * e;
+      from.current = v; // an interrupted animation resumes from where it is
+      setShown(v);
       if (k < 1) raf = requestAnimationFrame(step);
-      else from.current = value;
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
@@ -52,8 +53,28 @@ export function Countdown({ to, prefix = '' }: { to: string | null | undefined; 
 }
 
 /** Crisis Level arc gauge 0–100; colour shifts ice → red. */
+/** Eased tween toward `target` (starts from 0). */
+export function useTween(target: number, duration = 1200) {
+  const [v, setV] = useState(0);
+  const cur = useRef(0);
+  useEffect(() => {
+    if (reducedMotion()) { cur.current = target; setV(target); return; }
+    const a = cur.current, t0 = performance.now();
+    let raf = 0;
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / duration);
+      cur.current = a + (target - a) * (1 - Math.pow(1 - k, 3));
+      setV(cur.current);
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return v;
+}
+
 export function Gauge({ value, size = 168, label = 'Crisis Level' }: { value: number | null; size?: number; label?: string }) {
-  const v = value ?? 0;
+  const v = useTween(value ?? 0, 1400);
   const r = size / 2 - 12;
   const cx = size / 2;
   const cy = size / 2 + 8;
@@ -76,13 +97,13 @@ export function Gauge({ value, size = 168, label = 'Crisis Level' }: { value: nu
     <div style={{ width: size, textAlign: 'center' }}>
       <svg width={size} height={size * 0.82} viewBox={`0 0 ${size} ${size * 0.82}`} role="img" aria-label={`${label} ${value ?? 'unknown'} of 100`}>
         <path d={arc(start, end)} stroke="var(--border-2)" strokeWidth="6" fill="none" strokeLinecap="round" />
-        {value !== null && <path d={arc(start, Math.max(start + 0.001, ang))} stroke={col} strokeWidth="6" fill="none" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 8px ${col})`, transition: 'all .8s' }} />}
+        {value !== null && <path d={arc(start, Math.max(start + 0.001, ang))} stroke={col} strokeWidth="6" fill="none" strokeLinecap="round" style={{ filter: `drop-shadow(0 0 8px ${col})` }} />}
         {ticks.map((a, i) => {
           const [x0, y0] = [cx + (r - 14) * Math.cos(a), cy + (r - 14) * Math.sin(a)];
           const [x1, y1] = [cx + (r - 19) * Math.cos(a), cy + (r - 19) * Math.sin(a)];
           return <line key={i} x1={x0} y1={y0} x2={x1} y2={y1} stroke="var(--dim)" strokeWidth="1" />;
         })}
-        <text x={cx} y={cy - 2} textAnchor="middle" fontFamily="var(--mono)" fontSize={size * 0.24} fill="var(--text)">{value ?? '—'}</text>
+        <text x={cx} y={cy - 2} textAnchor="middle" fontFamily="var(--mono)" fontSize={size * 0.24} fill="var(--text)">{value === null ? '—' : Math.round(v)}</text>
         <text x={cx} y={cy + 18} textAnchor="middle" fontFamily="var(--mono)" fontSize="10" letterSpacing="2" fill="var(--muted)">/ 100</text>
       </svg>
       <div className="label" style={{ marginTop: -4 }}>{label}</div>
@@ -121,6 +142,23 @@ export function Stat({ label, value, sub, tone }: { label: string; value: ReactN
       {sub && <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>{sub}</div>}
     </div>
   );
+}
+
+/** Reserved-height placeholder shown while data loads, so the page never jumps. */
+export function Skeleton({ h, panel = true, label }: { h: number; panel?: boolean; label?: string }) {
+  const inner = (
+    <div aria-busy="true" aria-label={label ?? 'Loading'}>
+      <div className="skel" style={{ height: 14, width: '28%', marginBottom: 16 }} />
+      <div className="skel" style={{ height: Math.max(20, h - 30) }} />
+    </div>
+  );
+  return panel ? <div className="panel">{inner}</div> : inner;
+}
+
+/** Number that counts up from 0 the first time, then eases between values. */
+export function Num({ value, fmt, duration = 1100 }: { value: number | null | undefined; fmt: (x: number) => string; duration?: number }) {
+  if (value === null || value === undefined || !Number.isFinite(value)) return <>—</>;
+  return <CountUp value={value} format={fmt} duration={duration} start={0} />;
 }
 
 export function Empty({ children }: { children: ReactNode }) {

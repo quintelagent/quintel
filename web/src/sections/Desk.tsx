@@ -1,6 +1,6 @@
 import { useApi, type Desk as D } from '../lib/api';
 import { LineChart } from '../components/charts';
-import { Empty, SectionHead, Stat } from '../components/ui';
+import { Empty, Num, SectionHead, Skeleton, Stat } from '../components/ui';
 import { etTime, pct, usd } from '../lib/format';
 
 export function Desk() {
@@ -15,10 +15,10 @@ export function Desk() {
           title="A public paper desk that trades the odds."
           lede="Virtual $100,000. NVDA only, long or flat, 1×. Published rules, unchanged after launch except by a public changelog entry. Losses are shown exactly like gains."
         />
-        {!d ? <Empty>Loading desk…</Empty> : (
-          <>
+        {!d ? <Skeleton h={420} label="Loading the paper desk" /> : (
+          <div className="fade-in">
             <div className="panel reveal desk-stats">
-              <Stat label="Equity" value={usd(d.state.equity)} />
+              <Stat label="Equity" value={<Num value={d.state.equity} fmt={(x) => usd(x)} />} />
               <Stat label="Return" value={pct(ret, 2, true)} tone={ret < 0 ? 'red' : ret > 0 ? 'green' : undefined} />
               <Stat label="Max drawdown" value={pct(-d.state.maxDrawdown, 2)} tone={d.state.maxDrawdown > 0 ? 'red' : undefined} />
               <Stat label="Win rate" value={d.winRate === null ? '—' : pct(d.winRate, 0)} sub={`${d.state.wins}W · ${d.state.losses}L`} />
@@ -53,7 +53,7 @@ export function Desk() {
                 )}
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
       <style>{`

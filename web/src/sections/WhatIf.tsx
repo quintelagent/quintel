@@ -4,7 +4,7 @@ import { useData } from '../lib/data';
 import { api, type RunFull } from '../lib/api';
 import { runInBrowser } from '../lib/engineClient';
 import { Fan } from '../components/charts';
-import { Empty, SectionHead } from '../components/ui';
+import { Empty, SectionHead, Skeleton } from '../components/ui';
 import { pct, usd } from '../lib/format';
 
 const PRESETS: { name: string; shock: Shock }[] = [
@@ -71,8 +71,8 @@ export function WhatIf() {
     <section className="block" ref={sectionRef} style={{ paddingTop: 0 }}>
       <div className="wrap">
         <SectionHead eyebrow="Tool 02 · What if" title="Shock the inputs. Rerun 500,000 futures in your browser." lede="Presets set a drift shock, jump intensity and volatility multiplier. The same engine as the official run executes locally in a Web Worker — nothing leaves your device." />
-        {!output ? <Empty>Waiting for the first run…</Empty> : (
-          <div className="panel reveal wi-grid">
+        {!output ? <Skeleton h={360} label="Loading the latest run" /> : (
+          <div className="panel reveal wi-grid fade-in">
             <div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 22 }}>
                 {PRESETS.map((p) => (
@@ -91,7 +91,7 @@ export function WhatIf() {
                 <span className="label">Your scenario fan vs official (grey)</span>
                 <span className="mono dim" style={{ fontSize: 12 }}>{busy ? 'running 500,000 paths…' : res ? `500,000 paths in ${(res.ms / 1000).toFixed(2)}s` : ''}</span>
               </div>
-              {o ? <Fan spot={o.spot} horizons={o.combined.horizons} compare={output.combined.horizons} height={260} /> : <Empty>{err ?? 'Loading the latest run’s inputs…'}</Empty>}
+              {o ? <Fan spot={o.spot} horizons={o.combined.horizons} compare={output.combined.horizons} height={260} /> : err ? <Empty>{err}</Empty> : <Skeleton h={260} panel={false} label="Running 500,000 paths" />}
               {o && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 18 }}>
                   <div><div className="label">1m median</div><div className="mono" style={{ fontSize: 20 }}>{usd(o.combined.horizons[2].pct.p50)}</div></div>
