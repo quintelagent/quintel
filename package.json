@@ -3,7 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "workspaces": ["engine", "worker", "web"],
+  "workspaces": [
+    "engine",
+    "worker",
+    "web"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:browsers": "node web/test/build-engine.mjs && playwright test",
@@ -21,5 +25,10 @@
     "typescript": "^5.9.0",
     "vitest": "^4.0.0",
     "wrangler": "^4.166.0"
+  },
+  "allowScripts": {
+    "workerd@1.20261119.1": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
   }
 }
