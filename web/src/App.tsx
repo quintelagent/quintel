@@ -1,22 +1,16 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { DataProvider } from './lib/data';
 import { useRoute } from './lib/router';
-import { initMotion } from './lib/motion';
+import { initMotion, scrollToId, whenIdle } from './lib/motion';
 import { Nav } from './sections/Nav';
 import { Hero } from './sections/Hero';
 import { LiveStrip } from './sections/LiveStrip';
 import { DragPrice } from './sections/DragPrice';
-import { WhatIf } from './sections/WhatIf';
 import { WeekendGap } from './sections/WeekendGap';
-import { Briefing } from './sections/Briefing';
-import { Models } from './sections/Models';
-import { Desk } from './sections/Desk';
-import { Proof } from './sections/Proof';
-import { HowItWorks } from './sections/HowItWorks';
-import { Token } from './sections/Token';
-import { FAQ } from './sections/FAQ';
 import { Footer } from './sections/Footer';
 
+const loadBelow = () => import('./sections/Below');
+const Below = lazy(loadBelow);
 const Verify = lazy(() => import('./pages/Verify').then((m) => ({ default: m.Verify })));
 const Briefings = lazy(() => import('./pages/Briefings').then((m) => ({ default: m.Briefings })));
 const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })));
@@ -28,23 +22,18 @@ function Home() {
       <LiveStrip />
       <WeekendGap />
       <DragPrice />
-      <WhatIf />
-      <Briefing />
-      <Models />
-      <Desk />
-      <Proof />
-      <HowItWorks />
-      <Token />
-      <FAQ />
+      <Suspense fallback={<div style={{ minHeight: '300vh' }} />}>
+        <Below />
+      </Suspense>
     </>
   );
 }
 
 export function App() {
   const { path } = useRoute();
-  useEffect(() => { initMotion(); }, []);
+  useEffect(() => { initMotion(); whenIdle(() => { loadBelow(); }, 1200); }, []);
   useEffect(() => {
-    if (location.hash && path === '/') setTimeout(() => document.getElementById(location.hash.slice(1))?.scrollIntoView(), 300);
+    if (location.hash && path === '/') { loadBelow(); setTimeout(() => scrollToId(location.hash.slice(1)), 150); }
   }, [path]);
   let page = <Home />;
   if (path.startsWith('/verify')) page = <Verify />;
