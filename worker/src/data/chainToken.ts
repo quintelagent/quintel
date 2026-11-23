@@ -16,7 +16,7 @@ export function rpcUrls(env: Env): string[] {
 export const DEFAULT_POOL = '0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3';
 export const CHAINLINK_NVDA_247 = '0x321A36e441DfBadA01Aa6f9884F14a344E133D1F';
 
-export interface ChainPrice { price: number; source: 'pool' | 'chainlink' | 'dexscreener'; ts: string; poolPrice?: number; oraclePrice?: number }
+export interface ChainPrice { price: number; source: 'pool' | 'chainlink' | 'dexscreener' | 'geckoterminal'; ts: string; poolPrice?: number; oraclePrice?: number }
 
 async function ethCallOne(rpc: string, to: string, data: string): Promise<string> {
   const ctrl = new AbortController();
@@ -77,14 +77,15 @@ export async function getChainPrice(env: Env): Promise<ChainPrice> {
   if (pp && (!op || Math.abs(pp / op - 1) < 0.05)) return { price: pp, source: 'pool', ts, poolPrice: pp, oraclePrice: op };
   if (op) return { price: op, source: 'chainlink', ts, poolPrice: pp, oraclePrice: op };
   // Last resort: the same pool's price via DexScreener's indexer (used when the RPCs rate-limit us).
-  let dsErr = '';
-  try {
-    const ds = await dexscreenerPrice(pool);
-    return { price: ds, source: 'dexscreener', ts };
-  } catch (e) {
-    dsErr = String((e as Error).message || e);
+  const idxErrs: string[] = [];
+  for (const [source, fn] of [['dexscreener', dexscreenerPrice], ['geckoterminal', geckoterminalPrice]] as const) {
+    try {
+      return { price: await fn(pool), source, ts };
+    } catch (e) {
+      idxErrs.push(`${source}: ${String((e as Error).message || e).slice(0, 80)}`);
+    }
   }
-  throw new Error('chain price unavailable: ' + [p, o].map((x) => (x.status === 'rejected' ? String(x.reason) : 'ok')).join('; ') + '; ' + dsErr);
+  throw new Error('chain price unavailable: ' + [p, o].map((x) => (x.status === 'rejected' ? String(x.reason) : 'ok')).join('; ') + '; ' + idxErrs.join('; '));
 }
 
 export async function dexscreenerPrice(pool: string): Promise<number> {
@@ -96,6 +97,22 @@ export async function dexscreenerPrice(pool: string): Promise<number> {
     const pair = (j.pairs || [j.pair])[0];
     const price = Number(pair?.priceUsd);
     if (!(price > 0) || pair?.baseToken?.symbol !== 'NVDA') throw new Error('dexscreener: no NVDA price');
+    return price;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+export async function geckoterminalPrice(pool: string): Promise<number> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/robinhood/pools/${pool}`, { signal: ctrl.signal, headers: { accept: 'application/json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const j: any = await res.json();
+    const a = j?.data?.attributes;
+    const price = Number(a?.base_token_price_usd);
+    if (!(price > 0) || !String(a?.name || '').startsWith('NVDA')) throw new Error('no NVDA price');
     return price;
   } finally {
     clearTimeout(t);

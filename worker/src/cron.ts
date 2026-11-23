@@ -97,7 +97,16 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
     const c = await getChainPrice(env);
     chain = c.price;
     await env.DB.prepare('INSERT OR REPLACE INTO prices (ts, source, price) VALUES (?,?,?)').bind(nowIso, 'chain:' + c.source, c.price).run();
-  } catch (e) { log.push('chain price failed: ' + (e as Error).message); }
+  } catch (e) {
+    log.push('chain price failed: ' + (e as Error).message);
+    // reuse the last good on-chain price if it is recent (honestly logged)
+    const recent = await env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'chain:%' AND ts >= ? ORDER BY ts DESC LIMIT 1")
+      .bind(new Date(now.getTime() - 30 * 60000).toISOString()).first<{ ts: string; price: number }>();
+    if (recent) {
+      chain = recent.price;
+      log.push(`using last on-chain price from ${Math.round((now.getTime() - new Date(recent.ts).getTime()) / 60000)}m ago`);
+    }
+  }
 
   // 2. History + news
   await refreshHistory(env, now, log);
