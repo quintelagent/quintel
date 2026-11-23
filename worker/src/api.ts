@@ -1,0 +1,192 @@
+import { DESK_RULES, SCHEDULE, type Env } from './config';
+import { counter, getMeta } from './db';
+import { etParts, sessionAt, nextOpen } from './session';
+import { spentToday } from './agent/openrouter';
+import { scorecardSummary } from './proof/scorecard';
+import { initialDesk, type DeskState } from './desk/desk';
+import { CRISIS_WEIGHTS, MODEL_INFO } from '../../engine/src/index';
+
+const json = (data: unknown, maxAge = 30, status = 200) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': maxAge ? `public, max-age=${maxAge}, s-maxage=${maxAge * 2}` : 'no-store',
+      'access-control-allow-origin': '*',
+    },
+  });
+
+export function nextRunAt(now: Date): Date {
+  const open = sessionAt(now) === 'open';
+  const step = open ? 10 : 10 * SCHEDULE.closedRunEveryTicks;
+  const t = new Date(now);
+  t.setUTCSeconds(0, 0);
+  const m = t.getUTCMinutes();
+  t.setUTCMinutes(m - (m % step) + step);
+  return t;
+}
+
+async function latest(env: Env) {
+  const now = new Date();
+  const run = await env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, cpu_ms, summary FROM runs ORDER BY id DESC LIMIT 1').first<any>();
+  const prev = await env.DB.prepare('SELECT crisis FROM runs ORDER BY id DESC LIMIT 1 OFFSET 1').first<{ crisis: number }>();
+  const lastB = await env.DB.prepare('SELECT ts FROM briefings ORDER BY id DESC LIMIT 1').first<{ ts: string }>();
+  const today = etParts(now).date;
+  const runsToday = await counter(env, 'runs_' + today);
+  const runsTotal = await counter(env, 'runs_total');
+  const chainPrice = await env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'chain:%' ORDER BY ts DESC LIMIT 1").first<any>();
+  const stockPrice = await env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'stock:%' ORDER BY ts DESC LIMIT 1").first<any>();
+  return {
+    now: now.toISOString(),
+    session: sessionAt(now),
+    nextRunAt: nextRunAt(now).toISOString(),
+    nextOpen: nextOpen(now).toISOString(),
+    nextBriefingAt: lastB ? new Date(new Date(lastB.ts).getTime() + SCHEDULE.briefingEveryMin * 60000).toISOString() : null,
+    scenariosToday: runsToday * 1_000_000,
+    runsToday,
+    scenariosTotal: runsTotal * 1_000_000,
+    prices: { stock: stockPrice, chain: chainPrice },
+    prevCrisis: prev?.crisis ?? null,
+    run: run ? { ...run, summary: JSON.parse(run.summary) } : null,
+  };
+}
+
+async function runById(env: Env, id: number) {
+  const run = await env.DB.prepare('SELECT * FROM runs WHERE id = ?').bind(id).first<any>();
+  if (!run) return null;
+  const o = await env.DB.prepare('SELECT inputs, output FROM run_outputs WHERE id = ?').bind(id).first<any>();
+  return { ...run, summary: JSON.parse(run.summary), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
+}
+
+async function proof(env: Env) {
+  const fps = await env.DB.prepare('SELECT hour, hash, tx, status, attempts, created_at, sent_at, error FROM fingerprints ORDER BY hour DESC LIMIT 48').all();
+  return {
+    explorer: env.CHAIN_EXPLORER,
+    chainId: Number(env.CHAIN_ID),
+    wallet: env.FINGERPRINT_ADDRESS || null,
+    fingerprints: fps.results || [],
+  };
+}
+
+async function desk(env: Env) {
+  const state = (await getMeta<DeskState>(env, 'desk_state')) ?? initialDesk(new Date().toISOString());
+  const trades = await env.DB.prepare('SELECT * FROM desk_trades ORDER BY id DESC LIMIT 50').all();
+  const eq = await env.DB.prepare('SELECT ts, equity, price FROM (SELECT ts, equity, price FROM desk_equity ORDER BY ts DESC LIMIT 2000) ORDER BY ts').all();
+  const closed = (trades.results || []).filter((t: any) => t.action === 'exit');
+  return {
+    rules: DESK_RULES,
+    state,
+    returnPct: state.equity / DESK_RULES.startingCash - 1,
+    winRate: closed.length ? state.wins / (state.wins + state.losses) : null,
+    trades: trades.results || [],
+    equity: eq.results || [],
+  };
+}
+
+async function health(env: Env) {
+  const day = etParts(new Date()).date;
+  const ai = await env.DB.prepare('SELECT purpose, model, COUNT(*) AS calls, SUM(tokens_in) AS tokens_in, SUM(tokens_out) AS tokens_out, SUM(cost_usd) AS cost_usd, SUM(ok) AS ok FROM ai_usage WHERE day = ? GROUP BY purpose, model').bind(day).all();
+  const spent = await spentToday(env);
+  const cap = Number(env.AI_DAILY_CAP_USD || '4');
+  const lastTick = await getMeta<any>(env, 'last_tick');
+  const lastRun = await env.DB.prepare('SELECT id, ts, cpu_ms FROM runs ORDER BY id DESC LIMIT 1').first<any>();
+  const hist = await env.DB.prepare('SELECT COUNT(*) AS n, MAX(date) AS last FROM history_daily').first<any>();
+  return {
+    ok: !!lastRun && Date.now() - new Date(lastRun.ts).getTime() < 45 * 60000,
+    lastTick, lastRun, history: hist,
+    historySource: await getMeta(env, 'history_source'),
+    secrets: {
+      openrouter: !!env.OPENROUTER_API_KEY, alpaca: !!env.ALPACA_KEY_ID, finnhub: !!env.FINNHUB_API_KEY,
+      fingerprintKey: !!env.FINGERPRINT_KEY,
+    },
+    ai: { day, spentUsd: Math.round(spent * 1e4) / 1e4, capUsd: cap, capped: spent >= cap, byModel: ai.results || [] },
+  };
+}
+
+function config(env: Env) {
+  return {
+    symbol: env.SYMBOL,
+    chainId: Number(env.CHAIN_ID),
+    explorer: env.CHAIN_EXPLORER,
+    nvdaToken: env.NVDA_TOKEN_ADDRESS,
+    fingerprintWallet: env.FINGERPRINT_ADDRESS || null,
+    tokens: { pons: env.QNTL_TOKEN_PONS || null, solana: env.QNTL_TOKEN_SOLANA || null },
+    deskRules: DESK_RULES,
+    crisisWeights: CRISIS_WEIGHTS,
+    models: MODEL_INFO,
+    schedule: SCHEDULE,
+  };
+}
+
+export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, tickFn: (env: Env, force: boolean) => Promise<unknown>): Promise<Response> {
+  const url = new URL(req.url);
+  const p = url.pathname.replace(/\/+$/, '');
+
+  if (p === '/api/admin/tick' && req.method === 'POST') {
+    const auth = req.headers.get('authorization') || '';
+    if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: 'unauthorized' }, 0, 401);
+    return json(await tickFn(env, url.searchParams.get('force') === '1'), 0);
+  }
+  if (req.method !== 'GET') return json({ error: 'method not allowed' }, 0, 405);
+
+  // edge cache
+  const cache = (caches as unknown as { default: Cache }).default;
+  const hit = await cache.match(req);
+  if (hit) return hit;
+
+  let res: Response;
+  let m: RegExpMatchArray | null;
+  try {
+    if (p === '/api/latest') res = json(await latest(env), 20);
+    else if (p === '/api/health') res = json(await health(env), 0);
+    else if (p === '/api/config') res = json(config(env), 300);
+    else if ((m = p.match(/^\/api\/run\/(\d+)$/))) {
+      const r = await runById(env, Number(m[1]));
+      res = r ? json(r, 3600) : json({ error: 'not found' }, 0, 404);
+    } else if (p === '/api/runs') {
+      const since = url.searchParams.get('since') || new Date(Date.now() - 86400000).toISOString();
+      const limit = Math.min(500, Number(url.searchParams.get('limit') || 200));
+      const r = await env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, summary FROM runs WHERE ts >= ? ORDER BY id DESC LIMIT ?').bind(since, limit).all<any>();
+      res = json((r.results || []).map((x) => ({ ...x, summary: JSON.parse(x.summary) })), 30);
+    } else if ((m = p.match(/^\/api\/sample\/(\d+|latest)$/))) {
+      const row = m[1] === 'latest'
+        ? await env.DB.prepare('SELECT id, sample FROM run_outputs ORDER BY id DESC LIMIT 1').first<any>()
+        : await env.DB.prepare('SELECT id, sample FROM run_outputs WHERE id = ?').bind(Number(m[1])).first<any>();
+      res = row ? json({ id: row.id, ...JSON.parse(row.sample) }, m[1] === 'latest' ? 30 : 3600) : json({ error: 'not found' }, 0, 404);
+    } else if ((m = p.match(/^\/api\/output\/(\d+|latest)$/))) {
+      const row = m[1] === 'latest'
+        ? await env.DB.prepare('SELECT id, output FROM run_outputs ORDER BY id DESC LIMIT 1').first<any>()
+        : await env.DB.prepare('SELECT id, output FROM run_outputs WHERE id = ?').bind(Number(m[1])).first<any>();
+      res = row ? json({ id: row.id, output: JSON.parse(row.output) }, m[1] === 'latest' ? 30 : 3600) : json({ error: 'not found' }, 0, 404);
+    } else if (p === '/api/briefings') {
+      const limit = Math.min(100, Number(url.searchParams.get('limit') || 20));
+      const r = await env.DB.prepare('SELECT id, ts, run_id, body, hash, model, fallback FROM briefings ORDER BY id DESC LIMIT ?').bind(limit).all<any>();
+      res = json((r.results || []).map((x) => ({ ...x, body: JSON.parse(x.body) })), 30);
+    } else if (p === '/api/news') {
+      const r = await env.DB.prepare('SELECT ts, title, url, source, score, category, one_line FROM news WHERE relevant = 1 ORDER BY ts DESC LIMIT 30').all();
+      res = json(r.results || [], 60);
+    } else if (p === '/api/desk') res = json(await desk(env), 30);
+    else if (p === '/api/proof') res = json(await proof(env), 30);
+    else if ((m = p.match(/^\/api\/fingerprint\/(.+)$/))) {
+      const r = await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(decodeURIComponent(m[1])).first<any>();
+      res = r ? json({ ...r, payload: JSON.parse(r.payload) }, 60) : json({ error: 'not found' }, 0, 404);
+    } else if (p === '/api/fingerprint-for-run') {
+      const id = Number(url.searchParams.get('id'));
+      const run = await env.DB.prepare('SELECT ts FROM runs WHERE id = ?').bind(id).first<{ ts: string }>();
+      if (!run) res = json({ error: 'not found' }, 0, 404);
+      else {
+        const hour = new Date(Math.floor(new Date(run.ts).getTime() / 3600_000) * 3600_000).toISOString();
+        const r = await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>();
+        res = json(r ? { ...r, payload: JSON.parse(r.payload) } : { hour, status: 'not_yet' }, 60);
+      }
+    } else if (p === '/api/scorecard') res = json(await scorecardSummary(env), 300);
+    else if (p === '/api/history') {
+      const r = await env.DB.prepare('SELECT date, close FROM history_daily ORDER BY date DESC LIMIT 260').all<any>();
+      res = json((r.results || []).reverse(), 600);
+    } else res = json({ error: 'not found' }, 0, 404);
+  } catch (e) {
+    return json({ error: (e as Error).message }, 0, 500);
+  }
+  if (res.status === 200 && res.headers.get('cache-control') !== 'no-store') ctx.waitUntil(cache.put(req, res.clone()));
+  return res;
+}

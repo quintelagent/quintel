@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quintel",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "web/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "limits": { "cpu_ms": 60000 },
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "quintel",
+      "database_id": "REPLACE_AFTER_D1_CREATE",
+      "migrations_dir": "worker/migrations"
+    }
+  ],
+  "vars": {
+    "SYMBOL": "NVDA",
+    "CHAIN_ID": "4663",
+    "CHAIN_EXPLORER": "https://robinhoodchain.blockscout.com",
+    "NVDA_TOKEN_ADDRESS": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+    "NVDA_POOL_ADDRESS": "0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3",
+    "TRIAGE_MODEL": "anthropic/claude-haiku-5.5",
+    "BRIEFING_MODEL": "google/gemini-3.8-flash",
+    "AI_DAILY_CAP_USD": "4",
+    "PRE_CRISIS_LEVEL": "0",
+    "QNTL_TOKEN_PONS": "",
+    "QNTL_TOKEN_SOLANA": "",
+    "FINGERPRINT_ADDRESS": ""
+  }
+}
