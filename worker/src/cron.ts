@@ -96,7 +96,9 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
   try {
     const c = await getChainPrice(env);
     chain = c.price;
-    await env.DB.prepare('INSERT OR REPLACE INTO prices (ts, source, price) VALUES (?,?,?)').bind(nowIso, 'chain:' + c.source, c.price).run();
+    // a failed write must not throw away the fresh price we just read
+    await env.DB.prepare('INSERT OR REPLACE INTO prices (ts, source, price) VALUES (?,?,?)').bind(nowIso, 'chain:' + c.source, c.price).run()
+      .catch((err) => log.push('prices write failed: ' + (err as Error).message));
   } catch (e) {
     log.push('chain price failed: ' + (e as Error).message);
     // reuse the last good on-chain price if it is recent (honestly logged)
