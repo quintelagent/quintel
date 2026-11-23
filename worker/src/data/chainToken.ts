@@ -16,7 +16,7 @@ export function rpcUrls(env: Env): string[] {
 export const DEFAULT_POOL = '0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3';
 export const CHAINLINK_NVDA_247 = '0x321A36e441DfBadA01Aa6f9884F14a344E133D1F';
 
-export interface ChainPrice { price: number; source: 'pool' | 'chainlink'; ts: string; poolPrice?: number; oraclePrice?: number }
+export interface ChainPrice { price: number; source: 'pool' | 'chainlink' | 'dexscreener'; ts: string; poolPrice?: number; oraclePrice?: number }
 
 async function ethCallOne(rpc: string, to: string, data: string): Promise<string> {
   const ctrl = new AbortController();
@@ -76,5 +76,28 @@ export async function getChainPrice(env: Env): Promise<ChainPrice> {
   // Prefer the traded pool price, unless it disagrees wildly with the oracle (thin-liquidity spike).
   if (pp && (!op || Math.abs(pp / op - 1) < 0.05)) return { price: pp, source: 'pool', ts, poolPrice: pp, oraclePrice: op };
   if (op) return { price: op, source: 'chainlink', ts, poolPrice: pp, oraclePrice: op };
-  throw new Error('chain price unavailable: ' + [p, o].map((x) => (x.status === 'rejected' ? String(x.reason) : 'ok')).join('; '));
+  // Last resort: the same pool's price via DexScreener's indexer (used when the RPCs rate-limit us).
+  let dsErr = '';
+  try {
+    const ds = await dexscreenerPrice(pool);
+    return { price: ds, source: 'dexscreener', ts };
+  } catch (e) {
+    dsErr = String((e as Error).message || e);
+  }
+  throw new Error('chain price unavailable: ' + [p, o].map((x) => (x.status === 'rejected' ? String(x.reason) : 'ok')).join('; ') + '; ' + dsErr);
+}
+
+export async function dexscreenerPrice(pool: string): Promise<number> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/pairs/robinhood/${pool}`, { signal: ctrl.signal });
+    const j: any = await res.json();
+    const pair = (j.pairs || [j.pair])[0];
+    const price = Number(pair?.priceUsd);
+    if (!(price > 0) || pair?.baseToken?.symbol !== 'NVDA') throw new Error('dexscreener: no NVDA price');
+    return price;
+  } finally {
+    clearTimeout(t);
+  }
 }

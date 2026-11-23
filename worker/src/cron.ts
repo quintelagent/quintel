@@ -162,13 +162,13 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
     };
     const ins = await env.DB.prepare(
       'INSERT INTO runs (ts, session, seed, input_hash, output_hash, spot, price_source, crisis, cpu_ms, summary) VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING id',
-    ).bind(nowIso, session, seed, out.inputHash, oh, out.spot, priceSource, out.crisis.level, ms, JSON.stringify(summary)).first<{ id: number }>();
+    ).bind(nowIso, session, seed, out.inputHash, oh, out.spot, priceSource, out.crisis.level, ms > 0 ? ms : null, JSON.stringify(summary)).first<{ id: number }>();
     ranId = ins!.id;
     await env.DB.prepare('INSERT INTO run_outputs (id, inputs, output, sample) VALUES (?,?,?,?)')
       .bind(ranId, JSON.stringify(inputs), JSON.stringify(out), JSON.stringify(sample)).run();
     await incr(env, 'runs_' + et.date);
     await incr(env, 'runs_total');
-    log.push(`run ${ranId}: ${out.totalPaths} paths in ${ms}ms, crisis ${out.crisis.level}, hash ${oh.slice(0, 12)}`);
+    log.push(`run ${ranId}: ${out.totalPaths} paths${ms > 0 ? ` in ${ms}ms` : ''}, crisis ${out.crisis.level}, hash ${oh.slice(0, 12)}`);
 
     // 4. Desk
     try {
