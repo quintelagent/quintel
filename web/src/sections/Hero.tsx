@@ -65,30 +65,42 @@ function draw2D(canvas: HTMLCanvasElement, data: CloudPaths[], spot: number, pro
 export function Hero() {
   const [latest] = useApi<Latest>('/api/latest', 30000);
   const [sample] = useApi<Sample>('/api/sample/latest', 120000);
-  const [dense, setDense] = useState<CloudPaths[] | null>(null);
+  const [dense, setDense] = useState<{ runId: number; models: CloudPaths[] } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cloudRef = useRef<{ dispose(): void; setScroll(k: number): void; setPaths(d: CloudPaths[]): void } | null>(null);
+  const cloudRef = useRef<{ dispose(): void; setScroll(k: number): void; setPaths(d: CloudPaths[], fadeIn?: boolean, spot?: number): void } | null>(null);
   const spot = latest?.run?.spot ?? null;
   const runId = latest?.run?.id ?? null;
+  const sampleId = sample?.id ?? null;
   const mobile = useRef(isMobile() || reducedMotion()).current;
+
+  // Best data available right now, keyed by content (not object identity — polls return new objects).
+  const best = dense ? dense.models : sample?.models ?? null;
+  const bestKey = dense ? `dense:${dense.runId}` : sampleId !== null ? `sample:${sampleId}` : null;
+  const bestRef = useRef({ data: best, spot });
+  bestRef.current = { data: best, spot };
+  const shownKey = useRef<string | null>(null);
+  const bestKeyRef = useRef(bestKey);
+  bestKeyRef.current = bestKey;
 
   // Dense cloud: download the run's inputs + seed, then sample thousands of real paths in the Web Worker.
   useEffect(() => {
     if (!runId) return;
     let alive = true;
     whenIdle(() => {
+      if (!alive) return;
       api<RunFull>(`/api/run/${runId}`)
         .then((r) => sampleInBrowser(r.inputs, r.seed, mobile ? DENSE_MOBILE : DENSE_DESKTOP))
-        .then((s) => alive && setDense(s.models))
+        .then((s) => { if (alive) setDense({ runId, models: s.models }); })
         .catch(() => {});
     }, 3000);
     return () => { alive = false; };
   }, [runId, mobile]);
 
-  // 3D (desktop) — created once, after the page is idle.
+  // 3D (desktop) — created exactly once, after the page is idle, from whatever data is freshest at that moment.
+  const ready = !!best && !!spot;
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (mobile || !canvas || !sample || !spot || cloudRef.current) return;
+    if (mobile || !canvas || !ready) return;
     let alive = true;
     let frame = 0;
     const onScroll = () => {
@@ -97,8 +109,10 @@ export function Hero() {
     };
     whenIdle(() => {
       import('../three/ScenarioCloud').then(({ ScenarioCloud }) => {
-        if (!alive) return;
-        cloudRef.current = new ScenarioCloud(canvas, dense ?? sample.models, spot);
+        const { data, spot: s0 } = bestRef.current;
+        if (!alive || !data || !s0) return;
+        cloudRef.current = new ScenarioCloud(canvas, data, s0);
+        shownKey.current = bestKeyRef.current;
         canvas.classList.add('in');
       });
     }, 2000);
@@ -109,27 +123,35 @@ export function Hero() {
       cancelAnimationFrame(frame);
       cloudRef.current?.dispose();
       cloudRef.current = null;
+      shownKey.current = null;
     };
+  }, [ready, mobile]);
+
+  // Swap paths in place only when the content actually changes (new run, or dense set arrived).
+  useEffect(() => {
+    if (mobile || !cloudRef.current || !best || !spot || bestKey === shownKey.current) return;
+    cloudRef.current.setPaths(best, true, spot);
+    shownKey.current = bestKey;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sample, spot, mobile]);
+  }, [bestKey, mobile]);
 
-  // swap in the dense set when it arrives
-  useEffect(() => { if (dense && cloudRef.current) cloudRef.current.setPaths(dense); }, [dense]);
-
-  // 2D (phones / reduced motion)
+  // 2D (phones / reduced motion): the draw-in sweep plays once; later updates redraw instantly.
+  const swept = useRef(false);
   useEffect(() => {
     const canvas = canvasRef.current;
-    const data = dense ?? sample?.models;
-    if (!mobile || !canvas || !data || !spot) return;
+    if (!mobile || !canvas || !best || !spot) return;
     canvas.classList.add('in');
-    let k = reducedMotion() || dense ? 1 : 0;
+    const data = best;
+    let k = reducedMotion() || swept.current ? 1 : 0;
+    swept.current = true;
     let raf = 0;
     const step = () => { k = Math.min(1, k + 0.015); draw2D(canvas, data, spot, k); if (k < 1) raf = requestAnimationFrame(step); };
     step();
     const onR = () => draw2D(canvas, data, spot, 1);
     window.addEventListener('resize', onR);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', onR); };
-  }, [sample, dense, spot, mobile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bestKey, spot, mobile]);
 
   const run = latest?.run;
   return (

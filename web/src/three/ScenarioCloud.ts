@@ -65,7 +65,8 @@ export class ScenarioCloud {
   }
 
   /** Replace the path set (e.g. the dense browser-generated sample); fades the new set in. */
-  setPaths(data: CloudPaths[], fadeIn = true) {
+  setPaths(data: CloudPaths[], fadeIn = true, newSpot?: number) {
+    if (newSpot && newSpot !== this.spot) { this.spot = newSpot; this.range = null; }
     if (this.layer) {
       this.root.remove(this.layer);
       this.layer.traverse((o) => {
@@ -197,6 +198,13 @@ export class ScenarioCloud {
     this.io.disconnect();
     window.removeEventListener('resize', this.resize);
     document.removeEventListener('visibilitychange', this.sync);
+    // free every GPU buffer/material we created (renderer.dispose() alone does not)
+    this.scene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      m.geometry?.dispose();
+      const mat = m.material as THREE.Material | THREE.Material[] | undefined;
+      (Array.isArray(mat) ? mat : mat ? [mat] : []).forEach((x) => x.dispose());
+    });
     this.renderer.dispose();
   }
 }
