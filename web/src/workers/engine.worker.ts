@@ -4,7 +4,8 @@ import type { EngineInputs } from '@engine/types';
 
 type Msg =
   | { id: number; type: 'run'; inputs: EngineInputs; seed: string; pathsPerModel: number; withSample?: boolean }
-  | { id: number; type: 'hash'; value: unknown };
+  | { id: number; type: 'hash'; value: unknown }
+  | { id: number; type: 'sample'; inputs: EngineInputs; seed: string; perModel: number };
 
 self.onmessage = (e: MessageEvent<Msg>) => {
   const m = e.data;
@@ -19,6 +20,8 @@ self.onmessage = (e: MessageEvent<Msg>) => {
       const ms = performance.now() - t0;
       const sample = m.withSample ? samplePaths(m.inputs, m.seed, 30) : null;
       (self as any).postMessage({ id: m.id, output, hash, inputHash: hashObject(m.inputs), ms, sample });
+    } else if (m.type === 'sample') {
+      (self as any).postMessage({ id: m.id, sample: samplePaths(m.inputs, m.seed, m.perModel) });
     } else if (m.type === 'hash') {
       (self as any).postMessage({ id: m.id, hash: hashObject(m.value) });
     }

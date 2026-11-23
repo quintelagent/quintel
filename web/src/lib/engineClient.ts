@@ -38,3 +38,12 @@ export function hashInBrowser(value: unknown): Promise<string> {
     getWorker().postMessage({ id, type: 'hash', value });
   });
 }
+
+/** Daily-stepped paths from a run's own inputs + seed (same streams the server samples from). */
+export function sampleInBrowser(inputs: EngineInputs, seed: string, perModel: number): Promise<PathSample> {
+  const id = ++seq;
+  return new Promise((resolve, reject) => {
+    pending.set(id, { resolve: (d) => resolve(d.sample), reject });
+    getWorker().postMessage({ id, type: 'sample', inputs, seed, perModel });
+  });
+}
