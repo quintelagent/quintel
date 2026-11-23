@@ -1,5 +1,6 @@
 import type { Env } from '../config';
 import { hashObject } from '../../../engine/src/hash';
+import { rpcUrls } from '../data/chainToken';
 
 export interface FingerprintPayload {
   hour: string; // ISO hour start, e.g. 2026-11-23T14:00:00.000Z
@@ -37,18 +38,18 @@ export async function buildPayload(env: Env, hourStart: Date): Promise<Fingerpri
 /** Send a 0-value self-transaction carrying the hash as calldata. Returns tx hash. */
 export async function sendFingerprintTx(env: Env, hash: string): Promise<string> {
   if (!env.FINGERPRINT_KEY) throw new Error('FINGERPRINT_KEY not set');
-  const { createWalletClient, http, defineChain } = await import('viem');
+  const { createWalletClient, http, fallback, defineChain } = await import('viem');
   const { privateKeyToAccount } = await import('viem/accounts');
-  const rpc = env.CHAIN_RPC_URL || 'https://rpc.mainnet.chain.robinhood.com';
+  const urls = rpcUrls(env);
   const chain = defineChain({
     id: Number(env.CHAIN_ID || 4663),
     name: 'Robinhood Chain',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    rpcUrls: { default: { http: [rpc] } },
+    rpcUrls: { default: { http: urls } },
   });
   const key = (env.FINGERPRINT_KEY.startsWith('0x') ? env.FINGERPRINT_KEY : '0x' + env.FINGERPRINT_KEY) as `0x${string}`;
   const account = privateKeyToAccount(key);
-  const client = createWalletClient({ account, chain, transport: http(rpc) });
+  const client = createWalletClient({ account, chain, transport: fallback(urls.map((u) => http(u))) });
   return client.sendTransaction({ to: account.address, value: 0n, data: hash as `0x${string}` });
 }
 

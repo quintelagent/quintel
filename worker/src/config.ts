@@ -5,7 +5,6 @@ export interface Env {
   ASSETS: Fetcher;
   // vars
   SYMBOL: string;
-  CHAIN_RPC_URL?: string;
   CHAIN_ID: string;
   CHAIN_EXPLORER: string;
   NVDA_TOKEN_ADDRESS: string;
@@ -19,6 +18,8 @@ export interface Env {
   FINGERPRINT_ADDRESS?: string;
   SITE_URL?: string;
   // secrets
+  /** primary Robinhood Chain RPC (e.g. Alchemy); falls back to the public RPC */
+  RPC_URL?: string;
   OPENROUTER_API_KEY?: string;
   ALPACA_KEY_ID?: string;
   ALPACA_SECRET_KEY?: string;

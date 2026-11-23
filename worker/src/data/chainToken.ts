@@ -8,12 +8,17 @@ import type { Env } from '../config';
  */
 
 export const DEFAULT_RPC = 'https://rpc.mainnet.chain.robinhood.com';
+
+/** Primary RPC from the RPC_URL secret, then the public fallback. */
+export function rpcUrls(env: Env): string[] {
+  return env.RPC_URL ? [env.RPC_URL, DEFAULT_RPC] : [DEFAULT_RPC];
+}
 export const DEFAULT_POOL = '0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3';
 export const CHAINLINK_NVDA_247 = '0x321A36e441DfBadA01Aa6f9884F14a344E133D1F';
 
 export interface ChainPrice { price: number; source: 'pool' | 'chainlink'; ts: string; poolPrice?: number; oraclePrice?: number }
 
-async function ethCall(rpc: string, to: string, data: string): Promise<string> {
+async function ethCallOne(rpc: string, to: string, data: string): Promise<string> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 8000);
   try {
@@ -32,6 +37,14 @@ async function ethCall(rpc: string, to: string, data: string): Promise<string> {
   }
 }
 
+async function ethCall(rpcs: string[], to: string, data: string): Promise<string> {
+  let last: unknown;
+  for (const rpc of rpcs) {
+    try { return await ethCallOne(rpc, to, data); } catch (e) { last = e; }
+  }
+  throw last;
+}
+
 /** USD per NVDA token from a sqrtPriceX96 where token0 = USDG(6) and token1 = NVDA(18). */
 export function priceFromSqrtX96(sqrtPriceX96: bigint): number {
   // USD per NVDA = 1e12 * 2^192 / sqrtP^2 ; compute with 1e8 extra precision in BigInt
@@ -40,21 +53,21 @@ export function priceFromSqrtX96(sqrtPriceX96: bigint): number {
   return Number(num / den) / 1e8;
 }
 
-export async function poolPrice(rpc: string, pool: string): Promise<number> {
+export async function poolPrice(rpc: string[], pool: string): Promise<number> {
   const r = await ethCall(rpc, pool, '0x3850c7bd'); // slot0()
   const sqrt = BigInt('0x' + r.slice(2, 66));
   if (sqrt === 0n) throw new Error('pool not initialised');
   return priceFromSqrtX96(sqrt);
 }
 
-export async function chainlinkPrice(rpc: string, feed: string): Promise<{ price: number; updatedAt: number }> {
+export async function chainlinkPrice(rpc: string[], feed: string): Promise<{ price: number; updatedAt: number }> {
   const r = await ethCall(rpc, feed, '0xfeaf968c'); // latestRoundData()
   const word = (i: number) => BigInt('0x' + r.slice(2 + 64 * i, 66 + 64 * i));
   return { price: Number(word(1)) / 1e8, updatedAt: Number(word(3)) };
 }
 
 export async function getChainPrice(env: Env): Promise<ChainPrice> {
-  const rpc = env.CHAIN_RPC_URL || DEFAULT_RPC;
+  const rpc = rpcUrls(env);
   const pool = env.NVDA_POOL_ADDRESS || DEFAULT_POOL;
   const [p, o] = await Promise.allSettled([poolPrice(rpc, pool), chainlinkPrice(rpc, CHAINLINK_NVDA_247)]);
   const pp = p.status === 'fulfilled' && p.value > 0 ? p.value : undefined;
