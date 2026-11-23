@@ -12,3 +12,4 @@ One line per judgment call, newest last.
 - Firefox determinism is checked in CI (Ubuntu); Playwright's Firefox does not launch on this dev Mac's OS version.
 - History adapter order: Alpaca (SIP daily bars, split+dividend adjusted) → Yahoo chart API (keyless fallback, verified working).
 - If the token/stock gap exceeds 25% the token price is ignored for that run (possible corporate-action multiplier).
+- Token price fallback order: Uniswap pool via RPC_URL → public RPC → Chainlink → DexScreener (indexer of the same pool). Workers freeze timers during compute, so in-Worker run time is stored as null; timing is measured in tests.
