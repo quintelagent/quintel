@@ -17,7 +17,7 @@
     {
       "binding": "DB",
       "database_name": "quintel",
-      "database_id": "REPLACE_AFTER_D1_CREATE",
+      "database_id": "4a505724-4bbb-4bb2-93d7-705f1ca51161",
       "migrations_dir": "worker/migrations"
     }
   ],
