@@ -33,6 +33,7 @@
     "PRE_CRISIS_LEVEL": "0",
     "QNTL_TOKEN_PONS": "",
     "QNTL_TOKEN_SOLANA": "",
-    "FINGERPRINT_ADDRESS": ""
+    "SITE_URL": "https://quintelagent.com",
+    "FINGERPRINT_ADDRESS": "0xfbA600991E6d76a17e45Fec9F68b002c97def19D"
   }
 }

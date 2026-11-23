@@ -29,8 +29,12 @@ export function Proof() {
               <button className="btn primary" type="submit">Verify</button>
             </form>
             {p?.wallet && (
-              <div className="mono muted" style={{ fontSize: 12, marginTop: 18, wordBreak: 'break-all' }}>
-                Fingerprint wallet: <a href={`${p.explorer}/address/${p.wallet}`} target="_blank" rel="noreferrer">{p.wallet}</a>
+              <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                <div className="label">Quintel fingerprint wallet</div>
+                <a className="mono" href={`${p.explorer}/address/${p.wallet}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, wordBreak: 'break-all', display: 'inline-block', marginTop: 6 }}>
+                  {p.wallet} ↗
+                </a>
+                <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>Robinhood Chain · chain id {p.chainId} · every fingerprint is a 0-value tx from this wallet to itself</div>
               </div>
             )}
           </div>
