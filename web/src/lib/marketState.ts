@@ -1,4 +1,4 @@
-import { closeMinute, etParts, etToUtc, isTradingDay, nextOpen, sessionAt, EARLY_CLOSES, HOLIDAYS, addDays } from '../../../worker/src/session';
+import { closeMinute, etParts, etToUtc, isTradingDay, nextOpen, sessionAt, EARLY_CLOSES, HOLIDAYS } from '../../../worker/src/session';
 
 export { addTradingDays, etParts, etToUtc, isTradingDay, nextOpen, EARLY_CLOSES, HOLIDAYS, addDays } from '../../../worker/src/session';
 

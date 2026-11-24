@@ -4,7 +4,7 @@ import type { RunRow, RunSummary } from './api';
 export const keptOf = (s: RunSummary | null | undefined): number | null => (s?.touch ? 1 - s.touch.giveBack.p : null);
 export const backAboveOf = (s: RunSummary | null | undefined): { level: number; p: number } | null => (s?.touch ? { level: s.touch.backAbove.level, p: s.touch.backAbove.p } : null);
 
-/** Runs that started from a stale price (docs/incidents). Kept and verifiable, but left out of sparks and changes. */
+/** Runs that started from a stale price (docs/incidents). Kept and verifiable, but left out of odds changes (token prices on them were right). */
 export const isIncidentRun = (id: number) => id === 24 || (id >= 64 && id <= 78);
 
 /** Change in kept odds between a run and the one before it. Runs newest first. */

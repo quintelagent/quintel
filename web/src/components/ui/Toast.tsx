@@ -30,11 +30,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 function ToastCard({ t, close }: { t: Item; close: (id: number) => void }) {
   const left = useRef(6000), started = useRef(0), timer = useRef(0), y0 = useRef<number | null>(null);
-  const start = useCallback(() => { started.current = Date.now(); timer.current = window.setTimeout(() => close(t.id), left.current); }, [close, t.id]);
-  const stop = () => { clearTimeout(timer.current); left.current -= Date.now() - started.current; };
+  const start = useCallback(() => { clearTimeout(timer.current); started.current = Date.now(); timer.current = window.setTimeout(() => close(t.id), left.current); }, [close, t.id]);
+  const stop = () => { if (!timer.current) return; clearTimeout(timer.current); timer.current = 0; left.current = Math.max(1500, left.current - (Date.now() - started.current)); };
   useEffect(() => { start(); return () => clearTimeout(timer.current); }, [start]);
   return (
-    <div className={t.out ? 'toast out' : 'toast'} onMouseEnter={stop} onMouseLeave={start}
+    <div className={t.out ? 'toast out' : 'toast'} onMouseEnter={stop} onMouseLeave={start} onFocus={stop} onBlur={start}
       onTouchStart={(e) => { y0.current = e.touches[0].clientY; }} onTouchEnd={(e) => { if (y0.current !== null && e.changedTouches[0].clientY - y0.current > 24) close(t.id); y0.current = null; }}>
       {t.href ? <button type="button" className="toast-t" onClick={() => { close(t.id); navigate(t.href!); }}>{t.text}{t.action && <u>{t.action}</u>}</button> : <span className="toast-t">{t.text}</span>}
       <button type="button" className="icon-btn" aria-label="Dismiss" onClick={() => close(t.id)}><X size={16} strokeWidth={1.5} /></button>

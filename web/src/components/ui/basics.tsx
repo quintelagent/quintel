@@ -1,4 +1,4 @@
-import { useId, useState, type ButtonHTMLAttributes, type ElementType, type HTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ElementType, type HTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
 import { ChevronDown, Check, Copy, Lock } from 'lucide-react';
 import { Link } from '../../lib/router';
 import { useReveal } from '../../lib/hooks';
@@ -74,8 +74,8 @@ export function Slider({ label, value, min, max, step, onChange, format }: { lab
   );
 }
 
-export function Accordion({ items }: { items: { q: ReactNode; a: ReactNode }[] }) {
-  const [open, set] = useState<number | null>(null);
+export function Accordion({ items, defaultOpen = null }: { items: { q: ReactNode; a: ReactNode }[]; defaultOpen?: number | null }) {
+  const [open, set] = useState<number | null>(defaultOpen);
   const id = useId();
   return (
     <div className="accordion">
@@ -92,8 +92,10 @@ export function Accordion({ items }: { items: { q: ReactNode; a: ReactNode }[] }
 export function CopyButton({ text, label = 'Copy', toast = 'Copied' }: { text: string; label?: string; toast?: string }) {
   const [done, set] = useState(false);
   const push = useToast();
+  const timer = useRef(0);
+  useEffect(() => () => clearTimeout(timer.current), []);
   return (
-    <button type="button" className="copy" onClick={() => { navigator.clipboard?.writeText(text).then(() => { set(true); push({ text: toast }); setTimeout(() => set(false), 1500); }, () => push({ text: 'Couldn’t copy. Select the text instead.' })); }}>
+    <button type="button" className="copy" onClick={() => { navigator.clipboard?.writeText(text).then(() => { set(true); push({ text: toast }); clearTimeout(timer.current); timer.current = window.setTimeout(() => set(false), 1500); }, () => push({ text: 'Couldn’t copy. Select the text instead.' })); }}>
       {done ? <Check size={16} strokeWidth={1.5} aria-hidden="true" /> : <Copy size={16} strokeWidth={1.5} aria-hidden="true" />}{label}
     </button>
   );

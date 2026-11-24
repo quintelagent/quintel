@@ -15,7 +15,6 @@ export function PixelBars({ values, risk, marker, label, height = 160 }: { value
     const n = values?.length ?? 60;
     const colW = w / n;
     const pitch = Math.max(3, Math.floor(colW)), s = pitch - Math.max(1, Math.round(dpr / 2));
-    const off = Math.floor((w - pitch * n) / 2);
     const rows = Math.floor(h / pitch), max = values ? Math.max(...values, 1e-12) : 1;
     for (let i = 0; i < n; i++) {
       const filled = values ? Math.max(values[i] > 0 ? 1 : 0, Math.round((values[i] / max) * rows)) : 1;
@@ -23,11 +22,12 @@ export function PixelBars({ values, risk, marker, label, height = 160 }: { value
       for (let y = 0; y < rows; y++) {
         const on = y < filled && !!values;
         if (!on && y > 0) continue;
-        cell(ctx, off + i * pitch, h - (y + 1) * pitch, s, !on ? p.line : r ? p.risk : p.ink, on && r);
+        cell(ctx, Math.round((i * w) / n), h - (y + 1) * pitch, s, !on ? p.line : r ? p.risk : p.ink, on && r);
       }
     }
     if (marker !== null && marker !== undefined) {
-      const x = Math.round(off + marker * pitch * n);
+      const x = Math.round(marker * w);
+      ctx.clearRect(x - Math.round(2 * dpr), 0, Math.round(4 * dpr), h);
       ctx.fillStyle = p.ink2;
       for (let y = 0; y < h; y += pitch) ctx.fillRect(x - Math.ceil(dpr), y, Math.max(2, Math.round(dpr * 2)), Math.max(1, Math.floor(pitch / 2)));
     }

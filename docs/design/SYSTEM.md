@@ -56,7 +56,7 @@ Inverted pill (ink background, paper text) is the only "loud" treatment. Use it 
 
 ### Type
 - Sans: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif`. Inter is self-hosted (woff2, latin subset, `font-display: swap`) as fallback only. Never ship SF Pro files.
-- Mono (every number, label, counter, address, code): `ui-monospace, "SF Mono", "JetBrains Mono", monospace` + `font-variant-numeric: tabular-nums`.
+- Mono (every number, label, counter, address, code): `ui-monospace, "SF Mono", "JetBrains Mono", monospace` + `font-variant-numeric: tabular-nums`. JetBrains Mono is self-hosted (woff2, latin subset, swap) as fallback only, so numbers never fall back to Courier.
 
 | Role | Size | Weight | Notes |
 |---|---|---|---|

@@ -11,12 +11,13 @@
   "scripts": {
     "test": "vitest run",
     "test:browsers": "node web/test/build-engine.mjs && playwright test",
-    "build": "npm run build -w web",
+    "build": "npm run check:design && npm run build -w web",
     "dev": "npm run dev -w web",
     "deploy": "npm test && npm run build && wrangler deploy",
     "verify": "tsx engine/verify.ts",
     "typecheck": "tsc -p engine && tsc -p worker && tsc -p web",
-    "ship": "node scripts/ship.mjs"
+    "ship": "node scripts/ship.mjs",
+    "check:design": "node scripts/check-design.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261119.1",

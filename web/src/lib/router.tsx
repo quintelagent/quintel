@@ -6,6 +6,8 @@ const emit = () => window.dispatchEvent(new Event('q-nav'));
 export function scrollToId(id: string, tries = 30) {
   const el = document.getElementById(id);
   if (!el) { if (tries > 0) setTimeout(() => scrollToId(id, tries - 1), 100); return; }
+  if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+  el.focus({ preventScroll: true });
   el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 

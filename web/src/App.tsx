@@ -47,7 +47,7 @@ export function App() {
       <ToastProvider>
         <a className="skip" href="#main">Skip to content</a>
         <Header path={path} />
-        <Banner />
+        <Banner path={path} />
         <main id="main" tabIndex={-1}><Suspense fallback={<div style={{ minHeight: '100dvh' }} />}><Page path={path} /></Suspense></main>
         <Footer />
         <StickyBar path={path} />
