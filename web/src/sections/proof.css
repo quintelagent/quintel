@@ -1,0 +1,15 @@
+.proof, .proof-grid { display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr); }
+.proof { gap: var(--s5); }
+.proof-grid > .card, .proof-score { display: flex; flex-direction: column; gap: var(--s5); }
+.proof-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); }
+.proof-grid h3 { line-height: 28px; }
+.proof-grid .state { flex: 1; }
+.proof-grid .state p { text-wrap: balance; }
+.proof-latest > .note { text-wrap: pretty; }
+.proof-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4); }
+.proof-latest .btn { align-self: flex-start; }
+.proof-latest > .note { margin-top: auto; }
+.proof-score .pixel-bars { max-width: 480px; }
+.proof-wallet { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); border-top: 1px solid var(--line); padding-top: var(--s5); }
+.proof-link { display: inline-flex; align-items: center; min-height: 44px; width: fit-content; font-weight: 500; }
+@media (min-width: 1100px) { .proof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

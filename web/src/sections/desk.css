@@ -1,0 +1,23 @@
+.desk { --desk-pos-h: 51px; --desk-none-h: 51px; --desk-rules-h: 432px; display: grid; gap: var(--s4); grid-template-columns: minmax(0, 1fr); }
+.desk > .card { display: flex; flex-direction: column; gap: var(--s5); }
+.desk-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5) var(--s4); }
+.desk-trades .state { min-height: 0; padding: 0; align-items: flex-start; text-align: left; }
+.desk-stats .change { vertical-align: top; }
+.desk-trades .btn { align-self: flex-start; }
+.desk-trades td:last-child { text-wrap: pretty; }
+.desk-trades td > span { overflow-wrap: normal; }
+.desk-rules ol { display: flex; flex-direction: column; counter-reset: r; }
+.desk-rules li { text-wrap: pretty; display: grid; grid-template-columns: var(--s5) minmax(0, 1fr); gap: var(--s2); padding-block: var(--s3); border-top: 1px solid var(--line); counter-increment: r; }
+.desk-rules li::before { content: counter(r); font: 500 var(--fs-label)/2 var(--mono); color: var(--ink-2); }
+.desk-rules .note { margin-top: auto; }
+@media (min-width: 768px) {
+  .desk { --desk-pos-h: 26px; --desk-none-h: 26px; --desk-rules-h: 256px; }
+  .desk-trades td.mono:not(:first-child) { white-space: nowrap; }
+}
+@media (min-width: 1100px) {
+  .desk { --desk-pos-h: 51px; --desk-rules-h: 304px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 1fr auto; }
+  .desk-trades td:nth-child(2) { white-space: nowrap; }
+  .desk-rules { grid-column: 2; grid-row: 1 / span 2; }
+  .has-trades .desk-rules { grid-row: 1; }
+  .has-trades .desk-trades { grid-column: 1 / -1; }
+}
