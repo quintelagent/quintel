@@ -3,6 +3,7 @@ import { counter, getMeta } from './db';
 import { etParts, sessionAt, nextOpen } from './session';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
+import { redact, safeError } from './redact';
 import { scorecardSummary } from './proof/scorecard';
 import { initialDesk, type DeskState } from './desk/desk';
 import { CRISIS_WEIGHTS, MODEL_INFO } from '../../engine/src/index';
@@ -75,7 +76,7 @@ async function proof(env: Env) {
     explorer: env.CHAIN_EXPLORER,
     chainId: Number(env.CHAIN_ID),
     wallet: env.FINGERPRINT_ADDRESS || null,
-    fingerprints: fps.results || [],
+    fingerprints: (fps.results || []).map((f: any) => ({ ...f, error: f.error ? redact(f.error, env).slice(0, 200) : null })),
   };
 }
 
@@ -182,7 +183,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
     else if (p === '/api/proof') res = json(await proof(env), 30);
     else if ((m = p.match(/^\/api\/fingerprint\/(.+)$/))) {
       const r = await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(decodeURIComponent(m[1])).first<any>();
-      res = r ? json({ ...r, payload: JSON.parse(r.payload) }, 60) : json({ error: 'not found' }, 0, 404);
+      res = r ? json({ ...r, error: r.error ? redact(r.error, env).slice(0, 200) : null, payload: JSON.parse(r.payload) }, 60) : json({ error: 'not found' }, 0, 404);
     } else if (p === '/api/fingerprint-for-run') {
       const id = Number(url.searchParams.get('id'));
       const run = await env.DB.prepare('SELECT ts FROM runs WHERE id = ?').bind(id).first<{ ts: string }>();
@@ -190,7 +191,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
       else {
         const hour = new Date(Math.floor(new Date(run.ts).getTime() / 3600_000) * 3600_000).toISOString();
         const r = await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>();
-        res = json(r ? { ...r, payload: JSON.parse(r.payload) } : { hour, status: 'not_yet' }, 60);
+        res = json(r ? { ...r, error: r.error ? redact(r.error, env).slice(0, 200) : null, payload: JSON.parse(r.payload) } : { hour, status: 'not_yet' }, 60);
       }
     } else if (p === '/api/scorecard') res = json(await scorecardSummary(env), 300);
     else if (p === '/api/history') {
@@ -198,7 +199,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
       res = json((r.results || []).reverse(), 600);
     } else res = json({ error: 'not found' }, 0, 404);
   } catch (e) {
-    return json({ error: (e as Error).message }, 0, 500);
+    return json({ error: safeError(e, env) }, 0, 500);
   }
   if (res.status === 200 && res.headers.get('cache-control') !== 'no-store') ctx.waitUntil(cache.put(req, res.clone()));
   return res;

@@ -1,6 +1,7 @@
 import type { Env } from './config';
 import { handleApi } from './api';
 import { tick } from './cron';
+import { safeError } from './redact';
 
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -19,7 +20,7 @@ export default {
     ctx.waitUntil(
       tick(env).then(
         (r) => console.log(JSON.stringify(r)),
-        (e) => console.error('tick failed', e),
+        (e) => console.error('tick failed', safeError(e, env)),
       ),
     );
   },

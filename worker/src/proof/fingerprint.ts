@@ -1,5 +1,6 @@
 import type { Env } from '../config';
 import { hashObject } from '../../../engine/src/hash';
+import { safeError } from '../redact';
 import { rpcUrls } from '../data/chainToken';
 
 export interface FingerprintPayload {
@@ -88,8 +89,8 @@ export async function processFingerprints(env: Env, now: Date): Promise<string[]
       log.push(`sent ${p.hour} ${tx}`);
     } catch (e) {
       await env.DB.prepare('UPDATE fingerprints SET attempts = attempts + 1, error = ? WHERE hour = ?')
-        .bind(String((e as Error).message).slice(0, 300), p.hour).run();
-      log.push(`fingerprint send failed ${p.hour}: ${(e as Error).message}`);
+        .bind(safeError(e, env), p.hour).run();
+      log.push(`fingerprint send failed ${p.hour}: ${safeError(e, env)}`);
     }
   }
   return log;

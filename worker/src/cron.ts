@@ -1,4 +1,5 @@
 import { SCHEDULE, type Env } from './config';
+import { redact } from './redact';
 import { getMeta, setMeta, incr } from './db';
 import { sessionAt, etParts, lastCloseDate, type Session } from './session';
 import { marketEvent } from './event';
@@ -230,6 +231,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
     try { log.push(`scorecard: ${await scoreMatured(env)} rows`); } catch (e) { log.push('scorecard failed: ' + (e as Error).message); }
   }
 
-  await setMeta(env, 'last_tick', { ts: nowIso, session, log });
-  return { ts: nowIso, session, ran: ranId !== undefined, runId: ranId, log };
+  const safeLog = log.map((l) => redact(l, env).slice(0, 400));
+  await setMeta(env, 'last_tick', { ts: nowIso, session, log: safeLog });
+  return { ts: nowIso, session, ran: ranId !== undefined, runId: ranId, log: safeLog };
 }

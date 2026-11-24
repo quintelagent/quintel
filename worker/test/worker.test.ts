@@ -7,6 +7,7 @@ import { priceFromSqrtX96 } from '../src/data/chainToken';
 import { sessionAt, addTradingDays, nextOpen, lastCloseDate } from '../src/session';
 import { choosePrice, historyStale } from '../src/pricing';
 import { marketEvent } from '../src/event';
+import { redact, safeError } from '../src/redact';
 import { newsIntensity } from '../src/agent/triage';
 import { runScenarios, deriveSeed } from '../../engine/src/index';
 import { baseInputs } from '../../engine/test/fixtures';
@@ -175,5 +176,16 @@ describe('fingerprint wallet guard', () => {
     const { generatePrivateKey } = await import('viem/accounts');
     const env = { FINGERPRINT_KEY: generatePrivateKey(), FINGERPRINT_ADDRESS: '0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47' } as any;
     await expect(sendFingerprintTx(env, '0x00')).rejects.toThrow(/not the published wallet/);
+  });
+});
+
+describe('public errors never leak secrets', () => {
+  const env = { RPC_URL: 'https://robinhood-mainnet.g.alchemy.com/v2/SuperSecretKey123', FINNHUB_API_KEY: 'fhkey9999' };
+  it('strips RPC URLs (keys live in the path) and bare secret values', () => {
+    const viem = { shortMessage: 'RPC Request failed.', details: `Too Many Requests at ${env.RPC_URL}`, message: `Status: 429\nURL: ${env.RPC_URL}` };
+    for (const s of [safeError(viem, env), safeError(viem), safeError(new Error(`x ${env.RPC_URL}/a`), env), redact('token=fhkey9999', env)]) {
+      expect(s).not.toMatch(/SuperSecretKey123|fhkey9999|alchemy/);
+    }
+    expect(safeError(viem, env)).toContain('Too Many Requests');
   });
 });
