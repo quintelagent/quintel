@@ -1,10 +1,9 @@
 import { DESK_RULES, SCHEDULE, type Env } from './config';
 import { cachedBody } from './cache';
-import { workerFlag } from './flags';
 import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
 import { etParts, sessionAt, nextOpen } from './session';
-import { handleMcp } from './mcp';
+import { mcpRoute } from './mcp';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
 import { redact, safeError } from './redact';
@@ -151,8 +150,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
   const p = url.pathname.replace(/\/+$/, '');
 
   if (p === '/api/mcp') {
-    if (!workerFlag(env, 'MCP_SERVER')) return json({ error: 'not found' }, 0, 404);
-    return handleMcp(req, async (path) => {
+    return mcpRoute(req, env, async (path) => {
       const r = await handleApi(new Request(url.origin + path), env, ctx, tickFn);
       if (!r.ok && r.status !== 404) throw new Error('unavailable');
       return r.ok ? r.json() : null;

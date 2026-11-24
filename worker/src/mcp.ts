@@ -5,6 +5,8 @@
  * Nothing a client sends is logged or stored.
  */
 import { MCP_TOOLS, ODDS_NOTE, type McpInput, type McpTool } from '../../web/src/lib/mcpTools';
+import type { Env } from './config';
+import { workerFlag } from './flags';
 import { callTool, TOOL_FAILED, type Get } from './mcpTools';
 
 const MODERN = '2026-07-28';
@@ -158,3 +160,7 @@ export async function handleMcp(req: Request, get: Get): Promise<Response> {
     return send(replies.length ? { status: 200, body: replies } : { status: 202, body: null });
   } catch { return send(fail(500, -32603, 'Internal error')); }
 }
+
+/** With the flag off the address does not exist, for any method. */
+export const mcpRoute = async (req: Request, env: Pick<Env, 'PREVIEW_FLAGS'>, get: Get): Promise<Response> =>
+  workerFlag(env, 'MCP_SERVER') ? handleMcp(req, get) : send({ status: 404, body: { error: 'not found' } });
