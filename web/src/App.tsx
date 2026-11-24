@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
+import { flagOn } from './features';
 import { DataProvider } from './lib/data';
 import { anchorFor, scrollToId, useRoute } from './lib/router';
 import { ToastProvider } from './components/ui';
@@ -15,6 +16,7 @@ const Briefings = lazy(() => import('./pages/Briefings').then((m) => ({ default:
 const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })));
 const Incidents = lazy(() => import('./pages/Incidents').then((m) => ({ default: m.Incidents })));
 const Changelog = lazy(() => import('./pages/Changelog').then((m) => ({ default: m.Changelog })));
+const Burn = lazy(() => import('./pages/Burn').then((m) => ({ default: m.Burn })));
 const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })));
 
 function Page({ path }: { path: string }) {
@@ -27,6 +29,7 @@ function Page({ path }: { path: string }) {
   if ((m = path.match(/^\/docs\/([\w-]+)$/))) return <Docs slug={m[1]} />;
   if (path === '/incidents') return <Incidents />;
   if (path === '/status') return <Status />;
+  if (path === '/burn' && flagOn('BURN_TO_RUN')) return <Burn />;
   if (path === '/changelog') return <Changelog />;
   return <NotFound />;
 }
