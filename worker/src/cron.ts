@@ -1,6 +1,7 @@
 import { SCHEDULE, type Env } from './config';
 import { getMeta, setMeta, incr } from './db';
 import { sessionAt, etParts, lastCloseDate, type Session } from './session';
+import { choosePrice, historyStale } from './pricing';
 import { getStockQuote } from './data/stockPrice';
 import { getDailyHistory, intradayVol } from './data/history';
 import { getNews } from './data/news';
@@ -16,16 +17,14 @@ import {
   type EngineInputs, type RunOutput,
 } from '../../engine/src/index';
 
-/** Max |token/stock − 1| we treat as a real gap; beyond it we assume a corporate-action multiplier mismatch. */
-const MAX_SANE_GAP = 0.25;
-
 export interface TickReport { ts: string; session: Session; ran: boolean; runId?: number; log: string[] }
 
 async function refreshHistory(env: Env, now: Date, log: string[]) {
   const today = etParts(now).date;
   const last = await getMeta<string>(env, 'history_refreshed');
-  const count = await env.DB.prepare('SELECT COUNT(*) AS n FROM history_daily').first<{ n: number }>();
-  if (last === today && (count?.n ?? 0) > 200) return;
+  const have = await env.DB.prepare('SELECT COUNT(*) AS n, MAX(date) AS latest FROM history_daily').first<{ n: number; latest: string | null }>();
+  // refresh daily, and keep retrying every tick while a completed session is missing
+  if (last === today && (have?.n ?? 0) > 200 && !historyStale(have?.latest, lastCloseDate(now))) return;
   const start = new Date(now.getTime() - 3.2 * 365 * 86400000).toISOString().slice(0, 10);
   try {
     const h = await getDailyHistory(env, env.SYMBOL, start);
@@ -126,21 +125,13 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
   if (shouldRun && history.length >= 120) {
     const closes = history.map((h) => h.close);
     const lastClose = closes[closes.length - 1];
-    let spot: number;
-    let priceSource: EngineInputs['priceSource'];
-    let tokenPremium = 0;
-    const ref = session === 'open' && stock ? stock.price : lastClose;
-    const gap = chain ? chain / ref - 1 : null;
-    const gapSane = gap !== null && Math.abs(gap) <= MAX_SANE_GAP;
-    if (gap !== null && !gapSane) log.push(`token/stock gap ${(gap * 100).toFixed(1)}% looks like a multiplier mismatch; ignoring token price`);
-    if (session === 'open' && stock) {
-      spot = stock.price; priceSource = 'stock';
-    } else if (chain && gapSane) {
-      spot = chain; priceSource = 'chain';
-    } else {
-      spot = lastClose; priceSource = 'last_close';
-    }
-    if (gapSane) tokenPremium = Math.round(gap! * 1e6) / 1e6;
+    const stale = historyStale(history[history.length - 1].date, lastCloseDate(now));
+    if (stale) log.push('history is behind the last completed session');
+    const px = choosePrice({ session, stock: stock?.price ?? null, chain, lastClose, stale });
+    const { spot, source: priceSource } = px;
+    const gapSane = px.gap !== null;
+    if (chain && !gapSane) log.push(`token is ${((chain / px.ref - 1) * 100).toFixed(1)}% from reference and the stock quote disagrees; ignoring token price`);
+    const tokenPremium = px.gap !== null ? Math.round(px.gap * 1e6) / 1e6 : 0;
 
     const preCfg = Number(env.PRE_CRISIS_LEVEL || 0);
     const preCrisisLevel = preCfg > 0 ? preCfg : Math.max(...closes.slice(-60));
@@ -165,7 +156,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
     const c = out.combined;
     const summary = {
       spot: out.spot, priceSource, session,
-      stockPrice: stock?.price ?? null, lastClose, chainPrice: chain, gap: gapSane ? tokenPremium : null,
+      stockPrice: stock?.price ?? null, lastClose: session === 'open' ? lastClose : px.ref, chainPrice: chain, gap: gapSane ? tokenPremium : null,
       crisis: out.crisis, agreement: out.agreement, newsIntensity: intensity,
       horizons: c.horizons.map((h, i) => ({ days: h.days, p5: h.pct.p5, p25: h.pct.p25, p50: h.pct.p50, p75: h.pct.p75, p95: h.pct.p95, pUp: c.probs[i].pUp, pDown10: c.probs[i].pDown10, pDown20: c.probs[i].pDown20 })),
       expMaxDrawdown1m: c.expMaxDrawdown1m, var95_1m: c.var95_1m, preCrisisLevel: inputs.preCrisisLevel,

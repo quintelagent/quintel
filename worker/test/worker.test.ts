@@ -5,6 +5,7 @@ import { initialDesk, stepDesk, deskHash, markToMarket } from '../src/desk/desk'
 import { fingerprintHash } from '../src/proof/fingerprint';
 import { priceFromSqrtX96 } from '../src/data/chainToken';
 import { sessionAt, addTradingDays, nextOpen, lastCloseDate } from '../src/session';
+import { choosePrice, historyStale } from '../src/pricing';
 import { newsIntensity } from '../src/agent/triage';
 import { runScenarios, deriveSeed } from '../../engine/src/index';
 import { baseInputs } from '../../engine/test/fixtures';
@@ -120,5 +121,27 @@ describe('news intensity', () => {
     const old = [{ ts: '2026-11-22T20:00:00Z', score: 0.9, relevant: 1 }];
     expect(newsIntensity(fresh, now)).toBeGreaterThan(newsIntensity(old, now));
     expect(newsIntensity(Array(50).fill(fresh[0]), now)).toBe(1);
+  });
+});
+
+describe('starting price', () => {
+  const b = { session: 'closed' as const, stock: 165.05, chain: 164.34, lastClose: 125.53, stale: true };
+  it('detects missing sessions (Nov 23 regression)', () => {
+    expect(historyStale('2026-11-20', '2026-11-23')).toBe(true);
+    expect(historyStale('2026-11-23', '2026-11-23')).toBe(false);
+    expect(historyStale(null, '2026-11-23')).toBe(true);
+  });
+  it('never falls back to a stale close after a +31% day', () => {
+    expect(choosePrice(b)).toMatchObject({ spot: 164.34, source: 'chain', ref: 165.05 });
+    expect(choosePrice({ ...b, chain: null }).spot).toBe(165.05);
+  });
+  it('keeps a real extended-hours move the stock quote confirms', () => {
+    const p = choosePrice({ ...b, stale: false, stock: 159, chain: 158.73 });
+    expect(p.source).toBe('chain');
+    expect(p.gap).toBeGreaterThan(0.25);
+  });
+  it('rejects a token nobody confirms, and uses the stock when open', () => {
+    expect(choosePrice({ ...b, stale: false, stock: 125.6, chain: 251 }).source).toBe('last_close');
+    expect(choosePrice({ ...b, session: 'open' }).source).toBe('stock');
   });
 });

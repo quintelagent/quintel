@@ -1,6 +1,6 @@
 import type { Env } from '../config';
 import type { RunOutput } from '../../../engine/src/index';
-import { addTradingDays, etParts, isTradingDay } from '../session';
+import { addTradingDays, etParts, isTradingDay, sessionAt } from '../session';
 
 /**
  * Daily scorecard. For each trading day D we score the LAST official run of D
@@ -18,7 +18,7 @@ export async function scoreMatured(env: Env): Promise<number> {
   for (const r of runs.results || []) {
     const e = etParts(new Date(r.ts));
     if (!isTradingDay(e.date)) continue;
-    if (e.hour * 60 + e.minute > 16 * 60) continue; // runs after the close belong to the next session
+    if (sessionAt(new Date(r.ts)) !== 'open') continue; // only runs made while the market was open
     lastByDay.set(e.date, r.id);
   }
   let added = 0;
