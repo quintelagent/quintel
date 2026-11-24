@@ -61,7 +61,7 @@ cwd = work;
 if (git('status', '--porcelain')) { cleanup(); die(`${branch} has uncommitted changes.`); }
 try {
   say(1, `merge main into ${branch} and test`);
-  try { git('merge', '--no-edit', '-m', `Site: bring ${feature} up to date`, 'main'); } catch (e) { const c = run('git', ['diff', '--name-only', '--diff-filter=U']).trim(); try { run('git', ['merge', '--abort']); } catch { /* none */ } throw new Error(`merge conflicts in:\n${c}`); }
+  try { git('merge', '--no-edit', '-m', `Site: bring ${feature} up to date`, 'main'); } catch (e) { const left = run('git', ['diff', '--name-only', '--diff-filter=U']).trim(); if (!left && git('rev-parse', '-q', '--verify', 'MERGE_HEAD')) git('commit', '--no-edit'); else { const c = run('git', ['diff', '--name-only', '--diff-filter=U']).trim(); try { run('git', ['merge', '--abort']); } catch { /* none */ } throw new Error(`merge conflicts in:\n${c}`); } }
   for (const [c, ...a] of [['npm', 'run', 'typecheck'], ['npm', 'test'], ['npm', 'run', 'build'], ['node', 'scripts/secret-scan.mjs', '--all']]) { run(c, a); console.log(`     ok: ${[c, ...a].join(' ')}`); }
 } catch (e) { cleanup(); die(`not ready to release.\n${e.stdout !== undefined ? tail(e) : e.message}`); }
 const migrations = git('diff', '--name-only', '--diff-filter=A', 'main', 'HEAD', '--', 'worker/migrations').split('\n').filter(Boolean);

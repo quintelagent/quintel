@@ -1,14 +1,14 @@
 import { DESK_RULES, SCHEDULE, type Env } from './config';
+import { burnGallery, burnRequestView, burnRunView, burnSummary, postBurn } from './burn/request';
 import { Busy, cachedBody } from './cache';
 import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
+import { workerFlag } from './flags';
 import { etParts, sessionAt, nextOpen } from './session';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
 import { redact, safeError } from './redact';
 import { scorecardSummary } from './proof/scorecard';
-import { workerFlag } from './flags';
-import { burnGallery, burnRequestView, burnRunView, burnSummary, postBurn } from './burn/request';
 import { initialDesk, type DeskState } from './desk/desk';
 import { CRISIS_WEIGHTS, MODEL_INFO } from '../../engine/src/index';
 
