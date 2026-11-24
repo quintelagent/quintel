@@ -52,7 +52,7 @@ export function Countdown({ to, prefix = '' }: { to: string | null | undefined; 
   return <>{prefix}{ms > 0 ? clock(ms) : 'running…'}</>;
 }
 
-/** Crisis Level arc gauge 0–100; colour shifts ice → red. */
+/** Stress Level arc gauge 0–100; colour shifts ice → red. */
 /** Eased tween toward `target` (starts from 0). */
 export function useTween(target: number, duration = 1200) {
   const [v, setV] = useState(0);
@@ -73,7 +73,7 @@ export function useTween(target: number, duration = 1200) {
   return v;
 }
 
-export function Gauge({ value, size = 168, label = 'Crisis Level' }: { value: number | null; size?: number; label?: string }) {
+export function Gauge({ value, size = 168, label = 'Stress Level' }: { value: number | null; size?: number; label?: string }) {
   const v = useTween(value ?? 0, 1400);
   const r = size / 2 - 12;
   const cx = size / 2;

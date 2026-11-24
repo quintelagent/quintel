@@ -1,7 +1,7 @@
 import { clamp01, r6 } from './math';
 import type { CrisisOut } from './types';
 
-/** Public weights for the Crisis Level (sum to 1). */
+/** Public weights for the Stress Level (sum to 1). */
 export const CRISIS_WEIGHTS = { vol: 0.35, tail: 0.3, news: 0.2, chain: 0.15 } as const;
 
 export interface CrisisInputs {
@@ -16,7 +16,7 @@ export interface CrisisInputs {
 }
 
 /**
- * Crisis Level 0–100.
+ * Stress Level 0–100.
  * vol:   0 at ratio ≤ 0.8, 1 at ratio ≥ 2.5
  * tail:  0 at 0%, 1 at ≥ 25% chance of a 20% drop in a month
  * news:  news intensity as-is

@@ -37,7 +37,7 @@ export const DESK_RULES = {
   startingCash: 100_000,
   maxLeverage: 1,
   allowShort: false,
-  /** enter long when P(up, 1w) ≥ this AND Crisis Level is falling vs the previous run */
+  /** enter long when P(up, 1w) ≥ this AND Stress Level is falling vs the previous run */
   enterLongPUp1w: 0.58,
   /** exit when P(up, 1w) < this */
   exitPUp1w: 0.5,

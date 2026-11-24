@@ -24,7 +24,7 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 |---|---|
 | **1M-path engine** | Five models × 200,000 paths: random walk, jump-diffusion, history replay, GARCH(1,1) and mean reversion. Pure TypeScript with zero dependencies. ~1s per run. |
 | **Live, 24/7** | Runs every 10 minutes while the market is open. While it is closed, runs every 30 minutes priced off the on-chain NVDA token. |
-| **Crisis Level** | A 0–100 blend of realised vol, tail odds, news intensity and the token/stock gap. The weights are public. |
+| **Stress Level** | A 0–100 blend of realised vol, tail odds, news intensity and the token/stock gap. The weights are public. |
 | **Research agent** | Triage of every headline plus a briefing every 30 minutes. Code guards reject any number that isn’t in the run, and any advice wording. |
 | **Paper desk** | $100k virtual, published rules, every trade with a note. Losses are shown like gains. |
 | **Proof** | Hourly keccak256 fingerprint as calldata on Robinhood Chain. Any run can be re-computed in the browser, byte for byte. |
@@ -34,7 +34,7 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 
 1. **Data.** Every 10 minutes the worker fetches the NVDA price, 3 years of daily closes, the on-chain token price (Uniswap V3 NVDA/USDG on Robinhood Chain, cross-checked against Chainlink) and new headlines.
 2. **Triage.** A fast model scores each headline. The scores become a news-intensity input.
-3. **Simulate.** Five models × 200,000 paths each, seeded by `keccak256(inputs + timestamp)`, give percentiles, probabilities and the Crisis Level.
+3. **Simulate.** Five models × 200,000 paths each, seeded by `keccak256(inputs + timestamp)`, give percentiles, probabilities and the Stress Level.
 4. **Explain and act.** A briefing is written and guard-checked. The paper desk applies its published rules.
 5. **Prove.** Each hour, every run, input, briefing and desk hash is rolled into one fingerprint and sent on-chain.
 

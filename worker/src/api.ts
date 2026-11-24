@@ -26,6 +26,11 @@ export function nextRunAt(now: Date): Date {
   return t;
 }
 
+/** Public alias: `stress` mirrors the stored `crisis` field (kept so old hashes still verify). */
+function withStress<T extends { crisis: number; summary: any }>(r: T) {
+  return { ...r, stress: r.crisis, summary: { ...r.summary, stress: r.summary.crisis } };
+}
+
 async function latest(env: Env) {
   const now = new Date();
   const run = await env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, cpu_ms, summary FROM runs ORDER BY id DESC LIMIT 1').first<any>();
@@ -47,7 +52,8 @@ async function latest(env: Env) {
     scenariosTotal: runsTotal * 1_000_000,
     prices: { stock: stockPrice, chain: chainPrice },
     prevCrisis: prev?.crisis ?? null,
-    run: run ? { ...run, summary: JSON.parse(run.summary) } : null,
+    prevStress: prev?.crisis ?? null,
+    run: run ? withStress({ ...run, summary: JSON.parse(run.summary) }) : null,
   };
 }
 
@@ -55,7 +61,7 @@ async function runById(env: Env, id: number) {
   const run = await env.DB.prepare('SELECT * FROM runs WHERE id = ?').bind(id).first<any>();
   if (!run) return null;
   const o = await env.DB.prepare('SELECT inputs, output FROM run_outputs WHERE id = ?').bind(id).first<any>();
-  return { ...run, summary: JSON.parse(run.summary), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
+  return { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
 }
 
 async function proof(env: Env) {
@@ -113,6 +119,7 @@ function config(env: Env) {
     tokens: { pons: env.QNTL_TOKEN_PONS || null, solana: env.QNTL_TOKEN_SOLANA || null },
     deskRules: DESK_RULES,
     crisisWeights: CRISIS_WEIGHTS,
+    stressWeights: CRISIS_WEIGHTS,
     models: MODEL_INFO,
     schedule: SCHEDULE,
   };
@@ -147,7 +154,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
       const since = url.searchParams.get('since') || new Date(Date.now() - 86400000).toISOString();
       const limit = Math.min(500, Number(url.searchParams.get('limit') || 200));
       const r = await env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, summary FROM runs WHERE ts >= ? ORDER BY id DESC LIMIT ?').bind(since, limit).all<any>();
-      res = json((r.results || []).map((x) => ({ ...x, summary: JSON.parse(x.summary) })), 30);
+      res = json((r.results || []).map((x) => withStress({ ...x, summary: JSON.parse(x.summary) })), 30);
     } else if ((m = p.match(/^\/api\/sample\/(\d+|latest)$/))) {
       const row = m[1] === 'latest'
         ? await env.DB.prepare('SELECT id, sample FROM run_outputs ORDER BY id DESC LIMIT 1').first<any>()

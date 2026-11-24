@@ -7,7 +7,7 @@
 
 ## Phase 1 — Engine
 - [x] Pure-JS exp/log, PRNG, keccak, canonical JSON
-- [x] Five models, calibration, aggregation, Crisis Level
+- [x] Five models, calibration, aggregation, Stress Level
 - [x] Tests green, 1M paths ≈ 1.1s (Node, M-series)
 - [x] Cross-browser determinism (Chromium, WebKit, Firefox all match Node in CI)
 

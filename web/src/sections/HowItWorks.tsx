@@ -9,7 +9,7 @@ const NODES = [
   { id: 'm3', x: 420, y: 160, t: 'History replay', d: '200,000 paths built from real past weeks.' },
   { id: 'm4', x: 420, y: 220, t: 'Vol clusters', d: '200,000 paths where storms follow storms.' },
   { id: 'm5', x: 420, y: 280, t: 'Bounce', d: '200,000 paths pulled toward the moving average.' },
-  { id: 'odds', x: 610, y: 160, t: 'Odds', d: 'One million terminal prices become percentiles, histograms, probabilities and the Crisis Level.' },
+  { id: 'odds', x: 610, y: 160, t: 'Odds', d: 'One million terminal prices become percentiles, histograms, probabilities and the Stress Level.' },
   { id: 'brief', x: 760, y: 90, t: 'Briefing', d: 'A stronger model explains what changed. Code rejects any number not in the run and any advice wording.' },
   { id: 'desk', x: 760, y: 230, t: 'Desk', d: 'The paper desk applies its published rules to the new odds and marks to market.' },
   { id: 'chain', x: 910, y: 160, t: 'Fingerprint', d: 'Every hour, all hashes are combined into one and written to Robinhood Chain.' },

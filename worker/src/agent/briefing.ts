@@ -23,7 +23,7 @@ export function runFacts(o: RunOutput | null) {
   const c = o.combined;
   return {
     spot: o.spot,
-    crisisLevel: o.crisis.level,
+    stressLevel: o.crisis.level,
     modelAgreement: o.agreement,
     nextClose: { p5: c.horizons[0].pct.p5, median: c.horizons[0].pct.p50, p95: c.horizons[0].pct.p95, pUpPct: pct(c.probs[0].pUp) },
     oneWeek: { p5: c.horizons[1].pct.p5, median: c.horizons[1].pct.p50, p95: c.horizons[1].pct.p95, pUpPct: pct(c.probs[1].pUp), pDown10Pct: pct(c.probs[1].pDown10) },
@@ -51,7 +51,7 @@ const usd = (x: number) => '$' + x.toFixed(2);
 export function templatedBriefing(cur: RunOutput, news: NewsForBriefing[]): Briefing {
   const f = runFacts(cur)!;
   return {
-    headline: `Crisis Level ${f.crisisLevel} · ${f.oneWeek.pUpPct}% of scenarios end the week higher`,
+    headline: `Stress Level ${f.stressLevel} · ${f.oneWeek.pUpPct}% of scenarios end the week higher`,
     whatChanged: [
       `Latest run starts from ${usd(f.spot)} with model agreement at ${f.modelAgreement}.`,
       `One-month middle 50% of scenarios: ${usd(f.oneMonth.p25)} to ${usd(f.oneMonth.p75)}.`,

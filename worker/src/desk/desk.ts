@@ -39,7 +39,7 @@ export function markToMarket(s: DeskState, price: number): number {
 
 /**
  * Pure rules step. Returns the new state and any trades.
- * Rules (published): enter long when P(up,1w) ≥ 0.58 and Crisis Level is falling;
+ * Rules (published): enter long when P(up,1w) ≥ 0.58 and Stress Level is falling;
  * exit when P(up,1w) < 0.50 or the position is down 8%. Long or flat, 1x, fills only while the market is open.
  */
 export function stepDesk(prev: DeskState, sig: DeskSignal, rules = DESK_RULES): { state: DeskState; trades: TradeEvent[] } {
@@ -70,7 +70,7 @@ export function stepDesk(prev: DeskState, sig: DeskSignal, rules = DESK_RULES): 
       s.position = { side: 'long', qty, entryPrice: sig.price, entryTs: sig.ts, entryRunId: sig.runId };
       trades.push({
         action: 'enter', side: 'long', price: sig.price, qty, pnl: null,
-        reason: `P(up, 1w) ${(sig.pUp1w * 100).toFixed(1)}% ≥ ${Math.round(rules.enterLongPUp1w * 100)}% and Crisis Level fell ${sig.prevCrisis}→${sig.crisis}`,
+        reason: `P(up, 1w) ${(sig.pUp1w * 100).toFixed(1)}% ≥ ${Math.round(rules.enterLongPUp1w * 100)}% and Stress Level fell ${sig.prevCrisis}→${sig.crisis}`,
       });
     }
   }

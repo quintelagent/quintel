@@ -64,7 +64,9 @@ For each model and for the combined 1,000,000 paths, at each horizon:
 - **95% VaR (1 month):** `1 − p5 / spot`
 - **Model agreement (0–100):** `100 × (1 − (2a + b))`, clamped. Here a is the standard deviation of the five 1-month medians and b is the standard deviation of their p10–p90 spreads, both divided by the mean spread.
 
-## Crisis Level (0–100)
+## Stress Level (0–100)
+
+Called “Crisis Level” before 24 Nov 2026. Stored runs keep the field name `crisis` so their hashes still verify; the API also exposes it as `stress`.
 
 The weights are public and live in [`engine/src/crisis.ts`](../engine/src/crisis.ts):
 
@@ -90,6 +92,6 @@ Byte-identical output in every JS engine is a hard requirement:
 Rules are fixed at launch. Any change requires a public CHANGELOG entry.
 
 - Virtual $100,000. NVDA only, long or flat, max 1×.
-- **Enter long** when P(up, 1 week) ≥ 58% *and* the Crisis Level is lower than at the previous run.
+- **Enter long** when P(up, 1 week) ≥ 58% *and* the Stress Level is lower than at the previous run.
 - **Exit** when P(up, 1 week) < 50%, or when the position is down 8% from entry (stop-loss).
 - Fills only while the stock market is open, at the stock price. Marked to market after every run.

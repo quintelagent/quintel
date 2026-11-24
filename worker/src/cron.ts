@@ -170,7 +170,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
       .bind(ranId, JSON.stringify(inputs), JSON.stringify(out), JSON.stringify(sample)).run();
     await incr(env, 'runs_' + et.date);
     await incr(env, 'runs_total');
-    log.push(`run ${ranId}: ${out.totalPaths} paths${ms > 0 ? ` in ${ms}ms` : ''}, crisis ${out.crisis.level}, hash ${oh.slice(0, 12)}`);
+    log.push(`run ${ranId}: ${out.totalPaths} paths${ms > 0 ? ` in ${ms}ms` : ''}, stress ${out.crisis.level}, hash ${oh.slice(0, 12)}`);
 
     // 4. Desk
     try {
