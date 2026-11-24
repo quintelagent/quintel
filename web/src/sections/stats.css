@@ -1,0 +1,8 @@
+.stats { padding-block: 0; }
+.stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s3); padding-block: var(--s5); border-block: 1px solid var(--line); }
+.stats-row .stat { gap: var(--s2); min-height: 64px; }
+.stats-row .label { text-wrap: balance; }
+/* number first, then what it is */
+.stats-row .stat-v { order: -1; font-size: clamp(var(--fs-body), 4vw, var(--fs-h2)); letter-spacing: -0.04em; white-space: nowrap; }
+.stats-link { display: block; text-decoration: none; border-radius: var(--r-input); }
+@media (min-width: 768px) { .stats-row { gap: var(--s6); padding-block: var(--s6); } }

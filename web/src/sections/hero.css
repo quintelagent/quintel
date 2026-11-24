@@ -1,0 +1,50 @@
+.hero { padding-block: var(--s5) calc(var(--sec) / 2); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s6); }
+.hero-copy { display: flex; flex-direction: column; gap: var(--s4); }
+.hero-eyebrow { min-height: 28px; display: flex; align-items: center; }
+.hero h1 span { display: block; }
+.hero-phrase { display: inline-block; }
+
+.hero-field { display: flex; flex-direction: column; gap: var(--s3); min-width: 0; }
+/* 64 whole cells: round to the nearest size that fills the box, so the grid lines up with the text */
+/* before the first draw a canvas has its default size; hold the full box so nothing shifts */
+.hero-field canvas:not([style]) { width: 100%; height: 100%; visibility: hidden; }
+.hero-field figcaption, .hero-key { display: flex; justify-content: space-between; align-items: center; gap: var(--s4); }
+.hero-key > span { display: inline-flex; align-items: center; gap: var(--s2); }
+.hero-kept { width: 8px; height: 8px; background: var(--ink); }
+
+.hero-data { display: flex; flex-direction: column; gap: var(--s4); min-width: 0; }
+.hero-num { min-height: 1.1em; }
+.hero-label { display: flex; align-items: center; min-height: 48px; }
+.hero-label p { line-height: 1.4; max-width: 224px; text-wrap: balance; }
+.hero-missing { display: block; }
+.hero-label .icon-btn { color: var(--ink-2); margin-left: calc(-1 * var(--s2)); }
+.hero-tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s3); }
+.hero-tiles .stat { height: 100%; gap: var(--s2); }
+.hero-tiles .stat > .label { flex: 1; min-height: 4.2em; text-wrap: balance; }
+.hero-tiles .stat > .note { min-height: 20px; display: flex; align-items: center; }
+.hero-tiles .pixel-meter { width: 100%; }
+.hero-inline { display: inline-block; vertical-align: middle; }
+.hero-next { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s2); min-height: 24px; }
+.hero-none { min-height: 309px; display: grid; place-items: center; }
+.hero-none p { text-wrap: balance; }
+.hero-cta { display: grid; gap: var(--s3); }
+.hero-more { display: inline-flex; align-items: center; min-height: 44px; width: fit-content; }
+
+@media (min-width: 768px) {
+  .hero { padding-top: var(--s7); }
+  .hero-field { width: 512px; max-width: 100%; }
+  .hero-tiles .stat > .label { min-height: 2.8em; }
+  .hero-none { min-height: 340px; }
+  .hero-cta { display: flex; }
+}
+@media (min-width: 1100px) {
+  .hero { padding-block: var(--s6); }
+  .hero-grid { grid-template-columns: minmax(0, 1fr) 500px; grid-template-rows: auto auto; gap: var(--s5) var(--s6); align-content: center; }
+  .hero-copy { grid-area: 1 / 1; }
+  .hero-data { grid-area: 2 / 1; }
+  .hero-field { grid-area: 1 / 2 / 3 / 3; align-self: center; width: 500px; }
+  .hero-odds { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s5); }
+  .hero-label { flex: 1 1 144px; }
+  .hero-none { min-height: 292px; }
+}
