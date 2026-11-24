@@ -1,5 +1,5 @@
 import { DESK_RULES, SCHEDULE, type Env } from './config';
-import { cachedBody } from './cache';
+import { Busy, cachedBody } from './cache';
 import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
 import { etParts, sessionAt, nextOpen } from './session';
@@ -75,7 +75,8 @@ async function runById(env: Env, id: number) {
   const run = await env.DB.prepare('SELECT * FROM runs WHERE id = ?').bind(id).first<any>();
   if (!run) return null;
   const o = await env.DB.prepare('SELECT inputs, output FROM run_outputs WHERE id = ?').bind(id).first<any>();
-  return o ? { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) } : null;
+  if (!o) throw new Error('run output not ready');
+  return { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
 }
 
 async function proof(env: Env) {
@@ -155,29 +156,30 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
   }
   if (req.method !== 'GET') return json({ error: 'method not allowed' }, 0, 405);
 
-  const int = (k: string, d: number, max: number) => { const n = Math.floor(Number(url.searchParams.get(k) ?? d)); return Number.isFinite(n) ? Math.min(max, Math.max(1, n)) : d; };
+  const int = (k: string, d: number, max: number) => { const n = Math.floor(Number(url.searchParams.get(k) || d)); return Number.isFinite(n) ? Math.min(max, Math.max(1, n)) : d; };
   let m: RegExpMatchArray | null;
   // the cache key holds only what changes the answer, so extra parameters cannot get around the cache
-  const serve = async (key: string, fresh: number, swr: number, load: () => Promise<unknown>): Promise<Response> => {
-    const body = await cachedBody(key, { fresh, swr }, async () => { const v = await load(); return v === null || v === undefined ? null : JSON.stringify(v); }, (x) => ctx.waitUntil(x));
+  const serve = async (key: string, fresh: number, swr: number, load: () => Promise<unknown>, keep?: number): Promise<Response> => {
+    const body = await cachedBody(key, { fresh, swr, keep }, async () => { const v = await load(); return v === null || v === undefined ? null : JSON.stringify(v); }, (x) => ctx.waitUntil(x));
     return body === null ? json({ error: 'not found' }, 0, 404) : raw(body, fresh);
   };
   const all = async (q: D1PreparedStatement) => (await q.all<any>()).results || [];
   const fpRow = (r: any) => (r ? { ...r, error: r.error ? redact(r.error, env).slice(0, 200) : null, payload: JSON.parse(r.payload) } : null);
   try {
     if (p === '/api/latest') return await serve(p, 20, 60, () => latest(env));
-    if (p === '/api/health') return await serve(p, 10, 20, () => health(env));
-    if (p === '/api/config') return await serve(p, 300, 600, async () => config(env));
-    if ((m = p.match(/^\/api\/run\/(\d{1,9})$/))) { const id = Number(m[1]); return await serve(p, 3600, 86400, () => runById(env, id)); }
+    if (p === '/api/health') return await serve(p, 5, 0, () => health(env), 0); // never a stale answer: monitoring reads this
+    if (p === '/api/config') return json(config(env), 300); // no database
+    if ((m = p.match(/^\/api\/run\/(\d{1,9})$/))) { const id = Number(m[1]); return await serve('/api/run/' + id, 3600, 86400, () => runById(env, id)); }
     if (p === '/api/runs') {
       const t = Date.parse(url.searchParams.get('since') ?? '');
-      const since = new Date(Math.floor((Number.isFinite(t) ? t : Date.now() - 86400000) / 3600_000) * 3600_000).toISOString(); // whole hours
+      const from = Math.max(Number.isFinite(t) ? t : Date.now() - 86400000, Date.now() - 45 * 86400000);
+      const since = new Date(Math.floor(from / 3600_000) * 3600_000).toISOString(); // whole hours, 45 days back at most
       const limit = int('limit', 200, 500);
       return await serve(`${p}?since=${since}&limit=${limit}`, 30, 60, async () => (await all(env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, summary FROM runs WHERE ts >= ? ORDER BY id DESC LIMIT ?').bind(since, limit))).map((x) => withStress({ ...x, summary: JSON.parse(x.summary) })));
     }
     if ((m = p.match(/^\/api\/(sample|output)\/(\d{1,9}|latest)$/))) {
       const col = m[1], id = m[2];
-      return await serve(p, id === 'latest' ? 30 : 3600, id === 'latest' ? 60 : 86400, async () => {
+      return await serve(`/api/${col}/${id === 'latest' ? id : Number(id)}`, id === 'latest' ? 30 : 3600, id === 'latest' ? 60 : 86400, async () => {
         const row = id === 'latest'
           ? await env.DB.prepare(`SELECT id, ${col} AS v FROM run_outputs ORDER BY id DESC LIMIT 1`).first<any>()
           : await env.DB.prepare(`SELECT id, ${col} AS v FROM run_outputs WHERE id = ?`).bind(Number(id)).first<any>();
@@ -191,7 +193,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
     if (p === '/api/news') return await serve(p, 60, 120, () => all(env.DB.prepare('SELECT ts, title, url, source, score, category, one_line FROM news WHERE relevant = 1 ORDER BY ts DESC LIMIT 30')));
     if (p === '/api/desk') return await serve(p, 30, 60, () => desk(env));
     if (p === '/api/proof') return await serve(p, 30, 60, () => proof(env));
-    if ((m = p.match(/^\/api\/fingerprint\/(.{1,60})$/))) { const hour = decodeURIComponent(m[1]); return await serve('/api/fingerprint/' + encodeURIComponent(hour), 60, 120, async () => fpRow(await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>())); }
+    if ((m = p.match(/^\/api\/fingerprint\/(.{1,60})$/))) { let hour = ''; try { hour = decodeURIComponent(m[1]); } catch { return json({ error: 'not found' }, 0, 404); } return await serve('/api/fingerprint/' + encodeURIComponent(hour), 60, 120, async () => fpRow(await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>())); }
     if (p === '/api/fingerprint-for-run') {
       const id = Math.floor(Number(url.searchParams.get('id')));
       if (!Number.isFinite(id) || id < 1) return json({ error: 'not found' }, 0, 404);
@@ -206,7 +208,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
     if (p === '/api/history') return await serve(p, 600, 1200, async () => (await all(env.DB.prepare('SELECT date, close FROM history_daily ORDER BY date DESC LIMIT 260'))).reverse());
     return json({ error: 'not found' }, 0, 404);
   } catch (e) {
-    console.error('api', p, safeError(e, env));
+    if (!(e instanceof Busy)) console.error('api', p, safeError(e, env));
     return json({ error: 'temporarily unavailable' }, 0, 503);
   }
 }
