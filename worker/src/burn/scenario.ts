@@ -77,7 +77,9 @@ export const shortAddress = (a: string) => `${a.slice(0, 4)}…${a.slice(-2)}`;
 export const isTxHash = (s: unknown): s is string => typeof s === 'string' && /^0x[0-9a-fA-F]{64}$/.test(s);
 export const isAddress = (s: unknown): s is string => typeof s === 'string' && /^0x[0-9a-fA-F]{40}$/.test(s);
 
-/* ---- answers of /api/burn ---- */
+/* ---- what /api/burn takes and answers ---- */
+
+export interface BurnBodyJson { tx: string; scenario: Scenario; anonymous: boolean; signature: string }
 
 export interface BurnSummary {
   open: boolean; status: 'Open' | typeof NOT_OPEN;
