@@ -72,6 +72,8 @@ export const BANNED_PATTERNS: RegExp[] = [
   /\bforecasts? that will\b/i,
   /\bwill (definitely|certainly)\b/i,
   /\bguarantee(d|s)?\b/i,
+  /\bcrisis\b/i,
+  /\b(pUp|pDown|pAbove|var95|expectedMaxDrawdown)\w*Pct\b|\bp(Up|Down10|Down20)Pct\b/, // raw field names
   /\b(buy|sell|buying|selling|buys|sells)\b/i,
   /\bprice target\b/i,
   /\b(strong )?(buy|sell) (signal|rating)\b/i,

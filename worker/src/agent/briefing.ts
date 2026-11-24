@@ -23,17 +23,18 @@ const px = (x: number) => Math.round(x * 100) / 100;
 export function runFacts(o: RunOutput | null) {
   if (!o) return null;
   const c = o.combined;
+  // plain-language keys: the model copies key names into its text
   return {
     spot: px(o.spot),
-    stressLevel: o.crisis.level,
-    modelAgreement: o.agreement,
-    nextClose: { p5: px(c.horizons[0].pct.p5), median: px(c.horizons[0].pct.p50), p95: px(c.horizons[0].pct.p95), pUpPct: pct(c.probs[0].pUp) },
-    oneWeek: { p5: px(c.horizons[1].pct.p5), median: px(c.horizons[1].pct.p50), p95: px(c.horizons[1].pct.p95), pUpPct: pct(c.probs[1].pUp), pDown10Pct: pct(c.probs[1].pDown10) },
-    oneMonth: {
-      p5: px(c.horizons[2].pct.p5), p25: px(c.horizons[2].pct.p25), median: px(c.horizons[2].pct.p50), p75: px(c.horizons[2].pct.p75), p95: px(c.horizons[2].pct.p95),
-      pUpPct: pct(c.probs[2].pUp), pDown10Pct: pct(c.probs[2].pDown10), pDown20Pct: pct(c.probs[2].pDown20),
-      pAbovePreCrisisPct: pct(c.probs[2].pAbovePreCrisis),
-      expectedMaxDrawdownPct: pct(c.expMaxDrawdown1m), var95Pct: pct(c.var95_1m),
+    'Stress Level': o.crisis.level,
+    'model agreement': o.agreement,
+    'next close': { '5th percentile': px(c.horizons[0].pct.p5), median: px(c.horizons[0].pct.p50), '95th percentile': px(c.horizons[0].pct.p95), '% of scenarios higher': pct(c.probs[0].pUp) },
+    'one week': { '5th percentile': px(c.horizons[1].pct.p5), median: px(c.horizons[1].pct.p50), '95th percentile': px(c.horizons[1].pct.p95), '% of scenarios higher': pct(c.probs[1].pUp), '% of scenarios down more than 10%': pct(c.probs[1].pDown10) },
+    'one month': {
+      '5th percentile': px(c.horizons[2].pct.p5), '25th percentile': px(c.horizons[2].pct.p25), median: px(c.horizons[2].pct.p50), '75th percentile': px(c.horizons[2].pct.p75), '95th percentile': px(c.horizons[2].pct.p95),
+      '% of scenarios higher': pct(c.probs[2].pUp), '% of scenarios down more than 10%': pct(c.probs[2].pDown10), '% of scenarios down more than 20%': pct(c.probs[2].pDown20),
+      '% of scenarios above the recent high': pct(c.probs[2].pAbovePreCrisis),
+      'average worst fall inside the month, %': pct(c.expMaxDrawdown1m), '95% value at risk, %': pct(c.var95_1m),
     },
   };
 }
@@ -46,7 +47,8 @@ Hard rules:
 - Call outputs "scenario odds" — never "prediction" or "forecast". Never give advice; never use the words buy, sell, guaranteed, fraud.
 - Describe legal/regulatory matters only as reported ("reported SEC probe"). Nothing about anyone's personal life.
 - Sources: only items from NEWS that you actually reference, copied exactly.
-- Write prices as $ with two decimals and fields ending in Pct with a % sign. Say "scenario odds" or "share of scenarios", not "probability".
+- Write prices as $ with two decimals and shares with a % sign. Say "scenario odds" or "share of scenarios", not "probability".
+- Say "Stress Level" and "recent high". Never use the word crisis.
 - Plain English, calm, precise. No emojis, no hype.`;
 
 const usd = (x: number) => '$' + x.toFixed(2);
@@ -54,15 +56,15 @@ const usd = (x: number) => '$' + x.toFixed(2);
 export function templatedBriefing(cur: RunOutput, news: NewsForBriefing[]): Briefing {
   const f = runFacts(cur)!;
   return {
-    headline: `Stress Level ${f.stressLevel} · ${f.oneWeek.pUpPct}% of scenarios end the week higher`,
+    headline: `Stress Level ${f['Stress Level']} · ${f['one week']['% of scenarios higher']}% of scenarios end the week higher`,
     whatChanged: [
-      `Latest run starts from ${usd(f.spot)} with model agreement at ${f.modelAgreement}.`,
-      `One-month middle 50% of scenarios: ${usd(f.oneMonth.p25)} to ${usd(f.oneMonth.p75)}.`,
+      `Latest run starts from ${usd(f.spot)} with model agreement at ${f['model agreement']}.`,
+      `One-month middle 50% of scenarios: ${usd(f['one month']['25th percentile'])} to ${usd(f['one month']['75th percentile'])}.`,
     ],
-    scenarioSummary: `Across 1,000,000 scenarios, the one-month median is ${usd(f.oneMonth.median)}. ${f.oneMonth.pDown20Pct}% of scenarios fall more than 20% within a month; ${f.oneMonth.pUpPct}% end the month higher.`,
+    scenarioSummary: `Across 1,000,000 scenarios, the one-month median is ${usd(f['one month'].median)}. ${f['one month']['% of scenarios down more than 20%']}% of scenarios fall more than 20% within a month; ${f['one month']['% of scenarios higher']}% end the month higher.`,
     keyRisks: [
-      `Tail: 5% of one-month scenarios end below ${usd(f.oneMonth.p5)}.`,
-      `Expected worst drawdown inside the month: ${f.oneMonth.expectedMaxDrawdownPct}%.`,
+      `Tail: 5% of one-month scenarios end below ${usd(f['one month']['5th percentile'])}.`,
+      `Expected worst drawdown inside the month: ${f['one month']['average worst fall inside the month, %']}%.`,
     ],
     watchNext: ['Whether model agreement holds on the next run.', 'Gap between the on-chain token and the stock.'],
     sources: news.slice(0, 3).map((n) => ({ title: n.title, url: n.url, publishedAt: n.ts })),

@@ -118,3 +118,19 @@ export async function geckoterminalPrice(pool: string): Promise<number> {
     clearTimeout(t);
   }
 }
+
+/** 24h volume of the one pool the token price comes from (never per wallet). */
+export interface TokenVolume { ts: string; usd24h: number; scope: 'pool'; source: 'dexscreener' }
+export async function poolVolume(pool: string, now = new Date()): Promise<TokenVolume> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/pairs/robinhood/${pool}`, { signal: ctrl.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const j: any = await res.json();
+    const pair = (j.pairs || [j.pair])[0];
+    const usd24h = Number(pair?.volume?.h24);
+    if (!Number.isFinite(usd24h) || usd24h < 0 || pair?.baseToken?.symbol !== 'NVDA' || String(pair?.pairAddress || '').toLowerCase() !== pool.toLowerCase()) throw new Error('no pool volume');
+    return { ts: now.toISOString(), usd24h: Math.round(usd24h), scope: 'pool', source: 'dexscreener' };
+  } finally { clearTimeout(t); }
+}

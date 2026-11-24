@@ -5,7 +5,7 @@
  */
 import { runScenarios, outputHash, deriveSeed, hashObject, type EngineInputs } from './src/index';
 
-const API = process.env.QNTL_API || 'https://quintel.example';
+const API = process.env.QNTL_API || 'https://quintelagent.com';
 const id = Number(process.argv[2]);
 if (!id) {
   console.error('usage: npx tsx engine/verify.ts <runId>');
