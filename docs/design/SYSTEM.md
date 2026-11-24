@@ -92,7 +92,7 @@ Lucide only, outline, 1.5px stroke, 20px default (16px inline, 24px max). No emo
 - Sections: fade + rise 12px once when entering view (IntersectionObserver). Never again on scroll back.
 - Pages: crossfade via the View Transitions API where supported, nothing otherwise.
 - Live numbers: **NumberRoll**, digits roll 300ms; never jump, flicker or reflow.
-- Pixel graphics: stepped at ~10 fps (that's the style, not a bug).
+- Pixel graphics: stepped at ~10 fps (that's the style, not a bug). PixelField ticks every 140ms on one shared timer.
 - Toasts and sheets: slide 16px + fade, 250ms.
 - Pause every looping animation when off-screen or when the tab is hidden. Every loop has a "Pause" control.
 - `prefers-reduced-motion: reduce` → no movement: pixel graphics show their final frame, NumberRoll swaps instantly, toasts appear without sliding, no page crossfade.
@@ -102,16 +102,17 @@ Lucide only, outline, 1.5px stroke, 20px default (16px inline, 24px max). No emo
 
 ## 5. Pixel system (the visual identity)
 
-Idea: **1,000,000 futures, shown as pixels.** Each PixelField cell stands for an equal share of the run: about 244 futures (64×64) or 100 futures (100×100). Labels and aria text say so; never "one pixel, one future".
+Idea: **1,000,000 futures, shown as pixels.** Each PixelField cell stands for an equal share of the run: about 287 futures (64×64) or 118 futures (100×100), counting filled cells only. Labels and aria text say so; never "one pixel, one future".
 Ink pixel = kept / up / inside · red pixel = lost / down / outside · line pixel = empty.
-Red pixels also carry a pattern (hollow center) so meaning never relies on color alone.
+Red pixels are solid. Meaning never relies on color alone: the number, the label or key, and the aria-label always say it too.
+Gaps between pixels are about 1 CSS px on every screen (`max(1, round(dpr))` device pixels); cells are whole device pixels.
 
 Shared canvas helper: draws with `fillRect` at device-pixel-ratio resolution, integer cell sizes, 1 device-pixel gap → razor-sharp on every screen. Every canvas sits in a fixed `aspect-ratio` box (no layout shift) and has an `aria-label` stating its value in words.
 
 | Component | What it shows |
 |---|---|
-| `PixelField` | The scenario grid. 64×64 phone, 100×100 laptop. Re-sorts in a stepped wipe (~800ms) on each new run. |
-| `PixelFan` | The hero picture: all futures spreading out over 1 week, as an ordered pixel pattern. Ink above the halfway price, hollow red below. 64×48 phone, 100×100 laptop. Draws in once (~1s, 10 steps), again on each new run. Loading: a light dot grid. |
+| `PixelField` | The scenario grid and the hero picture. 64×64 phone, 100×100 laptop. Kept (ink) and lost (red) cells scattered at random in exact proportion, over 15% empty (`--line`) texture cells. Standard motion: a swap shimmer, every 140ms swap 4.4% of cells as random pairs (counts never change). A new run moves to the new split in ~1.5s of ticks, then the number rolls. No wipe. Loading: all empty, still. Has a Pause control; stops off-screen and in a hidden tab; reduced motion shows a still grid. |
+| `PixelFan` | Not placed yet (kept for later). All futures spreading out over 1 week, as an ordered pixel pattern. Ink above the halfway price, red below. 64×48 phone, 100×100 laptop. Draws in once (~1s, 10 steps), again on each new run. Loading: a light dot grid. |
 | `PixelMeter` | 10 blocks, ink → red as the value rises (Stress Level, progress, limits). |
 | `PixelBars` | Distributions, histograms, hit/miss rows as stacked pixel columns. |
 | `PixelFlow` | Dot-matrix process diagram; pixels hop along grid lines in steps. |
@@ -156,7 +157,7 @@ Delayed means no new run for 20 min while the market is open, or 45 min while it
 
 - Prices: `$186.64` (2 decimals). Large: `$1.2M`.
 - Odds and %: one decimal, `61.2%`. Change in odds: `+0.4 pts`. Tiny odds: `<0.1%`, `>99.9%`.
-- Signs: real minus `−` and `+` on every change. Up = `--ink`. Down = `--risk` at 24px and larger; smaller falls use `--ink` text, the `−` sign and a small hollow `--risk` pixel marker (small red text fails contrast).
+- Signs: real minus `−` and `+` on every change. Up = `--ink`. Down = `--risk` at 24px and larger; smaller falls use `--ink` text, the `−` sign and a small `--risk` pixel marker (small red text fails contrast).
 - Times: Eastern, `10:40am ET`; dates `Tue, Dec 1` (the weekday is always computed from the date, never typed). Relative: "updated 2 min ago".
 - Countdowns: `1d 14h 22m` (mono), under 1h `42:10`.
 - Addresses: `0x12…ab` (first 4, last 2 after 0x) unless expanded.

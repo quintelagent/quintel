@@ -9,7 +9,7 @@ In 3 seconds: what happened, what the odds say now, and when the next run lands.
 1. Eyebrow (mono label): market state + run + time — "After hours · run 4,182 · 10:40am ET"
 2. H1: "NVDA +31% in a day. Does it hold?"
 3. Sub: "1,000,000 futures, every 10 minutes."
-4. PixelFan, full width, 4:3, with "Now · $164.21" and "1 week" under it, then "Halfway price $145.29" and the above / below key.
+4. PixelField (shimmering), full width, square. Under it: "Each pixel is about 287 futures" (118 on laptop), a kept / lost key and a small Pause control.
 5. Big number (NumberRoll) "61.2%" + label "of futures keep at least half of Monday's gain for a week" + small info button (opens Sheet with the metric definition from the Methodology doc — use the existing definition, do not invent one).
 6. Two Stat tiles side by side:
    - "Stress level" — PixelMeter + "62 · Elevated"
@@ -18,10 +18,10 @@ In 3 seconds: what happened, what the odds say now, and when the next run lands.
 8. Buttons: "Check my position" (primary, → `/#position`) · "How it works" (secondary, → Proof section)
 
 ## Layout — laptop
-Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, countdown row, buttons. Right: PixelFan 500px square, vertically centered.
+Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, countdown row, buttons. Right: PixelField 500px square, vertically centered.
 
 ## States
-- **Loading:** PixelFan shows a light dot grid; number/tiles Skeleton in final size; countdown hidden.
+- **Loading:** PixelField all empty (`--line`), still; number/tiles Skeleton in final size; countdown hidden.
 - **Delayed** (no run for 20 min while open, 45 min while closed): last good data + Delayed pill in eyebrow: "Delayed · last run 10:10am ET".
 - **Error:** same as delayed; never blank.
 - **Market states:** eyebrow shows Market open / After hours (runs every 30 min) / Weekend / Holiday / Half day.
@@ -40,10 +40,10 @@ Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, cou
 - Footnote under buttons (12px, `--ink-2`): "Scenario odds, not predictions. Not financial advice."
 
 ## Motion
-On load and on each new run: PixelFan draws in from the left (10 steps, ~1s) → NumberRoll on all numbers → PixelMeter fills block by block at 10fps. Reduced motion: final frame, instant numbers.
+First load: the full grid appears at once. While visible: the swap shimmer (140ms). New run: the grid moves to the new split over ~1.5s → NumberRoll on all numbers → PixelMeter fills block by block at 10fps. Reduced motion: final frame, instant numbers.
 
 ## Reuses
-Section, PixelFan, NumberRoll, Stat, PixelMeter, Countdown, Pill, Button, Sheet, Skeleton.
+Section, PixelField, NumberRoll, Stat, PixelMeter, Countdown, Pill, Button, Sheet, Skeleton.
 
 ## Done when
 - [ ] Big number and H1 fit at 375px without overflow
@@ -52,7 +52,7 @@ Section, PixelFan, NumberRoll, Stat, PixelMeter, Countdown, Pill, Button, Sheet,
 
 ## As built
 - H1 is one line per sentence (three lines on phone). The size of the move comes from the run, never typed.
-- The picture uses the run's own 1-day and 1-week spreads (all 1,000,000 futures); the days between join them by rank. The most extreme 2.5% on each side is outside the picture. It shows prices along the way, so its red area is not the same number as the big odds figure.
-- Laptop: the picture is 500px (exact 5px cells) and the label sits beside the big number, so the hero fits 1440×900.
+- The hero picture is the shimmering PixelField. The split is always the run's exact kept odds. While paused, a new run still updates the split, without motion.
+- Laptop: the field is 500px (exact 5px cells) and the label sits beside the big number, so the hero fits 1440×900.
 - "Back above" tile note: "any daily close". Countdown past due: "Run in progress", then "Next run delayed" after 5 minutes. No touch data: "Not in this run."
 - The Delayed pill lives in the hero eyebrow on the home page; the top banner shows Delayed on the other pages only, so nothing shifts.

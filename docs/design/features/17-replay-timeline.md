@@ -25,7 +25,7 @@ PixelField left, numbers right, timeline full width beneath. Arrow keys step run
 - **Flag off:** route "Soon" page, link hidden.
 
 ## Motion
-Scrubbing redraws the field without the wipe (instant per run); Play uses the stepped wipe between runs. Reduced motion: Play steps without the wipe.
+Scrubbing redraws the field at once for each run; Play moves the field to each run’s split. Reduced motion: Play redraws at once.
 
 ## Touch
 Only the timeline captures horizontal drags (`touch-action: pan-x` on the track); the rest of the page scrolls normally.

@@ -19,7 +19,7 @@ Same product for other Robinhood stock tokens (TSLA, AAPL…), same layout, one 
 ## States (future)
 - One symbol: switcher hidden.
 - Symbol "Soon": selectable, shows a Soon page for that symbol with the release date.
-- Switching: crossfade + PixelField wipe; URL updates to `/s/{symbol}`.
+- Switching: crossfade + PixelField moves to the new split; URL updates to `/s/{symbol}`.
 
 ## Rules
 Same product rules for every symbol: no company names or logos in product names, scenario odds, no advice, neutral news.
