@@ -8,6 +8,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: npm }
       - run: npm ci
+      - run: npm run secret-scan
       - run: npm test
       - run: npx playwright install --with-deps chromium webkit firefox
       - run: npm run test:browsers

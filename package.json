@@ -17,7 +17,9 @@
     "verify": "tsx engine/verify.ts",
     "typecheck": "tsc -p engine && tsc -p worker && tsc -p web",
     "ship": "node scripts/ship.mjs",
-    "check:design": "node scripts/check-design.mjs"
+    "check:design": "node scripts/check-design.mjs",
+    "secret-scan": "node scripts/secret-scan.mjs --all",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261119.1",

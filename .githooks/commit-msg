@@ -1,0 +1,3 @@
+#!/bin/sh
+# no co-author lines: commits are by Quintel only
+if grep -qi '^co-authored-by:' "$1"; then echo "Remove the co-author line: commits are by Quintel only."; exit 1; fi
