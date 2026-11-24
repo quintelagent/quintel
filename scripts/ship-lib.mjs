@@ -6,7 +6,7 @@ export function listFlags(src) {
 export function setFlag(src, flag, on, iso) {
   return src.split('\n').map((l) => {
     if (!l.includes(`flag: '${flag}'`)) return l;
-    return l.replace(/on: (true|false)/, `on: ${on}`).replace(/status: '\w+'/, `status: '${on ? 'live' : 'soon'}'`).replace(/shippedAt: (null|'[^']*')/, `shippedAt: ${on ? `'${iso}'` : 'null'}`);
+    return l.replace(/on: (true|false)/, `on: ${on}`).replace(/status: '\w+'/, `status: '${on ? 'live' : 'planned'}'`).replace(/shippedAt: (null|'[^']*')/, `shippedAt: ${on ? `'${iso}'` : 'null'}`);
   }).join('\n');
 }
 const ET = { timeZone: 'America/New_York' };

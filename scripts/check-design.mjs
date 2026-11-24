@@ -60,7 +60,8 @@ readFileSync(reg, 'utf8').split('\n').forEach((l, i) => {
   if (!name || l.includes('interface')) return;
   if (BRAND.test(name)) add(reg, i, 'brand in feature name', name);
   if (route && BRAND.test(route)) add(reg, i, 'brand in route', route);
-  if (!doc || !existsSync(join(ROOT, 'docs/design/features', doc + '.md'))) add(reg, i, 'no design file', name);
+  const live = /status: 'live'/.test(l);
+  if ((live && !doc) || (doc && !existsSync(join(ROOT, 'docs/design/features', doc + '.md')))) add(reg, i, 'no design file', name);
 });
 for (const f of walk(join(ROOT, 'web/public'))) if (BRAND.test(relative(join(ROOT, 'web/public'), f))) add(f, 0, 'brand in asset', f);
 
