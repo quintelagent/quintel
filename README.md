@@ -12,7 +12,9 @@
   <a href="https://quintelagent.com/docs">Docs</a> ·
   <a href="https://x.com/quintelagent">X</a>
   <br/><br/>
-  <img alt="CI" src="https://github.com/quintelagent/quintel/actions/workflows/ci.yml/badge.svg" />
+  <a href="https://github.com/quintelagent/quintel/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/quintelagent/quintel/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <a href="https://quintelagent.com/api/latest"><img alt="Latest run" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquintelagent.com%2Fapi%2Flatest&query=%24.run.id&label=latest%20run&color=121212" /></a>
+  <a href="https://quintelagent.com/verify"><img alt="Fingerprints on chain" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquintelagent.com%2Fapi%2Fproof&query=%24.sent&label=fingerprints%20on%20chain&color=121212" /></a>
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-121212" />
 </p>
 
@@ -40,15 +42,37 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 4. **Explain and act.** A briefing is written and guard-checked. The paper desk applies its published rules.
 5. **Prove.** Each hour, every run, input, briefing and desk hash is rolled into one fingerprint and sent on-chain.
 
-**Quintel fingerprint wallet:** [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47) (Robinhood Chain, chain id 4663)
+## Check our claims
+
+Nothing here needs to be taken on trust. Each claim has a place to check it.
+
+| Claim | Where to check |
+|---|---|
+| 1,000,000 paths behind every run | `/api/run/<id>` has the inputs and seed. [Verify](https://quintelagent.com/verify) recomputes all of them in the browser. |
+| Nothing was edited after its fingerprint posted | The hour’s hash is the input data of a transaction from [the fingerprint wallet](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47). |
+| Late or missing fingerprints stay visible | [`/api/proof`](https://quintelagent.com/api/proof) lists every hour, its attempts and when it was sent. |
+| Same result in every browser | CI runs the engine in Chromium, WebKit and Firefox and compares hashes. |
+| The paper desk follows fixed rules | Rules in [Methodology](docs/METHODOLOGY.md), every trade in [`/api/desk`](https://quintelagent.com/api/desk). |
+| Mistakes are listed | [Incidents](docs/incidents), including the runs that started from a stale price. |
+
+What is **not** proven: that the odds are right. See [Limits](docs/LIMITS.md). The code has not been audited by a third party.
+
+## Addresses
+
+| What | Robinhood Chain (chain id 4663) |
+|---|---|
+| Fingerprint wallet | [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47) |
+| $QNTL on Pons | Posted at launch |
+
+The full list is in [Deployments](docs/DEPLOYMENTS.md). Quintel never asks for a private key, a seed phrase or a token approval.
 
 ## Verify a run
 
-In the browser, open `/verify?run=<id>`. From the command line:
+In the browser, open `https://quintelagent.com/verify?run=<id>`. From the command line:
 
 ```bash
 npm install
-QNTL_API=https://quintelagent.com npx tsx engine/verify.ts <runId>
+npx tsx engine/verify.ts <runId>
 ```
 
 See [docs/PROOF.md](docs/PROOF.md).
@@ -73,7 +97,7 @@ Secrets are set with `wrangler secret put`, or in `.dev.vars` locally (gitignore
 
 ## Docs
 
-[Methodology](docs/METHODOLOGY.md) · [Proof](docs/PROOF.md) · [Limits](docs/LIMITS.md) · [Security](docs/SECURITY.md) · [Deployments](docs/DEPLOYMENTS.md) · [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Incidents](docs/incidents) · [Changelog](CHANGELOG.md)
+[Methodology](docs/METHODOLOGY.md) · [Proof](docs/PROOF.md) · [Limits](docs/LIMITS.md) · [Security](docs/SECURITY.md) · [Deployments](docs/DEPLOYMENTS.md) · [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Incidents](docs/incidents) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ---
 

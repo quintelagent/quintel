@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem
+    url: https://github.com/quintelagent/quintel/security/advisories/new
+    about: Please report security problems privately.
+  - name: Check a run yourself
+    url: https://quintelagent.com/verify
+    about: Recompute any run in the browser and read its fingerprint from the chain.
