@@ -34,7 +34,6 @@ export interface Desk {
   trades: DeskTrade[];
   equity: { ts: string; equity: number; price: number }[];
 }
-export interface Scorecard { status: 'live' | 'collecting'; note: string | null; horizons: { horizon: number; n: number; rate50: number; rate90: number; brier: number }[]; recent: any[] }
 export interface SiteConfig {
   symbol: string; chainId: number; explorer: string; nvdaToken: string; fingerprintWallet: string | null;
   hearing?: { date: string; label: string; url: string | null } | null;

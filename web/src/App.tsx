@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { DataProvider } from './lib/data';
 import { anchorFor, scrollToId, useRoute } from './lib/router';
-import { featureByRoute, flagOn } from './features';
 import { ToastProvider } from './components/ui';
 import { Header } from './components/chrome/Header';
 import { Banner } from './components/chrome/Banner';
@@ -10,7 +9,6 @@ import { Footer } from './components/chrome/Footer';
 import { LiveToasts } from './components/chrome/LiveToasts';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
-import { Soon } from './pages/Soon';
 
 const Verify = lazy(() => import('./pages/Verify').then((m) => ({ default: m.Verify })));
 const Briefings = lazy(() => import('./pages/Briefings').then((m) => ({ default: m.Briefings })));
@@ -29,9 +27,7 @@ function Page({ path }: { path: string }) {
   if ((m = path.match(/^\/docs\/([\w-]+)$/))) return <Docs slug={m[1]} />;
   if (path === '/incidents') return <Incidents />;
   if (path === '/status') return <Status />;
-  if (path === '/changelog') return <Changelog />; // renders with SHIP_LOG off too (feature 14)
-  const f = featureByRoute(path);
-  if (f?.flag && !flagOn(f.flag)) return <Soon feature={f} />;
+  if (path === '/changelog') return <Changelog />;
   return <NotFound />;
 }
 

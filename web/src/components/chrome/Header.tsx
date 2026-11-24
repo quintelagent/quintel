@@ -22,7 +22,6 @@ export function Header({ path }: { path: string }) {
     <header className="header">
       <div className="wrap header-in">
         <Wordmark />
-        {/* StockSwitcher slot (feature 19): hidden while only one symbol exists */}
         <nav className="header-nav" aria-label="Main">
           {LINKS.map(([h, t]) => <Link key={h} href={h} aria-current={cur(h)}>{t}</Link>)}
           <Button href="/#position">Check my position</Button>

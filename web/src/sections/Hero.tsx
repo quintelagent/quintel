@@ -3,7 +3,6 @@ import { Info, Pause, Play } from 'lucide-react';
 import { prevTradingDay } from '../../../worker/src/session';
 import { Button, Countdown, EmptyState, ErrorState, NumberRoll, Pill, Sheet, Skeleton, Stat, Tile } from '../components/ui';
 import { PixelField, PixelMeter } from '../components/pixel';
-import { flagOn } from '../features';
 import type { RunRow } from '../lib/api';
 import { useData } from '../lib/data';
 import { ago, etShortDate, etTime, int, odds, usd } from '../lib/format';
@@ -27,7 +26,6 @@ function Eyebrow({ run, failed }: { run: RunRow | null; failed: boolean }) {
 function Sub() {
   const now = useNow(30000);
   const { open } = marketState(now);
-  if (!open && flagOn('CHAIN_MODE_SPOTLIGHT')) return <>The market’s closed. The chain isn’t.</>;
   return <>1,000,000 futures, every {cadenceMin(now)} minutes{open ? '.' : <> <span className="hero-phrase">while the market is closed.</span></>}</>;
 }
 

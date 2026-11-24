@@ -8,7 +8,7 @@ import './changelog.css';
 const FILE = 'CHANGELOG.md';
 const LOG = parseChangelog(source);
 
-/** Ship log, flag-off version (feature 14): CHANGELOG.md as a plain list. */
+/** CHANGELOG.md as a plain list. */
 export function Changelog() {
   useMeta('Changelog · Quintel', 'Everything we’ve shipped, newest first.');
   return (

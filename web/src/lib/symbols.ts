@@ -1,4 +1,4 @@
-/** Per-symbol copy and reference values (feature 19 drops more symbols in here). */
+/** Per-symbol copy and reference values. */
 export interface SymbolConfig { symbol: string; headline: (movePct: number | null) => string; gainName: string }
 export const DEFAULT_SYMBOL = 'NVDA';
 const move = (p: number) => `${p < 0 ? '−' : '+'}${Math.abs(Math.round(p * 100))}%`;
