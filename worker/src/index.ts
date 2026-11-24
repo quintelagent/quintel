@@ -1,6 +1,7 @@
 import type { Env } from './config';
 import { handleApi } from './api';
 import { tick } from './cron';
+import { workerFlag } from './flags';
 import { safeError } from './redact';
 
 export default {
@@ -13,6 +14,8 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       return handleApi(req, env, ctx, (e, force) => tick(e, new Date(), { force }));
     }
+    // MCP clients look here for a sign-in. There is none, and the site's page must not answer in its place.
+    if (/^\/\.well-known\/(oauth-|openid-)/.test(url.pathname) && workerFlag(env, 'MCP_SERVER')) return new Response('Not found', { status: 404 });
     return env.ASSETS.fetch(req);
   },
 

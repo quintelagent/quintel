@@ -36,7 +36,7 @@ async function latestRun(get: Get): Promise<RunRow | null> { return (await get<L
 
 /** The odds in one run's summary. Runs before the touch odds existed leave those out. */
 function runOdds(run: RunRow) {
-  const s = run.summary, kept = keptOf(s), back = backAboveOf(s), gain = symbolConfig().gainName;
+  const s = run.summary, kept = keptOf(s), back = backAboveOf(s), gain = s.event ? `the ${etShortDate(s.event.date)} gain` : symbolConfig().gainName;
   const give = s.touch?.giveBack, incident = incidentNote({ run_id: run.id });
   const lines = [
     incident,
