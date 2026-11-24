@@ -2,6 +2,7 @@ import { DESK_RULES, SCHEDULE, type Env } from './config';
 import { Busy, cachedBody } from './cache';
 import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
+import { workerFlag } from './flags';
 import { etParts, sessionAt, nextOpen } from './session';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
