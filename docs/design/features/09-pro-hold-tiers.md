@@ -37,7 +37,7 @@ Signed out: ghost button "Connect wallet". Signed in: AddressChip "0x12…ab" + 
 - **Flag off:** /pro → "Soon" page; locks hidden; token section shows "Soon · {date}".
 
 ## Motion
-Custom run: PixelField fills cell by cell (stepped) while running, then wipes to result. Reduced motion: progress bar via PixelMeter only.
+Custom run: PixelField fills cell by cell (stepped) while running, then moves to the result’s split. Reduced motion: progress bar via PixelMeter only.
 
 ## Reuses
 WalletChip, AddressChip, Sheet, Card, Input, Button, PixelField, PixelBars, PixelMeter, LockedState, Pill, Toast, ShareSheet.

@@ -9,7 +9,7 @@ In 3 seconds: what happened, what the odds say now, and when the next run lands.
 1. Eyebrow (mono label): market state + run + time — "After hours · run 4,182 · 10:40am ET"
 2. H1: "NVDA +31% in a day. Does it hold?"
 3. Sub: "1,000,000 futures, every 10 minutes."
-4. PixelField (shimmering), full width, square. Under it: "Each pixel is about 287 futures" (118 on laptop), a kept / lost key and a small Pause control.
+4. PixelField (shimmering), full width, square. Under it: "1 filled pixel ≈ 287 futures" (118 on laptop), a kept / lost key and a small Pause control.
 5. Big number (NumberRoll) "61.2%" + label "of futures keep at least half of Monday's gain for a week" + small info button (opens Sheet with the metric definition from the Methodology doc — use the existing definition, do not invent one).
 6. Two Stat tiles side by side:
    - "Stress level" — PixelMeter + "62 · Elevated"
@@ -40,7 +40,7 @@ Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, cou
 - Footnote under buttons (12px, `--ink-2`): "Scenario odds, not predictions. Not financial advice."
 
 ## Motion
-First load: the full grid appears at once. While visible: the swap shimmer (140ms). New run: the grid moves to the new split over ~1.5s → NumberRoll on all numbers → PixelMeter fills block by block at 10fps. Reduced motion: final frame, instant numbers.
+First load: the full grid appears at once. While visible: the swap shimmer (140ms). New run: the grid moves to the new split over ~1.5s → the big number rolls. The tiles update as soon as the run lands; PixelMeter fills block by block at 10fps. Reduced motion: final frame, instant numbers.
 
 ## Reuses
 Section, PixelField, NumberRoll, Stat, PixelMeter, Countdown, Pill, Button, Sheet, Skeleton.

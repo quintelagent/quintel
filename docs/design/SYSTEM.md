@@ -105,13 +105,13 @@ Lucide only, outline, 1.5px stroke, 20px default (16px inline, 24px max). No emo
 Idea: **1,000,000 futures, shown as pixels.** Each PixelField cell stands for an equal share of the run: about 287 futures (64×64) or 118 futures (100×100), counting filled cells only. Labels and aria text say so; never "one pixel, one future".
 Ink pixel = kept / up / inside · red pixel = lost / down / outside · line pixel = empty.
 Red pixels are solid. Meaning never relies on color alone: the number, the label or key, and the aria-label always say it too.
-Gaps between pixels are about 1 CSS px on every screen (`max(1, round(dpr))` device pixels); cells are whole device pixels.
+PixelField gaps are about 1 CSS px on every screen (`max(1, round(dpr))` device pixels); cells are whole device pixels.
 
-Shared canvas helper: draws with `fillRect` at device-pixel-ratio resolution, integer cell sizes, 1 device-pixel gap → razor-sharp on every screen. Every canvas sits in a fixed `aspect-ratio` box (no layout shift) and has an `aria-label` stating its value in words.
+Shared canvas helper: draws with `fillRect` at device-pixel-ratio resolution, integer cell sizes → razor-sharp on every screen. Every canvas sits in a fixed `aspect-ratio` box (no layout shift) and has an `aria-label` stating its value in words.
 
 | Component | What it shows |
 |---|---|
-| `PixelField` | The scenario grid and the hero picture. 64×64 phone, 100×100 laptop. Kept (ink) and lost (red) cells scattered at random in exact proportion, over 15% empty (`--line`) texture cells. Standard motion: a swap shimmer, every 140ms swap 4.4% of cells as random pairs (counts never change). A new run moves to the new split in ~1.5s of ticks, then the number rolls. No wipe. Loading: all empty, still. Has a Pause control; stops off-screen and in a hidden tab; reduced motion shows a still grid. |
+| `PixelField` | The scenario grid and the hero picture. 64×64 phone, 100×100 laptop. Kept (ink) and lost (red) cells scattered at random in exact proportion, over 15% empty (`--line`) texture cells. Standard motion: a swap shimmer, every 140ms swap 4.4% of cells as random pairs (counts never change). A new run moves to the new split in ~1.5s of ticks, then the number rolls. No wipe. Loading: all empty, still. Has a Pause control; stops off-screen and in a hidden tab (a move cut short by pausing or scrolling away lands on the exact split at once); reduced motion shows a still grid. |
 | `PixelFan` | Not placed yet (kept for later). All futures spreading out over 1 week, as an ordered pixel pattern. Ink above the halfway price, red below. 64×48 phone, 100×100 laptop. Draws in once (~1s, 10 steps), again on each new run. Loading: a light dot grid. |
 | `PixelMeter` | 10 blocks, ink → red as the value rises (Stress Level, progress, limits). |
 | `PixelBars` | Distributions, histograms, hit/miss rows as stacked pixel columns. |
@@ -184,7 +184,7 @@ Delayed means no new run for 20 min while the market is open, or 45 min while it
 - Visible focus ring: 2px `--ink` outline, 2px offset, on everything clickable.
 - Sliders and tabs work with arrow keys. Sheets trap focus and close on Esc.
 - Every canvas has an `aria-label` with its value in words; live regions announce new runs politely (max once per minute).
-- Meaning never relies on color alone (pattern on red pixels, +/− signs, pill text).
+- Meaning never relies on color alone (the number, label or key, aria-label, +/− signs, pill text).
 
 ---
 
