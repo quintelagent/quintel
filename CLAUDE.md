@@ -18,4 +18,10 @@ Before any UI, copy, page, feature, email, share image or component work, read a
 - Disclaimer: "Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice."
 
 ## Git
-One feature per branch with a plain-English draft PR; small commits starting "Site: …" or "Ship: …"; authored as Quintel; push as you go; never backdate or force-push. Features ship behind flags (all OFF in production) and are released with `npm run ship <FLAG>`.
+- Author and committer are always Quintel <build@quintelagent.com>. No co-author lines. `.githooks/` enforces this and scans for secrets.
+- `private/` is local only: never commit, push, quote or summarize it in public files, PRs, issues or commit messages.
+- Small commits, one change each, plain English, starting with the area: `Site:` `Engine:` `Proof:` `Ship:` `Docs:` `Fix:`. Push each commit as soon as it's made.
+- Never backdate, rewrite history or force-push `main`.
+- One feature per branch (`feature/<name>`) with a plain-English draft PR. Merge commits only, no squash.
+- Features ship behind flags (all OFF in production) and are released with `npm run ship <FLAG>`. Say "Now live", never "built today".
+- Production deploys only after approval, away from run times (:00, :10, :20…).
