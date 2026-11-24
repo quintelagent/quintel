@@ -1,0 +1,9 @@
+{
+  // Preview only: serves web/dist and forwards GET /api/* to production. No D1, cron, secrets or routes, so it cannot write or post.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quintel-preview",
+  "main": "scripts/preview-worker.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "web/dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true },
+  "workers_dev": true
+}

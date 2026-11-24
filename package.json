@@ -15,7 +15,8 @@
     "dev": "npm run dev -w web",
     "deploy": "npm test && npm run build && wrangler deploy",
     "verify": "tsx engine/verify.ts",
-    "typecheck": "tsc -p engine && tsc -p worker && tsc -p web"
+    "typecheck": "tsc -p engine && tsc -p worker && tsc -p web",
+    "ship": "node scripts/ship.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261119.1",

@@ -1,49 +1,58 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { DataProvider } from './lib/data';
-import { useRoute } from './lib/router';
-import { initMotion, scrollToId, whenIdle } from './lib/motion';
-import { Nav } from './sections/Nav';
-import { Hero } from './sections/Hero';
-import { LiveStrip } from './sections/LiveStrip';
-import { DragPrice } from './sections/DragPrice';
-import { WeekendGap } from './sections/WeekendGap';
-import { Footer } from './sections/Footer';
+import { anchorFor, scrollToId, useRoute } from './lib/router';
+import { featureByRoute, flagOn } from './features';
+import { ToastProvider } from './components/ui';
+import { Header } from './components/chrome/Header';
+import { Banner } from './components/chrome/Banner';
+import { StickyBar } from './components/chrome/StickyBar';
+import { Footer } from './components/chrome/Footer';
+import { LiveToasts } from './components/chrome/LiveToasts';
+import { Home } from './pages/Home';
+import { NotFound } from './pages/NotFound';
+import { Soon } from './pages/Soon';
 
-const loadBelow = () => import('./sections/Below');
-const Below = lazy(loadBelow);
 const Verify = lazy(() => import('./pages/Verify').then((m) => ({ default: m.Verify })));
 const Briefings = lazy(() => import('./pages/Briefings').then((m) => ({ default: m.Briefings })));
 const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })));
+const Incidents = lazy(() => import('./pages/Incidents').then((m) => ({ default: m.Incidents })));
+const Changelog = lazy(() => import('./pages/Changelog').then((m) => ({ default: m.Changelog })));
+const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })));
 
-function Home() {
-  return (
-    <>
-      <Hero />
-      <LiveStrip />
-      <WeekendGap />
-      <DragPrice />
-      <Suspense fallback={<div style={{ minHeight: '300vh' }} />}>
-        <Below />
-      </Suspense>
-    </>
-  );
+function Page({ path }: { path: string }) {
+  let m: RegExpMatchArray | null;
+  if (path === '/') return <Home />;
+  if (path === '/verify') return <Verify />;
+  if (path === '/briefings') return <Briefings id={null} />;
+  if ((m = path.match(/^\/briefings\/(\d+)$/))) return <Briefings id={Number(m[1])} />;
+  if (path === '/docs') return <Docs slug={null} />;
+  if ((m = path.match(/^\/docs\/([\w-]+)$/))) return <Docs slug={m[1]} />;
+  if (path === '/incidents') return <Incidents />;
+  if (path === '/status') return <Status />;
+  if (path === '/changelog') return <Changelog />; // renders with SHIP_LOG off too (feature 14)
+  const f = featureByRoute(path);
+  if (f?.flag && !flagOn(f.flag)) return <Soon feature={f} />;
+  return <NotFound />;
 }
 
 export function App() {
-  const { path } = useRoute();
-  useEffect(() => { initMotion(); whenIdle(() => { loadBelow(); }, 1200); }, []);
+  const { path, hash } = useRoute();
+  const first = useRef(true);
   useEffect(() => {
-    if (location.hash && path === '/') { loadBelow(); setTimeout(() => scrollToId(location.hash.slice(1)), 150); }
-  }, [path]);
-  let page = <Home />;
-  if (path.startsWith('/verify')) page = <Verify />;
-  else if (path.startsWith('/briefings')) page = <Briefings />;
-  else if (path.startsWith('/docs')) page = <Docs />;
+    if (first.current && hash) scrollToId(anchorFor(hash));
+    first.current = false;
+  }, [hash]);
   return (
     <DataProvider>
-      <Nav />
-      <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>{page}</Suspense>
-      <Footer />
+      <ToastProvider>
+        <a className="skip" href="#main">Skip to content</a>
+        <Header path={path} />
+        <Banner />
+        <main id="main" tabIndex={-1}><Suspense fallback={<div style={{ minHeight: '100dvh' }} />}><Page path={path} /></Suspense></main>
+        <Footer />
+        <StickyBar path={path} />
+        <LiveToasts />
+      </ToastProvider>
     </DataProvider>
   );
 }
