@@ -211,8 +211,8 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
     }
     if (p === '/api/scorecard') return await serve(p, 300, 600, () => scorecardSummary(env));
     if (burn) {
-      if (p === '/api/burn') return await serve(p, 20, 60, () => burnSummary(env));
-      if (p === '/api/burn/gallery') { const sort = url.searchParams.get('sort') === 'extreme' ? 'extreme' : 'latest'; return await serve(`${p}?sort=${sort}`, 30, 60, () => burnGallery(env, sort)); }
+      if (p === '/api/burn') return await serve(p, 15, 0, () => burnSummary(env));
+      if (p === '/api/burn/gallery') { const sort = url.searchParams.get('sort') === 'extreme' ? 'extreme' : 'latest'; return await serve(`${p}?sort=${sort}`, 15, 0, () => burnGallery(env, sort)); }
       if ((m = p.match(/^\/api\/burn\/(request|run)\/(\d{1,9})$/))) { const id = Number(m[2]); return await (m[1] === 'run' ? serve(`/api/burn/run/${id}`, 3600, 86400, () => burnRunView(env, id)) : serve(`/api/burn/request/${id}`, 5, 10, () => burnRequestView(env, id), 60)); }
     }
     if (p === '/api/history') return await serve(p, 600, 1200, async () => (await all(env.DB.prepare('SELECT date, close FROM history_daily ORDER BY date DESC LIMIT 260'))).reverse());
