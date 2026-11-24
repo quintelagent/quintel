@@ -10,7 +10,7 @@ In 3 seconds: what happened, what the odds say now, and when the next run lands.
 2. H1: "NVDA +31% in a day. Does it hold?"
 3. Sub: "1,000,000 futures, every 10 minutes."
 4. PixelField, full width, square.
-5. Big number (NumberRoll) "61.2%" + label "of futures keep Monday's gain" + small info button (opens Sheet with the metric definition from the Methodology doc — use the existing definition, do not invent one).
+5. Big number (NumberRoll) "61.2%" + label "of futures keep at least half of Monday's gain for a week" + small info button (opens Sheet with the metric definition from the Methodology doc — use the existing definition, do not invent one).
 6. Two Stat tiles side by side:
    - "Stress level" — PixelMeter + "62 · Elevated"
    - "Back above $186.64 within 1 month" — "38.4%"
@@ -22,7 +22,7 @@ Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, cou
 
 ## States
 - **Loading:** PixelField all `--line`; number/tiles Skeleton in final size; countdown hidden.
-- **Delayed** (no run 30+ min): last good data + Delayed pill in eyebrow: "Delayed · last run 10:10am ET".
+- **Delayed** (no run for 20 min while open, 45 min while closed): last good data + Delayed pill in eyebrow: "Delayed · last run 10:10am ET".
 - **Error:** same as delayed; never blank.
 - **Market states:** eyebrow shows Market open / After hours (runs every 30 min) / Weekend / Holiday / Half day.
 - **Chain mode on** (feature 16): sub swaps to "The market's closed. The chain isn't."
@@ -31,9 +31,9 @@ Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, cou
 ## Copy (exact)
 - Eyebrow: "{Market state} · run {n} · {time} ET"
 - H1: "NVDA +31% in a day. Does it hold?"
-- Sub: "1,000,000 futures, every 10 minutes."
-- Big label: "of futures keep Monday's gain"
-- Stress labels: "Calm" / "Elevated" / "High" (map to the existing Stress Level thresholds)
+- Sub: "1,000,000 futures, every 10 minutes." while the market is open; "1,000,000 futures, every 30 minutes while the market is closed." when it is closed
+- Big label: "of futures keep at least half of Monday's gain for a week" (METHODOLOGY.md, "Gain kept")
+- Stress labels: "Calm" / "Elevated" / "High" (0–33 / 34–66 / 67–100)
 - Tile 2 label: "Back above $186.64 within 1 month"
 - Countdown: "Next run in {mm:ss}" · "updated {n} min ago"
 - Info sheet title: "What 'Monday's gain kept' means"

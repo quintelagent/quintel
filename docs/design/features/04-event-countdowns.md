@@ -11,16 +11,15 @@ Sub: "Countdowns to the next market closures and hearings."
 Stacked rows (Card with hairline dividers), each: label · date (mono) · Countdown · "What if?" button.
 1. "Thanksgiving · market closed" — Thu, Nov 26
 2. "Half day · market closes 1:00pm ET" — Fri, Nov 27
-3. "Hearing · day 1" — Mon, Dec 1
-4. "Hearing · day 2" — Tue, Dec 2
+3. "Reported House committee session" — Tue, Dec 1, with "Source" link and "Time not reported" (a second day is added only with a source)
 Confirm closure/half-day times against the NYSE holiday calendar before shipping.
 
 ## Layout — laptop
 2×2 grid of Cards, same content.
 
 ## What-if presets (tap "What if?" → scrolls to the tool with the tab and values set)
-- Thanksgiving / Half day → Weekend gap tab, gap window preset to that closure: "Try a gap over the holiday"
-- Hearing day 1 / day 2 → What-if tab, preset to a ±10% move on that date: "Try a ±10% move on hearing day"
+- Thanksgiving / Half day → Weekend gap tab, read-only gap odds for that closure: "Try a gap over the holiday"
+- Hearing → What-if tab, the direction-neutral hearing preset (drift 0, jumps ×2.5, volatility ×1.3). The engine has no dated price move, so no ±10% preset.
 
 ## States
 - **Upcoming:** Countdown "1d 14h 22m".

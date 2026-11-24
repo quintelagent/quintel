@@ -36,14 +36,14 @@ Flagged routes return the 404 page (or a "Soon" page if the registry says so) wh
 
 ## Home — section order
 1. **Hero** → features/01-hero.md
-2. **Stats strip** — three Stats in a row (phone: 3 compact columns; numbers shrink with clamp): "1,000,000" / "futures per run" · "10 min" / "between runs" · "10:00am ET" / "last fingerprint" (links to /verify). Delayed → pill on the third.
+2. **Stats strip** — three Stats in a row (phone: 3 compact columns; numbers shrink with clamp): "1,000,000" / "futures per run" · "10 min" / "between runs" ("30 min" while the market is closed) · "10:00am ET" / "last fingerprint" (links to /verify). Delayed → pill on the third.
 3. **Wall Street vs Chain** → features/02-wall-street-vs-chain.md
 4. **The tool** — one Card with SegmentedTabs: Drag a price · What-if · Weekend gap · My position. H2: "Pick a price. See the odds." My position → features/03-check-my-position.md. The other tabs keep today's logic, restyled: big thumb-friendly Slider, result as a big NumberRoll + PixelBars. Laptop: tabs on top, controls left, result right. Deep links `/#drag`, `/#whatif`, `/#weekend`, `/#position`.
 5. **Event countdowns** → features/04-event-countdowns.md
 6. **Briefing + live feed** — H2: "What changed, in plain English." Left (laptop) / top (phone): latest briefing card (time, headline, 3-line summary, odds change pill, "Read briefing"). Right / below: the 6 latest feed events (same events as feature 05), new rows slide in. "All briefings" link.
 7. **Five models** — H2: "Five models. One set of odds." Five compact Cards (name, one line, current odds, PixelSpark). Phone: horizontal scroll-snap row with peeking next card. Laptop: 5-across grid.
 8. **Paper desk** — H2: "A public paper desk, every trade shown." Pill "Paper trading. No real money." Open positions + recent closed in a DataTable; P&L in mono with signs.
-9. **Proof** — H2: "Every hour, a fingerprint of every run goes on Robinhood Chain." PixelFlow (Research agent → 5 models → 1,000,000 futures → Scenario odds → Fingerprint on chain). Button "Verify a run". Scorecard teaser when DAILY_SCORECARD_PUBLIC is on (feature 13).
+9. **Proof** — H2: "Every hour, a fingerprint of every run goes on Robinhood Chain." when nothing is waiting; "Every hour of runs gets a fingerprint." with the waiting count while `/api/proof` shows pending posts PixelFlow (Research agent → 5 models → 1,000,000 futures → Scenario odds → Fingerprint on chain). Button "Verify a run". Scorecard teaser when DAILY_SCORECARD_PUBLIC is on (feature 13).
 10. **Token** → features/07-token-section.md
 11. **FAQ** — H2: "What people ask first." Accordion, 6–8 questions, max 720px. Must include: What is Quintel? · Are these predictions? (No — scenario odds.) · Where does the price come from? · How can I check a run? · What does Stress Level mean? · What is $QNTL for? · Is this advice? (No.)
 12. **Closing** — H2: "1,000,000 futures. Every 10 minutes." Buttons "Check my position" + "Read the docs".
@@ -52,6 +52,8 @@ Flagged routes return the 404 page (or a "Soon" page if the registry says so) wh
 Home laptop layout: hero two columns; Wall Street vs Chain, briefing + feed, and paper desk side by side; tool controls left / result right; models 5-across; FAQ single column.
 
 ## Other pages (no flag)
+- **Stored briefings** that used the old Stress Level name are hashed and can't be edited: show the current wording with the note "Shown with current wording. Original hash below."
+- **/verify** keeps the full in-browser recompute (1,000,000 paths) and only says what was checked: run hashes, seed, recompute, hourly fingerprint, and on-chain calldata when it was actually read.
 - **/verify** — H1 "Verify a run." Sub "Paste a run ID or fingerprint to check it against the chain." Big Input + "Verify". Result Card: Verified (inverted pill) or "Not found" (EmptyState: "No run matches that ID. Check it and try again."), run time, inputs summary, fingerprint (CodeBlock + Copy), block number, "View on explorer". Below: "Latest fingerprints" DataTable (time, run, block, link), 10 rows.
 - **/briefings** — H1 "Briefings." Sub "What changed in the odds, and why, in plain English." List of briefing Cards. Empty: "The first briefing posts after the next run."
 - **/briefings/:id** — article layout (680px, 18px body): time ET, headline, odds change pill, PixelBars chart at top, body, "Share" (feature 12 when RUN_SHARE_CARDS is on), previous/next.

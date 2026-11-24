@@ -19,13 +19,15 @@ Stacked Cards (title, one line, "Read"):
 | Changelog | "Everything we've shipped." |
 | Incidents | "Anything that broke, and what we did about it." |
 
+Docs that do not exist yet (Security, Deployments) are left out until written; Architecture and Decisions are listed.
+
 Laptop: 2-column grid (3 at 1100px+).
 
 ## Layout — /docs/:slug
 Phone: section picker dropdown at top, then article (680px, 18px body), CodeBlock with Copy, "Edit on GitHub" link at bottom. Laptop: left sidebar (all docs), article center, "On this page" links right.
 
 ## Layout — /incidents
-H1: "Incidents." Sub: "Anything that broke, when, and what we did." List of Cards (date ET, title, status Pill "Resolved"/"Investigating", 2-line summary). Empty: EmptyState "No incidents so far."
+H1: "Incidents." Sub: "Anything that broke, when, and what we did." List of Cards (date ET, title, status Pill "Resolved"/"Investigating", 2-line summary). Entries live in docs/incidents/*.md. Empty: EmptyState "No incidents so far."
 
 ## States
 Loading: Skeleton article lines. Missing doc: 404 page.

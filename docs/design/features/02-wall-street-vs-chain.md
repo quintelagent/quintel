@@ -27,6 +27,9 @@ Three columns: Wall Street card · gap (centered, big) · On chain card.
 - Badge: "24/7 chain mode"
 - Gap: "Gap {±x.x}% · {±$x.xx}"
 
+## Until 24h volume is collected
+The volume line is hidden; it is added with its source and definition when the worker stores it. The exchange label says "as of" the run time, since trade time is not stored.
+
 ## Motion
 NumberRoll on price changes. Live dot blinks in steps (1s on, 1s off). Reduced motion: dot static.
 

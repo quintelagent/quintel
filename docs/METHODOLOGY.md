@@ -65,7 +65,14 @@ For each model and for the combined 1,000,000 paths, at each horizon:
 - **95% VaR (1 month):** `1 − p5 / spot`
 - **Model agreement (0–100):** `100 × (1 − (2a + b))`, clamped. Here a is the standard deviation of the five 1-month medians and b is the standard deviation of their p10–p90 spreads, both divided by the mean spread.
 
+## Gain kept (the home page number)
+
+The share of all 1,000,000 paths that **keep at least half of the 23 Nov 2026 gain for a week**: `1 − touch.giveBack.p`. A path keeps it when no daily close over the next 5 trading days is at or below the halfway price between the 20 Nov and 23 Nov closes. Intraday moves are not counted, and the 5-day window starts from each run.
+
 ## Stress Level (0–100)
+
+Labels: **0–33 Calm · 34–66 Elevated · 67–100 High.** The labels are display only and do not feed any rule.
+
 
 Called “Crisis Level” before 24 Nov 2026. Stored runs keep the field name `crisis` so their hashes still verify; the API also exposes it as `stress`.
 
@@ -77,6 +84,10 @@ The weights are public and live in [`engine/src/crisis.ts`](../engine/src/crisis
 | P(down > 20% within 1 month) | 0.30 | 0% | ≥ 25% |
 | News intensity | 0.20 | 0 | 1 |
 | Token vs stock gap (absolute) | 0.15 | 0% | ≥ 5% |
+
+## "Back above" odds
+
+The share of all 1,000,000 paths with at least one daily close above the configured level ($186.64) within 21 trading days: `touch.backAbove.p`. This counts any close on the way, so it is higher than the odds of ending above that level. Price tools on the site use end-of-horizon odds instead.
 
 ## Determinism
 

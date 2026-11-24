@@ -26,7 +26,7 @@ calm, light, lots of space, big confident type, one idea per screen, nothing fla
 - Say **"scenario odds"**, never "predictions", "forecast", "signal", "call" or "target".
 - No buy/sell/hold advice. No "you should". No return promises.
 - Neutral wording on news: state facts and dates, never opinions about people or outcomes.
-- The user-facing name is **"Stress Level"**. "Crisis" must not appear anywhere.
+- The user-facing name is **"Stress Level"** (0–33 Calm, 34–66 Elevated, 67–100 High; see docs/METHODOLOGY.md). "Crisis" must not appear anywhere.
 - Disclaimer (footer, token section, share images, Pro, board, burn):
   "Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice."
 - Token links are labeled neutrally: "View on Pons", "View on Pump.fun", "Explorer".
@@ -102,7 +102,7 @@ Lucide only, outline, 1.5px stroke, 20px default (16px inline, 24px max). No emo
 
 ## 5. Pixel system (the visual identity)
 
-Idea: **1,000,000 pixels = 1,000,000 futures.**
+Idea: **1,000,000 futures, shown as pixels.** Each PixelField cell stands for an equal share of the run: about 244 futures (64×64) or 100 futures (100×100). Labels and aria text say so; never "one pixel, one future".
 Ink pixel = kept / up / inside · red pixel = lost / down / outside · line pixel = empty.
 Red pixels also carry a pattern (hollow center) so meaning never relies on color alone.
 
@@ -147,15 +147,16 @@ Never show NaN, undefined, blank numbers, raw error text or spinners that resize
 
 ### Market states (site-wide label in hero + Wall Street card)
 Market open · After hours (runs every 30 min) · Weekend · Holiday · Half day · Delayed.
+Delayed means no new run for 20 min while the market is open, or 45 min while it is closed.
 
 ---
 
 ## 8. Numbers and time (one shared formatter, src/lib/format.ts)
 
 - Prices: `$186.64` (2 decimals). Large: `$1.2M`.
-- Odds and %: one decimal, `61.2%`. Change in odds: `+0.4 pts`.
-- Signs: real minus `−` and `+` on every change. Up = `--ink`, down = `--risk`.
-- Times: Eastern, `10:40am ET`; dates `Mon, Dec 1`. Relative: "updated 2 min ago".
+- Odds and %: one decimal, `61.2%`. Change in odds: `+0.4 pts`. Tiny odds: `<0.1%`, `>99.9%`.
+- Signs: real minus `−` and `+` on every change. Up = `--ink`. Down = `--risk` at 24px and larger; smaller falls use `--ink` text, the `−` sign and a small hollow `--risk` pixel marker (small red text fails contrast).
+- Times: Eastern, `10:40am ET`; dates `Tue, Dec 1` (the weekday is always computed from the date, never typed). Relative: "updated 2 min ago".
 - Countdowns: `1d 14h 22m` (mono), under 1h `42:10`.
 - Addresses: `0x12…ab` (first 4, last 2 after 0x) unless expanded.
 - Token amounts: `1,204,000 $QNTL`.
@@ -189,7 +190,7 @@ Market open · After hours (runs every 30 min) · Weekend · Holiday · Half day
 - Test at 375×667, 390×844, 430×932, landscape 844×390. Zero sideways scrolling.
 - `100dvh` not `100vh`; `env(safe-area-inset-*)` on header, sticky bar, toasts, sheets.
 - Inputs 16px+ (no iOS zoom). No hover-only interactions.
-- Swipe areas react only to horizontal swipes (`touch-action: pan-y`); sliders `pan-x`.
+- Swipe areas react only to horizontal swipes (`touch-action: pan-y`); sliders and timelines `pan-y` too (the browser keeps vertical scroll, we handle the horizontal drag).
 - StickyBar never covers content (page bottom padding = bar height + safe area).
 - Big numbers fit one line at 375px.
 - With Chrome DevTools 4x CPU slowdown, scrolling stays smooth.

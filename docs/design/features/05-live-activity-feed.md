@@ -14,7 +14,7 @@ One toast at a time, full width minus 16px each side, sitting just above the Sti
 ## Event types and copy (exact)
 | Type | Toast text | Tap goes to |
 |---|---|---|
-| New run | "New run · 61.2% keep Monday's gain (+0.4 pts)" | hero |
+| New run | "New run · 71.4% keep half of Monday's gain (+0.4 pts)" | hero |
 | New briefing | "New briefing · {headline}" | the briefing |
 | Fingerprint | "Fingerprint posted on Robinhood Chain" + "View" | /verify (latest) |
 | Desk trade | "Paper desk opened a position" / "Paper desk closed a position" | paper desk |
