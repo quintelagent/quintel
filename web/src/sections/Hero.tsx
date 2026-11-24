@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, useApi, type Latest, type RunFull } from '../lib/api';
-import { CountUp, Countdown, Gauge } from '../components/ui';
+import { CountUp, Countdown, Gauge, Num } from '../components/ui';
+import { pct, usd } from '../lib/format';
 import { isMobile, reducedMotion, scrollToId, whenIdle } from '../lib/motion';
 import { navigate } from '../lib/router';
 import { sampleInBrowser } from '../lib/engineClient';
@@ -60,6 +61,15 @@ function draw2D(canvas: HTMLCanvasElement, data: CloudPaths[], spot: number, pro
   g.addColorStop(1, 'rgba(184,230,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(X(0) - 18, Y(spot) - 18, 36, 36);
+}
+
+function Odds({ v, label, red }: { v: number | undefined; label: string; red?: boolean }) {
+  return (
+    <div>
+      <div className={`mono ${red ? 'red' : 'ice'}`} style={{ fontSize: 'clamp(30px, 3.4vw, 44px)', lineHeight: 1.1 }}><Num value={v} fmt={(x) => pct(x)} /></div>
+      <div className="muted" style={{ fontSize: 14, maxWidth: '26ch' }}>{label}</div>
+    </div>
+  );
 }
 
 export function Hero() {
@@ -154,6 +164,8 @@ export function Hero() {
   }, [bestKey, spot, mobile]);
 
   const run = latest?.run;
+  const event = run?.summary.event ?? null;
+  const touch = run?.summary.touch ?? null;
   return (
     <header style={{ position: 'relative', minHeight: '100svh', display: 'flex', alignItems: 'center', overflow: 'hidden' }} className="grid-bg">
       <canvas ref={canvasRef} aria-hidden className="hero-canvas" />
@@ -162,12 +174,19 @@ export function Hero() {
         <div className="eyebrow">
           <span>{latest ? `Live · ${latest.session === 'open' ? 'Market open' : 'Market closed — priced off the on-chain token'}` : 'Live'}</span>
         </div>
-        <h1 style={{ fontSize: 'clamp(48px, 7.4vw, 96px)', lineHeight: 0.98, margin: '22px 0 22px', maxWidth: '13ch' }}>
-          1,000,000 futures for NVDA. <span style={{ color: 'var(--ice)' }}>Every 10 minutes.</span>
+        <h1 style={{ fontSize: 'clamp(44px, 7vw, 92px)', lineHeight: 0.98, margin: '22px 0 22px', maxWidth: '13ch' }}>
+          {event ? `NVDA ${event.pct >= 0 ? '+' : ''}${Math.round(event.pct * 100)}% in a day.` : 'NVDA moved fast.'} Does it hold?
         </h1>
+        <p style={{ fontSize: 'clamp(19px, 2vw, 26px)', color: 'var(--ice)', margin: '0 0 12px' }}>1,000,000 futures, every 10 minutes.</p>
         <p className="lede" style={{ maxWidth: '52ch' }}>
-          An AI research agent and five quant models simulate NVDA’s possible paths, turn them into scenario odds, explain what changed — and fingerprint every hour on Robinhood Chain.
+          {event && <>{new Date(event.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}: {usd(event.prevClose)} → {usd(event.close)}. </>}
+          Five models and an AI research agent turn NVDA’s possible paths into scenario odds — every 30 minutes while the market is closed.
         </p>
+        <div className="odds-row">
+          <Odds v={touch?.backAbove.p} label={touch ? `close back above ${usd(touch.backAbove.level)} within 1 month` : 'back above the pre-drop level within 1 month'} />
+          <Odds v={touch?.giveBack.p} red label={touch && event ? `give back half of the ${new Date(event.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })} gain (${usd(touch.giveBack.level)}) within 1 week` : 'give back half of the gain within 1 week'} />
+        </div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>Scenario odds: share of simulated paths with at least one daily close past the level. Not advice.</div>
         <div style={{ display: 'flex', gap: 12, marginTop: 34, flexWrap: 'wrap' }}>
           <button className="btn primary" onClick={() => scrollToId('tools')}>Try the tools</button>
           <button className="btn" onClick={() => navigate(run ? `/verify?run=${run.id}` : '/verify')}>Verify a run →</button>
@@ -197,6 +216,7 @@ export function Hero() {
         </div>
       </div>
       <style>{`
+        .odds-row { display: flex; gap: 36px; margin-top: 26px; flex-wrap: wrap; }
         .hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.4s ease; }
         .hero-canvas.in { opacity: .95; }
       `}</style>

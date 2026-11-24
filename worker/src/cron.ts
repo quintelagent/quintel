@@ -1,6 +1,7 @@
 import { SCHEDULE, type Env } from './config';
 import { getMeta, setMeta, incr } from './db';
 import { sessionAt, etParts, lastCloseDate, type Session } from './session';
+import { marketEvent } from './event';
 import { choosePrice, historyStale } from './pricing';
 import { getStockQuote } from './data/stockPrice';
 import { getDailyHistory, intradayVol } from './data/history';
@@ -136,8 +137,12 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
     const preCfg = Number(env.PRE_CRISIS_LEVEL || 0);
     const preCrisisLevel = preCfg > 0 ? preCfg : Math.max(...closes.slice(-60));
     const iv = session === 'open' ? await intradayVol(env, env.SYMBOL) : null;
+    const event = marketEvent(history, env.EVENT_DATE);
+    const backAbove = Number(env.BACK_ABOVE_LEVEL || 0);
+    const levels = event && backAbove > 0 ? { backAbove, giveBack: event.halfBack } : null;
     const inputs: EngineInputs = {
-      version: 1,
+      version: levels ? 2 : 1,
+      ...(levels ? { levels } : {}),
       asOf: nowIso,
       spot: Math.round(spot * 1e6) / 1e6,
       priceSource,
@@ -160,6 +165,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
       crisis: out.crisis, agreement: out.agreement, newsIntensity: intensity,
       horizons: c.horizons.map((h, i) => ({ days: h.days, p5: h.pct.p5, p25: h.pct.p25, p50: h.pct.p50, p75: h.pct.p75, p95: h.pct.p95, pUp: c.probs[i].pUp, pDown10: c.probs[i].pDown10, pDown20: c.probs[i].pDown20 })),
       expMaxDrawdown1m: c.expMaxDrawdown1m, var95_1m: c.var95_1m, preCrisisLevel: inputs.preCrisisLevel,
+      event, touch: out.touch ?? null,
       pAbovePreCrisis1m: c.probs[2].pAbovePreCrisis,
     };
     const ins = await env.DB.prepare(

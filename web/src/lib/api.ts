@@ -5,6 +5,8 @@ export interface HorizonSummary { days: number; p5: number; p25: number; p50: nu
 export interface RunSummary {
   spot: number; priceSource: 'stock' | 'chain' | 'last_close'; session: 'open' | 'closed';
   stockPrice: number | null; lastClose: number; chainPrice: number | null; gap: number | null;
+  event?: { date: string; prevClose: number; close: number; pct: number; halfBack: number } | null;
+  touch?: RunOutput['touch'] | null;
   crisis: RunOutput['crisis']; agreement: number; newsIntensity: number;
   horizons: HorizonSummary[]; expMaxDrawdown1m: number; var95_1m: number; preCrisisLevel: number; pAbovePreCrisis1m: number;
 }

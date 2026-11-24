@@ -60,6 +60,7 @@ For each model and for the combined 1,000,000 paths, at each horizon:
 - **Percentiles:** p1, p5, p10, p25, p50, p75, p90, p95, p99 (index `floor(q·N)` of the sorted terminals)
 - **Histogram:** 60 buckets between the combined 0.1st and 99.9th percentiles. Out-of-range paths are clamped into the end buckets, so counts always sum to the path count.
 - **Probabilities (combined):** P(up), P(down > 10%), P(down > 20%), P(above pre-crisis level), and P(below L) for every round-number level L on a ±40% grid
+- **Touch odds (v2 runs):** share of all 1,000,000 paths with at least one daily close above the configured level within 21 days, or at/below the half-give-back level within 5 days. Intraday touches are not counted. v2 runs step GBM and jump daily.
 - **Expected max drawdown (1 month):** the mean worst peak-to-trough over the path-simulated models (bootstrap, GARCH and OU; GBM and jump are sampled only at the horizons)
 - **95% VaR (1 month):** `1 − p5 / spot`
 - **Model agreement (0–100):** `100 × (1 − (2a + b))`, clamped. Here a is the standard deviation of the five 1-month medians and b is the standard deviation of their p10–p90 spreads, both divided by the mean spread.

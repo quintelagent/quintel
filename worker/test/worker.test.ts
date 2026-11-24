@@ -6,6 +6,7 @@ import { fingerprintHash } from '../src/proof/fingerprint';
 import { priceFromSqrtX96 } from '../src/data/chainToken';
 import { sessionAt, addTradingDays, nextOpen, lastCloseDate } from '../src/session';
 import { choosePrice, historyStale } from '../src/pricing';
+import { marketEvent } from '../src/event';
 import { newsIntensity } from '../src/agent/triage';
 import { runScenarios, deriveSeed } from '../../engine/src/index';
 import { baseInputs } from '../../engine/test/fixtures';
@@ -143,5 +144,16 @@ describe('starting price', () => {
   it('rejects a token nobody confirms, and uses the stock when open', () => {
     expect(choosePrice({ ...b, stale: false, stock: 125.6, chain: 251 }).source).toBe('last_close');
     expect(choosePrice({ ...b, session: 'open' }).source).toBe('stock');
+  });
+});
+
+describe('market event', () => {
+  const h = [{ date: '2026-11-20', close: 125.53 }, { date: '2026-11-23', close: 165.05 }];
+  it('computes the move and half-give-back level from closes', () => {
+    const e = marketEvent(h, '2026-11-23')!;
+    expect(Math.round(e.pct * 100)).toBe(31);
+    expect(e.halfBack).toBeCloseTo(145.29, 6);
+    expect(marketEvent(h, '2026-11-24')).toBeNull();
+    expect(marketEvent(h, undefined)).toBeNull();
   });
 });

@@ -10,6 +10,10 @@ export interface Env {
   NVDA_TOKEN_ADDRESS: string;
   NVDA_POOL_ADDRESS?: string;
   PRE_CRISIS_LEVEL?: string;
+  /** date of the daily move the hero is framed around */
+  EVENT_DATE?: string;
+  /** level for P(back above within 1 month) */
+  BACK_ABOVE_LEVEL?: string;
   TRIAGE_MODEL: string;
   BRIEFING_MODEL: string;
   AI_DAILY_CAP_USD: string;
