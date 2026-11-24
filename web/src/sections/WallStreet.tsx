@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { closeMinute, lastCloseDate } from '../../../worker/src/session';
 import type { Latest, RunRow } from '../lib/api';
 import { useData } from '../lib/data';
-import { etDate, etDay, etTime, pctChange, usd, usdChange } from '../lib/format';
+import { etDate, etDay, etTime, pctChange, usd, usdChange, usdShort } from '../lib/format';
 import { useInView, useNow } from '../lib/hooks';
 import { etToUtc, marketState, type MarketState } from '../lib/marketState';
 import { isIncidentRun } from '../lib/metrics';
@@ -123,13 +123,14 @@ export function WallStreet({ symbol = DEFAULT_SYMBOL }: { symbol?: string }) {
               </div>
               <Price latest={latest} q={token} empty="Token price unavailable" />
               <div className="ws-foot ws-spark">
+                <div className="ws-vol"><span className="label">Token volume · 24h</span><span className="mono">{!latest ? <Skeleton h="1em" w="5ch" /> : latest.tokenVolume ? usdShort(latest.tokenVolume.usd24h) : 'Not available'}</span></div>
                 <span className="label">Token price · last 24h</span>
                 <PixelSpark values={spark} height={48} label={sparkLabel} />
               </div>
             </Card>
           </div>
           <div className="ws-note">
-            <p className="note">The gap is the difference between the last exchange price and the live token price.</p>
+            <p className="note">The gap is the difference between the last exchange price and the live token price. {latest?.tokenVolume ? `Volume is from the one pool the token price comes from, as of ${etTime(latest.tokenVolume.ts)}.` : ''}</p>
             {live && <Button variant="ghost" className="ws-pause" aria-label={paused ? 'Play the live dot' : 'Pause the live dot'} onClick={() => setPaused(!paused)}>{paused ? 'Play' : 'Pause'}</Button>}
           </div>
           </>

@@ -27,8 +27,8 @@ Three columns: Wall Street card · gap (centered, big) · On chain card.
 - Badge: "24/7 chain mode"
 - Gap: "Gap {±x.x}% · {±$x.xx}"
 
-## Until 24h volume is collected
-The volume line is hidden; it is added with its source and definition when the worker stores it. The exchange label says "as of" the run time, since trade time is not stored.
+## 24h volume
+The 24h volume of the one Uniswap V3 pool the token price comes from (collected by the worker, kept only if under 2 hours old). The note under the cards says so and gives the time. No figure: "Not available". The exchange label says "as of" the run time, since trade time is not stored.
 
 ## Motion
 NumberRoll on price changes. Live dot blinks in steps (1s on, 1s off). Reduced motion: dot static.
@@ -37,7 +37,7 @@ NumberRoll on price changes. Live dot blinks in steps (1s on, 1s off). Reduced m
 Section, Card, Pill, NumberRoll, PixelSpark, Countdown, Skeleton.
 
 ## Data and privacy
-Existing exchange + token price sources. Volume is total token volume, never per-wallet.
+Existing exchange + token price sources. Volume is pool volume, never per-wallet.
 
 ## As built
 - Extra row "Opens in" / "Closes in". Token label adds "as of {time} ET".
