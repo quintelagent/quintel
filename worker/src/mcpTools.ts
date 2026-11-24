@@ -1,7 +1,7 @@
 import type { Briefing, Fingerprint, Latest, Proof, RunFull, RunRow } from '../../web/src/lib/api';
 import { displayBriefing, incidentNote } from '../../web/src/lib/briefing';
 import { etDate, etShortDate, etTime, int, odds, pct, usd } from '../../web/src/lib/format';
-import { cdfFromHist } from '../../web/src/lib/hist';
+import { cdfFromHist } from '../../web/src/lib/cdf';
 import { isDelayed, marketState } from '../../web/src/lib/marketState';
 import { ODDS_NOTE, type McpToolName } from '../../web/src/lib/mcpTools';
 import { backAboveOf, keptOf } from '../../web/src/lib/metrics';
@@ -23,7 +23,12 @@ const etFull = (ts: string) => `${etDate(ts)}, ${etParts(new Date(ts)).date.slic
 const verifyUrl = (id: number) => `${SITE}/verify?run=${id}`;
 const SOURCE: Record<string, string> = { stock: 'exchange price', chain: 'on-chain token price', last_close: 'last close' };
 /** odds as shown on the site, plus a number only where the run can resolve it */
-const o = (p: number) => ({ text: odds(p), percent: p < 0.001 || p > 0.999 ? null : Math.round(p * 1000) / 10 });
+const o = (p: number) => ({ text: odds(p), percent: p < 0.001 || p > 0.999 ? null : parseFloat(odds(p)) });
+const cents = (x: number) => Math.round(x * 100) / 100;
+/** One line of visible text: hidden characters in a third-party headline must not reach a model. */
+export const plain = (s: string, max = 600) => s.replace(/\p{Cf}/gu, '').replace(/[\p{Cc}\s]+/gu, ' ').trim().slice(0, max);
+const link = (u: string) => { try { return new URL(u).href; } catch { return ''; } };
+const incidentOf = (id: number) => incidentNote({ run_id: id } as Briefing);
 
 const result = (lines: (string | null | false)[], run: { id: number; ts: string }, data: Record<string, unknown>): ToolResult => ({
   text: [...lines.filter((l) => l !== null && l !== false), `Run ${run.id}, ${etFull(run.ts)} (${run.ts}). Verify: ${verifyUrl(run.id)}`, ODDS_NOTE].join('\n'),
@@ -37,7 +42,7 @@ async function latestRun(get: Get): Promise<RunRow | null> { return (await get<L
 /** The odds in one run's summary. Runs before the touch odds existed leave those out. */
 function runOdds(run: RunRow) {
   const s = run.summary, kept = keptOf(s), back = backAboveOf(s), gain = s.event ? `the ${etShortDate(s.event.date)} gain` : symbolConfig().gainName;
-  const give = s.touch?.giveBack, incident = incidentNote({ run_id: run.id });
+  const give = s.touch?.giveBack, incident = incidentOf(run.id);
   const lines = [
     incident,
     `${SYMBOL} started at ${usd(run.spot)} (${SOURCE[run.price_source] ?? run.price_source}). 1,000,000 futures from five models.`,
@@ -47,10 +52,10 @@ function runOdds(run: RunRow) {
     `Average worst fall over 1 month: ${pct(s.expMaxDrawdown1m)}. Stress Level ${run.stress} of 100, ${stressLabel(run.stress)}. Model agreement ${s.agreement} of 100.`,
   ];
   const data = {
-    symbol: SYMBOL, startPrice: run.spot, priceSource: SOURCE[run.price_source] ?? run.price_source, futures: 1_000_000,
-    gainKept: kept !== null && give ? { ...o(kept), meaning: `keeps at least half of ${gain} for a week`, level: give.level, tradingDays: give.days } : null,
-    backAbove: back ? { ...o(back.p), meaning: 'any daily close above the level within 1 month', level: back.level } : null,
-    horizons: s.horizons.map((h) => ({ horizon: NAMES[h.days] ?? null, tradingDays: h.days, endHigher: o(h.pUp), endDown10: o(h.pDown10), endDown20: o(h.pDown20), p5: h.p5, median: h.p50, p95: h.p95 })),
+    symbol: SYMBOL, startPrice: cents(run.spot), priceSource: SOURCE[run.price_source] ?? run.price_source, futures: 1_000_000,
+    gainKept: kept !== null && give ? { ...o(kept), meaning: `keeps at least half of ${gain} for a week`, level: cents(give.level), tradingDays: give.days } : null,
+    backAbove: back ? { ...o(back.p), meaning: 'any daily close above the level within 1 month', level: cents(back.level) } : null,
+    horizons: s.horizons.map((h) => ({ horizon: NAMES[h.days] ?? null, tradingDays: h.days, endHigher: o(h.pUp), endDown10: o(h.pDown10), endDown20: o(h.pDown20), p5: cents(h.p5), median: cents(h.p50), p95: cents(h.p95) })),
     averageWorstFall1mPercent: Math.round(s.expMaxDrawdown1m * 1000) / 10,
     stressLevel: { level: run.stress, label: stressLabel(run.stress) }, modelAgreement: s.agreement,
     ...(incident ? { incident } : {}),
@@ -70,7 +75,8 @@ const TOOLS: Record<McpToolName, (args: Record<string, any>, get: Get) => Promis
     return result([`Latest run. ${market}.${delayed ? ` Delayed: no newer run since ${etFull(run.ts)}.` : ''}`, ...lines], run, { market, delayed, ...data });
   },
 
-  async get_odds_at_price({ price, horizon }, get) {
+  async get_odds_at_price({ price: asked, horizon }, get) {
+    const price = cents(asked); // the answer is for the price it shows
     const run = await latestRun(get);
     if (!run) return none;
     const out = (await get<{ output: RunOutput }>(`/api/output/${run.id}`))?.output;
@@ -79,7 +85,7 @@ const TOOLS: Record<McpToolName, (args: Record<string, any>, get: Get) => Promis
     const below = cdfFromHist(h, price, out.totalPaths), name = NAMES[h.days];
     const lands = addTradingDays(etParts(new Date(run.ts)).date, h.days);
     const t = out.touch?.backAbove, back = t && Math.abs(t.level - price) < 0.005 ? t : null;
-    const incident = incidentNote({ run_id: run.id }), delayed = isDelayed(run.ts, new Date());
+    const incident = incidentOf(run.id), delayed = isDelayed(run.ts, new Date());
     return result([
       incident,
       `In ${name} (${h.days} trading ${h.days === 1 ? 'day' : 'days'}, to the ${etShortDate(lands)} close): ${odds(1 - below)} of futures end at or above ${usd(price)}, ${odds(below)} end below it.`,
@@ -87,9 +93,9 @@ const TOOLS: Record<McpToolName, (args: Record<string, any>, get: Get) => Promis
       back && `Within 1 month, ${odds(back.p)} of futures have at least one daily close above ${usd(back.level)}. That counts any daily close, so it is a different question.`,
       `The run started at ${usd(out.spot)}.${delayed ? ` Delayed: no newer run since ${etFull(run.ts)}.` : ''}`,
     ], run, {
-      symbol: SYMBOL, price, horizon, tradingDays: h.days, endsOn: lands, startPrice: out.spot, futures: out.totalPaths, delayed,
+      symbol: SYMBOL, price, horizon, tradingDays: h.days, endsOn: lands, startPrice: cents(out.spot), futures: out.totalPaths, delayed,
       endOfHorizon: { atOrAbove: o(1 - below), below: o(below), meaning: 'where the price ends, not whether it crosses the level on the way' },
-      anyDailyCloseAbove: back ? { ...o(back.p), level: back.level, tradingDays: back.days, meaning: 'at least one daily close above the level within 1 month' } : null,
+      anyDailyCloseAbove: back ? { ...o(back.p), level: cents(back.level), tradingDays: back.days, meaning: 'at least one daily close above the level within 1 month' } : null,
       ...(incident ? { incident } : {}),
     });
   },
@@ -99,7 +105,7 @@ const TOOLS: Record<McpToolName, (args: Record<string, any>, get: Get) => Promis
     if (!last) return none;
     // a number past the newest run is refused here, so made-up numbers never reach the database
     const run = id > last.id ? null : await get<RunFull>(`/api/run/${id}`);
-    if (!run) return bad(`There is no run ${id}. The latest is run ${last.id}.`);
+    if (!run) return bad(`Run ${id} was not found. The latest is run ${last.id}.`);
     const fp = await get<Fp>(`/api/fingerprint-for-run?id=${id}`).catch(() => null);
     const { lines, data } = runOdds(run);
     return result([
@@ -113,15 +119,15 @@ const TOOLS: Record<McpToolName, (args: Record<string, any>, get: Get) => Promis
     const run = await latestRun(get);
     if (!run) return none;
     const list = ((await get<Briefing[]>('/api/briefings?limit=5')) ?? []).slice(0, limit).map((b) => {
-      const s = displayBriefing(b);
-      return { id: b.id, runId: b.run_id, timeET: etFull(b.ts), timeISO: b.ts, headline: s.headline, summary: s.summary, whatChanged: s.whatChanged, keyRisks: s.keyRisks, watchNext: s.watchNext, sources: s.sources, hash: b.hash, url: `${SITE}/briefings/${b.id}`, currentWording: s.changed, incident: incidentNote(b) };
+      const s = displayBriefing(b), list = (a: string[]) => a.map((x) => plain(x));
+      return { id: b.id, runId: b.run_id, timeET: etFull(b.ts), timeISO: b.ts, headline: plain(s.headline), summary: plain(s.summary, 2000), whatChanged: list(s.whatChanged), keyRisks: list(s.keyRisks), watchNext: list(s.watchNext), sources: s.sources.map((x) => ({ title: plain(x.title, 200), url: link(x.url) })).filter((x) => x.url), hash: b.hash, url: `${SITE}/briefings/${b.id}`, currentWording: s.changed, incident: incidentOf(b.run_id) };
     });
     if (!list.length) return result(['The first briefing posts after the next run.'], run, { briefings: [] });
     return result([
       ...list.flatMap((b) => [
         `${b.headline}`, `Briefing ${b.id}, run ${b.runId}, ${b.timeET} (${b.timeISO}). ${b.url}`, b.incident, b.summary,
         b.whatChanged.length > 0 && `What changed: ${b.whatChanged.join(' ')}`, b.keyRisks.length > 0 && `Key risks: ${b.keyRisks.join(' ')}`, b.watchNext.length > 0 && `Watch next: ${b.watchNext.join(' ')}`,
-        b.sources.length > 0 && `Sources: ${b.sources.map((x) => `${x.title} (${x.url})`).join('; ')}`, b.currentWording && `Shown with current wording. Original hash: ${b.hash}`, '',
+        b.sources.length > 0 && `Sources (third-party headlines): ${b.sources.map((x) => `${x.title} (${x.url})`).join('; ')}`, b.currentWording && `Shown with current wording. Original hash: ${b.hash}`, '',
       ]),
       'Latest run:',
     ], run, { briefings: list });

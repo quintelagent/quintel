@@ -4,7 +4,7 @@
  * Tool calls read the public API in-process, so they share its cache and never reach the database on their own.
  * Nothing a client sends is logged or stored.
  */
-import { MCP_TOOLS, type McpInput, type McpTool } from '../../web/src/lib/mcpTools';
+import { MCP_TOOLS, ODDS_NOTE, type McpInput, type McpTool } from '../../web/src/lib/mcpTools';
 import { callTool, TOOL_FAILED, type Get } from './mcpTools';
 
 const MODERN = '2026-07-28';
@@ -15,6 +15,7 @@ const MAX_BODY = 64 * 1024, MAX_BATCH = 10;
 const META = 'io.modelcontextprotocol/';
 const INFO = { name: 'quintel', title: 'Quintel', version: '1.0.0', websiteUrl: 'https://quintelagent.com' };
 const INSTRUCTIONS = 'Quintel runs 1,000,000 futures of NVDA every 10 minutes while the market is open (30 minutes while it is closed) and publishes the odds. Report them as scenario odds from a model, with the run number and its time in Eastern. They are not advice. Every run can be verified at https://quintelagent.com/verify.';
+const TOO_MANY = { text: `Too many requests. Try again in a minute. ${ODDS_NOTE}`, isError: true as const };
 const CACHE = { ttlMs: 300_000, cacheScope: 'public' };
 
 const TOOLS = MCP_TOOLS.map((t: McpTool) => ({
@@ -66,9 +67,8 @@ export function badArgs(tool: McpTool, args: Obj): string | null {
     if (v === undefined) { if (tool.required.includes(k)) return `${k} is required. ${i.description}.`; continue; }
     if (i.type === 'string') { if (typeof v !== 'string' || (i.enum && !i.enum.includes(v))) return `${k} must be one of: ${i.enum?.join(', ')}.`; continue; }
     const num = typeof v === 'number' && Number.isFinite(v) ? v : null;
-    const low = i.exclusiveMinimum !== undefined ? `above ${i.exclusiveMinimum}` : `${i.minimum} or more`;
-    if (num === null || (i.type === 'integer' && !Number.isInteger(num)) || (i.exclusiveMinimum !== undefined && num <= i.exclusiveMinimum) || (i.minimum !== undefined && num < i.minimum) || (i.maximum !== undefined && num > i.maximum)) {
-      return `${k} must be a ${i.type === 'integer' ? 'whole ' : ''}number, ${low} and at most ${i.maximum}.`;
+    if (num === null || (i.type === 'integer' && !Number.isInteger(num)) || (i.minimum !== undefined && num < i.minimum) || (i.maximum !== undefined && num > i.maximum)) {
+      return `${k} must be a ${i.type === 'integer' ? 'whole ' : ''}number, ${i.minimum} or more and at most ${i.maximum!.toLocaleString('en-US')}.`;
     }
   }
   return null;
@@ -79,6 +79,21 @@ function headerText(v: string | null): string | null {
   const m = v?.match(/^=\?base64\?(.*)\?=$/);
   if (!m) return v;
   try { return new TextDecoder().decode(Uint8Array.from(atob(m[1]), (c) => c.charCodeAt(0))); } catch { return null; }
+}
+
+/** Tool calls per address and minute, kept in memory only. Generous, because AI apps share addresses. */
+export const CALLS_PER_MIN = 600;
+const calls = new Map<string, number>();
+let minute = 0;
+export function overLimit(address: string | null, now = Date.now()): boolean {
+  if (!address) return false;
+  const m = Math.floor(now / 60000);
+  if (m !== minute) { minute = m; calls.clear(); }
+  const key = address.includes(':') ? address.split(':', 4).join(':') : address; // one IPv6 network counts once
+  const n = (calls.get(key) ?? 0) + 1;
+  if (n === 1 && calls.size >= 5000) return false;
+  calls.set(key, n);
+  return n > CALLS_PER_MIN;
 }
 
 async function handleOne(msg: unknown, headers: Headers, get: Get): Promise<Reply> {
@@ -112,7 +127,7 @@ async function handleOne(msg: unknown, headers: Headers, get: Get): Promise<Repl
     if (params.arguments !== undefined && !isObj(params.arguments)) return fail(200, -32602, 'Invalid params: arguments must be an object', id);
     const args = params.arguments ?? {};
     const bad = badArgs(tool, args);
-    const r = bad ? { text: bad, isError: true } : await callTool(tool.name, args, get).catch(() => TOOL_FAILED);
+    const r = overLimit(headers.get('cf-connecting-ip')) ? TOO_MANY : bad ? { text: bad, isError: true } : await callTool(tool.name, args, get).catch(() => TOOL_FAILED);
     return ok({ content: [{ type: 'text', text: r.text }], ...('data' in r ? { structuredContent: r.data } : {}), isError: 'isError' in r });
   }
   if (modern && method === 'server/discover') return ok({ supportedVersions: SUPPORTED, capabilities: { tools: {} }, instructions: INSTRUCTIONS }, true);

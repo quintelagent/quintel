@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { EngineInputs, HorizonStats, RunOutput, Shock } from '@engine/types';
 import { api, type RunFull } from './api';
+import { cdfFromHist } from './cdf';
 import { useData } from './data';
 import { runInBrowser } from './engineClient';
 import { etShortDate } from './format';
-import { cdfFromHist } from './hist';
 import { etParts, horizonDate } from './marketState';
 
 export { cdfFromHist };
-
 export interface Axis { lo: number; hi: number }
 /** Chart range: the middle 98% of futures, rounded out to whole dollars. */
 export function axisOf(h: HorizonStats, step = 1): Axis {

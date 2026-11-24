@@ -1,7 +1,7 @@
-import type { HorizonStats } from '@engine/types';
+import type { HorizonStats } from '../../../engine/src/types';
 
 /** P(price < v) from a histogram, interpolating linearly inside a bucket. */
-export function cdfFromHist(h: HorizonStats, v: number, total: number): number {
+export function cdfFromHist(h: Pick<HorizonStats, 'hist'>, v: number, total: number): number {
   const { lo, hi, counts } = h.hist;
   if (v <= lo) return 0;
   if (v >= hi) return 1;

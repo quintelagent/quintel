@@ -1,10 +1,10 @@
 import { DESK_RULES, SCHEDULE, type Env } from './config';
 import { cachedBody } from './cache';
+import { workerFlag } from './flags';
 import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
-import { workerFlag } from './flags';
-import { handleMcp } from './mcp';
 import { etParts, sessionAt, nextOpen } from './session';
+import { handleMcp } from './mcp';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
 import { redact, safeError } from './redact';
@@ -150,11 +150,6 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
   const url = new URL(req.url);
   const p = url.pathname.replace(/\/+$/, '');
 
-  if (p === '/api/admin/tick' && req.method === 'POST') {
-    const auth = req.headers.get('authorization') || '';
-    if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: 'unauthorized' }, 0, 401);
-    return json(await tickFn(env, url.searchParams.get('force') === '1'), 0);
-  }
   if (p === '/api/mcp') {
     if (!workerFlag(env, 'MCP_SERVER')) return json({ error: 'not found' }, 0, 404);
     return handleMcp(req, async (path) => {
@@ -162,6 +157,11 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
       if (!r.ok && r.status !== 404) throw new Error('unavailable');
       return r.ok ? r.json() : null;
     });
+  }
+  if (p === '/api/admin/tick' && req.method === 'POST') {
+    const auth = req.headers.get('authorization') || '';
+    if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: 'unauthorized' }, 0, 401);
+    return json(await tickFn(env, url.searchParams.get('force') === '1'), 0);
   }
   if (req.method !== 'GET') return json({ error: 'method not allowed' }, 0, 405);
 
