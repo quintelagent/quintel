@@ -11,7 +11,7 @@ Anyone can burn $QNTL to request a custom 1,000,000-future run; every burn and r
 3. Request Card, here when the link names a request (`/burn?request=12`), otherwise after the steps.
 4. Steps (numbered Cards):
    - 1 "Choose your scenario": price Input, Horizon tabs (Next close · 1 week · 1 month), Shock tabs (No shock · Add a shock) with three Sliders. One line: "Odds of ending above $160.00, and at $160.00 or lower, in 1 week."
-   - 2 "Burn {amount} $QNTL": amount, token and burn address as AddressChips, "The token is the official address.", "Burns can’t be undone." Buttons in turn: "Connect wallet", "Switch network", "Review burn". Review Sheet: amount, full token address, full burn address, network, "Transfer, no approval", "Open wallet", "Cancel".
+   - 2 "Burn {amount} $QNTL": amount, token and burn address as AddressChips, "The token is the official address.", "Burns can’t be undone." Buttons in turn: "Connect wallet", "Switch network", "Review burn". Review Sheet: amount, full token address, your full wallet address, full burn address, network, "Transfer, no approval", "Open wallet", "Cancel".
    - 3 "Confirm": Input "Transaction hash", tabs "Short address" · "Anonymous", "Sign and check burn". Accordion "Sign in another wallet": the exact text, Input "Signature", "Check burn".
 5. Gallery: H2 "Gallery.", tabs "Latest" · "Most extreme" (furthest price from where the run started). Cards: who, big %, scenario line, the other side, PixelSpark of the futures, time, "Open", "Share".
 6. Disclaimer.
@@ -28,7 +28,7 @@ Steps left, request card right (it follows the page until it holds a result); ga
 ## The burn
 - A normal token transfer of at least the amount to 0x000000000000000000000000000000000000dEaD on chain 4663. Never an approval.
 - The server checks the receipt: success, the exact token, the burn address, the amount, a block at or after the opening block, 2 confirmations. Each transfer is good for one run. The signature must come from the address the tokens left.
-- Custom runs go one at a time at the very end of a ten-minute tick, after everything official is stored, and wait when the tick is late or slow or the official run failed. Three failed tries end a run; its burn can then be signed again.
+- Custom runs go one at a time at the very end of a ten-minute tick, after everything official is stored, and wait when the tick is late or slow or the official run failed. Three failed tries end a run; its burn can then be signed again, whatever the amount or opening block is by then.
 
 ## States
 - **Not open** (any owner value unset): Pill "Not open yet", "Burning isn’t open.", no steps, no addresses.
@@ -42,8 +42,8 @@ Steps left, request card right (it follows the page until it holds a result); ga
 - **Not found:** "We couldn’t find that burn. Check the transaction hash and network."
 - **Too small:** "This burn is below {amount} $QNTL, so it can’t start a run."
 - **Other refusals:** one line each for a reverted transaction, another token, another recipient, an early block, another signer, a used burn and a price out of range.
-- **Wallet:** none found, closed, busy, another network, too few tokens. One line each; before the wallet sends, it says that nothing was sent.
-- **Offline:** site banner, buttons off.
+- **Wallet:** none found, closed, busy, another account, another network, too few tokens. One line each; before the wallet sends, it says that nothing was sent.
+- **Offline:** site banner, buttons off, "You are offline." next to them.
 - **Gallery empty:** "No runs yet. The first burn starts the gallery."
 - **Flag off:** /burn is the 404 page; every /api/burn endpoint is 404; the token card has no link.
 
@@ -60,6 +60,10 @@ Card, Input, Slider, AddressChip, CopyButton, CodeBlock, Accordion, NumberRoll, 
 - Horizons replace "By date": the engine has only these three.
 - "Share" copies the request's link.
 - The running grid is the still, empty PixelField: a run takes seconds, so there is nothing to fill.
-- Contract wallets can't sign step 3 (EIP-191 from the burning address only); step 2 says so before the burn.
+- Exchanges and contract wallets can't sign step 3 (EIP-191 from the burning address only); step 2 says so before the burn.
+- Just before the wallet opens, the page reads `/api/burn` and `/api/config` again and works out the raw amount itself. Anything that differs from the screen stops it, and so does another account, network, token decimals or too small a balance. The transaction names the chain.
+- The counter and the gallery are at most about 35 seconds old.
+- Drift is the engine's log drift, the same control as the what-if tool: −30% moves the middle price by about −26%.
+- Request limits are kept in memory only, by address (IPv6 by /64). Requests that can't be read never use up the shared limit.
 - The counter counts burns used for runs, not every transfer to the burn address.
 - Owner values: `QNTL_TOKEN_PONS`, `BURN_AMOUNT` (whole tokens), `BURN_FROM_BLOCK`. Tables: `worker/migrations/0003_burn.sql`.
