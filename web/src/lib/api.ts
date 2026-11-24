@@ -23,7 +23,7 @@ export interface Briefing {
   body: { headline: string; whatChanged: string[]; scenarioSummary: string; keyRisks: string[]; watchNext: string[]; sources: { title: string; url: string; publishedAt: string }[]; trigger?: string };
 }
 export interface Fingerprint { hour: string; hash: string; tx: string | null; status: string; attempts: number; created_at: string; sent_at: string | null; error: string | null; payload?: any }
-export interface Proof { explorer: string; chainId: number; wallet: string | null; fingerprints: Fingerprint[] }
+export interface Proof { sent?: number; pending?: number; lockedFromDayOne?: boolean; explorer: string; chainId: number; wallet: string | null; fingerprints: Fingerprint[] }
 export interface Desk {
   rules: Record<string, number | boolean>;
   state: { cash: number; position: null | { side: string; qty: number; entryPrice: number; entryTs: string }; equity: number; peakEquity: number; maxDrawdown: number; wins: number; losses: number; lastPrice: number; updatedAt: string };

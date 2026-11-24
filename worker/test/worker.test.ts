@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { allowedNumbers, extractNumbers, guardText, briefingText } from '../src/agent/guards';
 import { runFacts, templatedBriefing } from '../src/agent/briefing';
 import { initialDesk, stepDesk, deskHash, markToMarket } from '../src/desk/desk';
-import { fingerprintHash } from '../src/proof/fingerprint';
+import { fingerprintHash, lockedFromDayOne } from '../src/proof/fingerprint';
 import { priceFromSqrtX96 } from '../src/data/chainToken';
 import { sessionAt, addTradingDays, nextOpen, lastCloseDate } from '../src/session';
 import { choosePrice, historyStale } from '../src/pricing';
@@ -155,5 +155,17 @@ describe('market event', () => {
     expect(e.halfBack).toBeCloseTo(145.29, 6);
     expect(marketEvent(h, '2026-11-24')).toBeNull();
     expect(marketEvent(h, undefined)).toBeNull();
+  });
+});
+
+describe('"locked from day one" claim', () => {
+  const L = '2026-11-24T14:00:00Z';
+  const ok = { hour: '2026-11-24T14:00:00.000Z', status: 'sent', sent_at: '2026-11-24T15:00:40.000Z' };
+  it('needs a launch time and every hour since then sent on time', () => {
+    expect(lockedFromDayOne([ok], L)).toBe(true);
+    expect(lockedFromDayOne([ok], undefined)).toBe(false);
+    expect(lockedFromDayOne([], L)).toBe(false);
+    expect(lockedFromDayOne([ok, { ...ok, status: 'pending', sent_at: null }], L)).toBe(false);
+    expect(lockedFromDayOne([{ ...ok, sent_at: '2026-11-25T15:00:00.000Z' }], L)).toBe(false);
   });
 });

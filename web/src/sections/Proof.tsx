@@ -14,7 +14,7 @@ export function Proof() {
   return (
     <section className="block" id="proof" style={{ borderTop: '1px solid var(--border)' }}>
       <div className="wrap">
-        <SectionHead eyebrow="Proof" title="Nothing edited after the fact. Check it yourself." lede="Every hour, the hashes of every run, input, briefing and the desk state are combined into one fingerprint and written to Robinhood Chain. Any run can be re-computed in your browser, byte for byte." />
+        <SectionHead eyebrow="Proof" title={p?.lockedFromDayOne ? 'Every hour, locked on-chain from day one.' : 'Every hour, hashed. Check it yourself.'} lede={p?.sent ? 'Every hour, the hashes of every run, input, briefing and the desk state are combined into one fingerprint and written to Robinhood Chain. Any run can be re-computed in your browser, byte for byte.' : 'Every hour, the hashes of every run, input, briefing and the desk state are combined into one fingerprint. On-chain posting has not started yet; any run can already be re-computed in your browser, byte for byte.'} />
         <div className="proof-grid">
           <div className="panel reveal">
             <div className="label" style={{ marginBottom: 14 }}>Verify any run</div>
@@ -64,6 +64,7 @@ export function Proof() {
           </div>
         </div>
         <div className="panel reveal" style={{ marginTop: 18 }}>
+          {!!p?.pending && <div className="tag warn" style={{ marginBottom: 12 }}>{p.pending} hour{p.pending === 1 ? '' : 's'} recorded, not yet on-chain</div>}
           <div className="label" style={{ marginBottom: 6 }}>Latest hourly fingerprints · Robinhood Chain</div>
           {!p ? <Skeleton h={160} panel={false} /> : fps.length === 0 ? <Empty>The first fingerprint is written at the top of the first full hour of runs.</Empty> : (
             <div className="scroll-x">

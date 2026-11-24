@@ -12,6 +12,8 @@ export interface Env {
   PRE_CRISIS_LEVEL?: string;
   /** date of the daily move the hero is framed around */
   EVENT_DATE?: string;
+  /** ISO launch time; gates the "locked on-chain from day one" claim */
+  LAUNCH_AT?: string;
   /** level for P(back above within 1 month) */
   BACK_ABOVE_LEVEL?: string;
   TRIAGE_MODEL: string;

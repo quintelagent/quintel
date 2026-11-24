@@ -2,6 +2,7 @@ import { DESK_RULES, SCHEDULE, type Env } from './config';
 import { counter, getMeta } from './db';
 import { etParts, sessionAt, nextOpen } from './session';
 import { spentToday } from './agent/openrouter';
+import { lockedFromDayOne } from './proof/fingerprint';
 import { scorecardSummary } from './proof/scorecard';
 import { initialDesk, type DeskState } from './desk/desk';
 import { CRISIS_WEIGHTS, MODEL_INFO } from '../../engine/src/index';
@@ -66,7 +67,11 @@ async function runById(env: Env, id: number) {
 
 async function proof(env: Env) {
   const fps = await env.DB.prepare('SELECT hour, hash, tx, status, attempts, created_at, sent_at, error FROM fingerprints ORDER BY hour DESC LIMIT 48').all();
+  const all = (await env.DB.prepare('SELECT hour, status, sent_at FROM fingerprints').all<{ hour: string; status: string; sent_at: string | null }>()).results || [];
   return {
+    sent: all.filter((r) => r.status === 'sent').length,
+    pending: all.filter((r) => r.status !== 'sent').length,
+    lockedFromDayOne: lockedFromDayOne(all, env.LAUNCH_AT),
     explorer: env.CHAIN_EXPLORER,
     chainId: Number(env.CHAIN_ID),
     wallet: env.FINGERPRINT_ADDRESS || null,

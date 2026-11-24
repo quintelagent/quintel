@@ -15,6 +15,13 @@ export function fingerprintHash(p: FingerprintPayload): string {
   return hashObject(p);
 }
 
+/** "Locked from day one" may only be claimed if every hour since launch was sent within 2h of ending. */
+export function lockedFromDayOne(rows: { hour: string; status: string; sent_at: string | null }[], launchAt: string | undefined): boolean {
+  if (!launchAt) return false;
+  const since = rows.filter((r) => r.hour >= new Date(launchAt).toISOString());
+  return since.length > 0 && since.every((r) => r.status === 'sent' && !!r.sent_at && new Date(r.sent_at).getTime() - new Date(r.hour).getTime() <= 3 * 3600_000);
+}
+
 export async function buildPayload(env: Env, hourStart: Date): Promise<FingerprintPayload> {
   const from = hourStart.toISOString();
   const to = new Date(hourStart.getTime() + 3600_000).toISOString();

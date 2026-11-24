@@ -36,6 +36,7 @@
     "BRIEFING_MODEL": "google/gemini-3.8-flash",
     "AI_DAILY_CAP_USD": "4",
     "PRE_CRISIS_LEVEL": "0",
+    "LAUNCH_AT": "",
     "EVENT_DATE": "2026-11-23",
     "BACK_ABOVE_LEVEL": "186.64",
     "QNTL_TOKEN_PONS": "",
