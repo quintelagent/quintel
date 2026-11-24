@@ -112,6 +112,9 @@
 /* pixels */
 .pixel-field canvas { width: 100%; height: 100%; }
 .pixel-field { aspect-ratio: 1; width: 100%; display: grid; place-items: center; }
+.pixel-fan { aspect-ratio: 4 / 3; width: 100%; display: grid; place-items: center; }
+.pixel-fan canvas { width: 100%; height: 100%; }
+@media (min-width: 1100px) { .pixel-fan { aspect-ratio: 1; } }
 .pixel-bars, .pixel-spark { width: 100%; min-width: 0; overflow: hidden; }
 .pixel-meter { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; max-width: 200px; }
 .pixel-meter i { aspect-ratio: 1; background: var(--line); }

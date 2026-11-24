@@ -111,6 +111,7 @@ Shared canvas helper: draws with `fillRect` at device-pixel-ratio resolution, in
 | Component | What it shows |
 |---|---|
 | `PixelField` | The scenario grid. 64×64 phone, 100×100 laptop. Re-sorts in a stepped wipe (~800ms) on each new run. |
+| `PixelFan` | The hero picture: all futures spreading out over 1 week, as an ordered pixel pattern. Ink above the halfway price, hollow red below. 64×48 phone, 100×100 laptop. Draws in once (~1s, 10 steps), again on each new run. Loading: a light dot grid. |
 | `PixelMeter` | 10 blocks, ink → red as the value rises (Stress Level, progress, limits). |
 | `PixelBars` | Distributions, histograms, hit/miss rows as stacked pixel columns. |
 | `PixelFlow` | Dot-matrix process diagram; pixels hop along grid lines in steps. |
