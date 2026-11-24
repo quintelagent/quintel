@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { AddressChip, Button, Card, CodeBlock, EmptyState, ErrorState, Input, Pill, Section, Skeleton, Stat } from '../components/ui';
 import { PixelFlow } from '../components/pixel';
 import type { Proof as ProofData } from '../lib/api';
+import { navigate } from '../lib/router';
 import { useData } from '../lib/data';
 import { etDate, etTime, int } from '../lib/format';
 import './proof.css';
