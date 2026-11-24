@@ -24,12 +24,11 @@ Confirm closure/half-day times against the NYSE holiday calendar before shipping
 ## States
 - **Upcoming:** Countdown "1d 14h 22m".
 - **Today:** inverted Pill "Today" replaces the countdown.
-- **Live** (hearing, when HEARING_LIVE is on): "Live" Pill with stepped red dot; button "Follow live".
 - **Done:** row turns `--ink-2`, Pill "Done", moves to the bottom; hidden 24h later.
 - **All done:** EmptyState "No dates on the calendar right now."
 
 ## Copy (exact)
-As above. Buttons: "What if?" · "Follow live". Never describe what a hearing might decide.
+As above. Buttons: "What if?". Never describe what a hearing might decide.
 
 ## Motion
 Countdown digits roll each minute (each second under 1h). Reduced motion: instant.
