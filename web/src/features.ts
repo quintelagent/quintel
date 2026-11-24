@@ -11,12 +11,12 @@ export const FEATURES: Feature[] = [
   { id: 'status', flag: null, on: true, name: 'Status', oneLine: 'What is live, what is next and how the system is running.', status: 'live', releaseAt: null, shippedAt: null, route: '/status', doc: '06-status-page' },
   { id: 'token', flag: null, on: true, name: 'Token section', oneLine: 'What $QNTL does and the official addresses.', status: 'live', releaseAt: null, shippedAt: null, route: '/#token', doc: '07-token-section' },
   { id: 'docs', flag: null, on: true, name: 'Docs', oneLine: 'How Quintel works, how to check it and its limits.', status: 'live', releaseAt: null, shippedAt: null, route: '/docs', doc: '08-docs-hub' },
-  { id: 'board', flag: 'HOLDERS_BOARD', on: false, name: 'Holders Board', oneLine: 'An opt-in, anonymous board of codenames and percentages.', status: 'planned', releaseAt: null, shippedAt: null, route: '/board', doc: null },
-  { id: 'mcp', flag: 'MCP_SERVER', on: false, name: 'Use Quintel from your AI', oneLine: 'Scenario odds, briefings and proofs in Claude or Cursor.', status: 'planned', releaseAt: null, shippedAt: null, route: '/mcp', doc: null },
-  { id: 'scorecard', flag: 'DAILY_SCORECARD_PUBLIC', on: false, name: 'Daily scorecard', oneLine: 'How the odds bands did against each close, misses included.', status: 'planned', releaseAt: null, shippedAt: null, route: '/scorecard', doc: null },
-  { id: 'ship-log', flag: 'SHIP_LOG', on: false, name: 'Ship log', oneLine: 'Every release with its time.', status: 'planned', releaseAt: null, shippedAt: null, route: '/changelog', doc: null },
-  { id: 'burn', flag: 'BURN_TO_RUN', on: false, name: 'Burn-to-run', oneLine: 'Burn $QNTL to request a public custom run.', status: 'planned', releaseAt: null, shippedAt: null, route: '/burn', doc: null },
-  { id: 'chain-mode', flag: 'CHAIN_MODE_SPOTLIGHT', on: false, name: '24/7 chain mode', oneLine: 'The site follows the token while Wall Street is closed.', status: 'planned', releaseAt: null, shippedAt: null, route: '/', doc: null },
+  { id: 'board', flag: 'HOLDERS_BOARD', on: false, name: 'Holders Board', oneLine: 'An opt-in, anonymous board of codenames and percentages.', status: 'planned', releaseAt: null, shippedAt: null, route: '/board', doc: '10-holders-board' },
+  { id: 'mcp', flag: 'MCP_SERVER', on: false, name: 'Use Quintel from your AI', oneLine: 'Scenario odds, briefings and proofs in Claude or Cursor.', status: 'planned', releaseAt: null, shippedAt: null, route: '/mcp', doc: '11-mcp-page' },
+  { id: 'scorecard', flag: 'DAILY_SCORECARD_PUBLIC', on: false, name: 'Daily scorecard', oneLine: 'How the odds bands did against each close, misses included.', status: 'planned', releaseAt: null, shippedAt: null, route: '/scorecard', doc: '13-daily-scorecard' },
+  { id: 'ship-log', flag: 'SHIP_LOG', on: false, name: 'Ship log', oneLine: 'Every release with its time.', status: 'planned', releaseAt: null, shippedAt: null, route: '/changelog', doc: '14-ship-log' },
+  { id: 'burn', flag: 'BURN_TO_RUN', on: false, name: 'Burn-to-run', oneLine: 'Burn $QNTL to request a public custom run.', status: 'planned', releaseAt: null, shippedAt: null, route: '/burn', doc: '15-burn-to-run' },
+  { id: 'chain-mode', flag: 'CHAIN_MODE_SPOTLIGHT', on: false, name: '24/7 chain mode', oneLine: 'The site follows the token while Wall Street is closed.', status: 'planned', releaseAt: null, shippedAt: null, route: '/', doc: '16-chain-mode-spotlight' },
 ];
 
 /** On previews and local builds only, `?flags=A,B` turns flags on for this tab. Never on the live domain. */

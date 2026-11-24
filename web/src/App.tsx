@@ -1,6 +1,7 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef, type ComponentType } from 'react';
 import { DataProvider } from './lib/data';
 import { anchorFor, scrollToId, useRoute } from './lib/router';
+import { FEATURES, flagOn } from './features';
 import { ToastProvider } from './components/ui';
 import { Header } from './components/chrome/Header';
 import { CaBar } from './components/chrome/CaBar';
@@ -18,6 +19,16 @@ const Incidents = lazy(() => import('./pages/Incidents').then((m) => ({ default:
 const Changelog = lazy(() => import('./pages/Changelog').then((m) => ({ default: m.Changelog })));
 const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })));
 
+// a feature's page is web/src/pages/flagged/<route>.tsx and opens only while its flag is on
+const flagged = import.meta.glob<{ default: ComponentType }>('./pages/flagged/*.tsx');
+const opened = new Map<string, ComponentType>();
+function flaggedPage(path: string): ComponentType | null {
+  const load = flagged[`./pages/flagged${path}.tsx`];
+  if (!load || !FEATURES.some((f) => f.flag && f.route === path && flagOn(f.flag))) return null;
+  if (!opened.has(path)) opened.set(path, lazy(load));
+  return opened.get(path)!;
+}
+
 function Page({ path }: { path: string }) {
   let m: RegExpMatchArray | null;
   if (path === '/') return <Home />;
@@ -29,7 +40,8 @@ function Page({ path }: { path: string }) {
   if (path === '/incidents') return <Incidents />;
   if (path === '/status') return <Status />;
   if (path === '/changelog') return <Changelog />;
-  return <NotFound />;
+  const Feature = flaggedPage(path);
+  return Feature ? <Feature /> : <NotFound />;
 }
 
 export function App() {
