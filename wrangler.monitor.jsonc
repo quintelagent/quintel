@@ -1,0 +1,13 @@
+{
+  // Watches the live site from outside it: public endpoints only, no database, no site secrets.
+  // Alerts go to ntfy. Set the topic once: npx wrangler secret put NTFY_TOPIC -c wrangler.monitor.jsonc
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quintel-monitor",
+  "main": "monitor/src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "triggers": { "crons": ["3-59/5 * * * *"] },
+  "observability": { "enabled": true },
+  "kv_namespaces": [{ "binding": "STATE", "id": "420587c0b0a54622a9a8b826e9326fb8" }],
+  "vars": { "SITE": "https://quintelagent.com", "RPC": "https://rpc.mainnet.chain.robinhood.com", "WALLET": "0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47" }
+}
