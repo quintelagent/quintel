@@ -3,12 +3,12 @@ import { Check } from 'lucide-react';
 import { Answer, PriceBars } from '../sections/tool/DragTab';
 import { api, useApi, type Loaded, type SiteConfig } from '../lib/api';
 import {
-  aboveLine, BURN_HORIZONS, burnMessage, errorText, isTxHash, parseScenario, priceInSpan, same, sendRequest, shockLine, SHOCK_BOUNDS, statsOf, waitMinutes, WALLET_TEXT, when,
+  aboveLine, BURN_HORIZONS, burnMessage, burnTransfer, DEAD_ADDRESS, errorText, isTxHash, parseScenario, priceInSpan, same, sendRequest, shockLine, SHOCK_BOUNDS, statsOf, waitMinutes, WALLET_TEXT, when,
   type BurnBodyJson, type BurnErrorCode, type BurnHorizon, type BurnRequestView, type BurnSummary, type GalleryItem, type Scenario,
 } from '../lib/burn';
 import { recheck } from '../lib/burnCheck';
 import { useData } from '../lib/data';
-import { etDateTime, etTime, hash, int, odds, pctChange, usd } from '../lib/format';
+import { addr, etDateTime, etTime, hash, int, odds, pctChange, usd } from '../lib/format';
 import { useNow, useStored } from '../lib/hooks';
 import { isDelayed } from '../lib/marketState';
 import { useMeta } from '../lib/meta';
@@ -57,11 +57,11 @@ function useSend(onDone: (id: number) => void) {
 
 export function Burn() {
   useMeta('Burn to run · Quintel', SUB);
-  const { data, error, reload } = useApi<BurnSummary>('/api/burn', 60000);
+  const { data, error, reload } = useApi<BurnSummary>('/api/burn', 20000);
   const asked = Number(useRoute().query.get('request'));
   const id = Number.isInteger(asked) && asked > 0 && asked < 1e9 ? asked : null;
   const [sort, setSort] = useState<'latest' | 'extreme'>('latest');
-  const gallery = useApi<GalleryItem[]>(`/api/burn/gallery?sort=${sort}`, 60000);
+  const gallery = useApi<GalleryItem[]>(`/api/burn/gallery?sort=${sort}`, 20000);
   const toRun = (n: number) => {
     history.replaceState({}, '', runLink(n));
     window.dispatchEvent(new Event('q-nav'));
@@ -108,7 +108,7 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
   const [price, setPrice] = useState(''), [touched, setTouched] = useState(false);
   const [h, setH] = useState<`${BurnHorizon}`>('5');
   const [useShock, setUseShock] = useState<'no' | 'yes'>('no'), [shock, setShock] = useState(NO_SHOCK);
-  const [tx, setTx] = useStored('q-burn-tx', '');
+  const [storedTx, setTx] = useStored('q-burn-tx', ''), tx = isTxHash(storedTx) ? storedTx : '';
   const [sentAt, setSentAt] = useState(0);
   const [hashText, setHashText] = useState(tx);
   const [anon, setAnon] = useState<'address' | 'anonymous'>('address');
@@ -136,7 +136,7 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
       <ol className="burn-steps">
         <Card as="li" className="burn-step">
           <div className="burn-step-head"><span className="label" aria-hidden="true">1</span><h2>Choose your scenario</h2></div>
-          <Input label={`${config?.symbol ?? DEFAULT_SYMBOL} price`} numeric prefix="$" value={price} placeholder={spot ? (Math.round(spot * 0.9)).toFixed(2) : ''} maxLength={12} onChange={(e) => setPrice(e.target.value)} onBlur={() => setTouched(true)} error={priceError} hint={spot ? `The latest run started at ${usd(spot)}.` : ' '} />
+          <Input label={`${config?.symbol ?? DEFAULT_SYMBOL} price`} numeric prefix="$" value={price} placeholder={spot ? (Math.round(spot * 0.9)).toFixed(2) : ''} maxLength={12} onChange={(e) => setPrice(e.target.value)} onBlur={() => setTouched(true)} error={priceError} hint={spot ? `The ${etTime(latest!.run!.ts)} run started at ${usd(spot)}.` : ' '} />
           <div className="field"><div className="label">Horizon</div><SegmentedTabs items={HORIZONS} value={h} onChange={setH} label="Horizon" /></div>
           <div className="field"><div className="label">Shock, optional</div><SegmentedTabs items={[{ id: 'no', label: 'No shock' }, { id: 'yes', label: 'Add a shock' }]} value={useShock} onChange={setUseShock} label="Shock" /></div>
           {useShock === 'yes' && (
@@ -151,7 +151,7 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
 
         <Card as="li" className="burn-step">
           <div className="burn-step-head"><span className="label" aria-hidden="true">2</span><h2>Burn {amount} $QNTL</h2></div>
-          <p className="muted">One normal token transfer on Robinhood Chain (chain ID {s.chainId}) to the burn address. Nothing to approve, ever. Use a regular wallet: a contract wallet can’t sign step 3.</p>
+          <p className="muted">One normal token transfer on Robinhood Chain (chain ID {s.chainId}) to the burn address. Nothing to approve, ever. Use your own regular wallet: an exchange or contract wallet can’t sign step 3.</p>
           {official === false ? (
             <div className="burn-alert" role="alert"><p>The token address here doesn’t match the official one, so burning is turned off. Please don’t burn.</p></div>
           ) : configError ? <ErrorState text="Couldn’t check the official address. Try again." onRetry={reloadConfig} /> : (
@@ -159,11 +159,11 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
               <dl className="burn-facts">
                 <div><dt className="label">Amount</dt><dd className="burn-amount"><span className="mono">{amount} $QNTL</span></dd></div>
                 <div><dt className="label">Token</dt><dd><AddressChip address={s.token} /></dd></div>
-                <div><dt className="label">Burn address</dt><dd><AddressChip address={s.burnAddress} /></dd></div>
+                <div><dt className="label">Burn address</dt><dd><AddressChip address={DEAD_ADDRESS} /></dd></div>
               </dl>
               <div className="burn-match">{official ? <><Check size={16} strokeWidth={1.5} aria-hidden="true" /><span className="note">The token is the official address.</span></> : <Skeleton h="1.5em" w="14em" />}</div>
               <p className="burn-warn"><i className="fall" aria-hidden="true" />Burns can’t be undone.</p>
-              <BurnStep s={s} wallet={wallet} ready={!!good && official === true && online} tx={tx} onSent={(t) => { setTx(t); setHashText(t); setSentAt(Date.now()); }} clear={() => { setTx(''); setHashText(''); }} />
+              <BurnStep s={s} wallet={wallet} wait={!online ? 'You are offline.' : official !== true ? 'Checking the official address.' : !good ? 'Choose a scenario first.' : !s.amountRaw ? 'Couldn’t read the token from the chain. Try again in a minute.' : null} tx={tx} onSent={(t) => { setTx(t); setHashText(t); setSentAt(Date.now()); }} clear={() => setTx('')} />
             </>
           )}
         </Card>
@@ -180,19 +180,21 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
 }
 
 /** Connect, switch network, then one transfer the visitor confirms in the wallet. */
-function BurnStep({ s, wallet, ready, tx, onSent, clear }: { s: BurnSummary; wallet: Wallet; ready: boolean; tx: string; onSent: (tx: string) => void; clear: () => void }) {
+function BurnStep({ s, wallet, wait, tx, onSent, clear }: { s: BurnSummary; wallet: Wallet; wait: string | null; tx: string; onSent: (tx: string) => void; clear: () => void }) {
   const [review, setReview] = useState(false), [busy, setBusy] = useState(false), [note, setNote] = useState<string | null>(null);
   const run = async (f: () => Promise<unknown>) => { setBusy(true); setNote(null); try { await f(); } catch (e) { setNote(WALLET_TEXT[problemOf(e)]); } finally { setBusy(false); } };
   const burn = () => run(async () => {
     // everything is read again just before the wallet opens
     const [now, cfg] = await Promise.all([api<BurnSummary>('/api/burn'), api<SiteConfig>('/api/config')]).catch(() => [null, null] as const);
     if (!now || !cfg) return setNote('Couldn’t check the address again. Nothing was sent. Try again.');
-    if (!now.open || !now.amountRaw || now.amountRaw !== s.amountRaw || now.decimals === null || !same(now.token, s.token) || !same(now.token, cfg.tokens.pons) || now.burnAddress !== s.burnAddress) return setNote('The burn details changed. Nothing was sent. Reload the page.');
-    const raw = BigInt(now.amountRaw), from = await wallet.connect();
-    if ((await walletChain()) !== now.chainId) return setNote('Your wallet is on another network. Nothing was sent.');
-    if ((await readDecimals(now.token!)) !== now.decimals) return setNote('The token on this network doesn’t match. Nothing was sent.');
-    if ((await readBalance(now.token!, from)) < raw) return setNote(`This wallet holds less than ${int(now.amount)} $QNTL. Nothing was sent.`);
-    const t = await sendBurn(from, now.token!, raw);
+    const b = burnTransfer(s, now, { token: cfg.tokens.pons, chainId: cfg.chainId });
+    if (!b) return setNote('The burn details changed. Nothing was sent. Reload the page.');
+    const shown = wallet.account, from = await wallet.connect();
+    if (!same(from, shown)) return setNote('Your wallet is on another account. Nothing was sent. Check the address above.');
+    if ((await walletChain()) !== b.chainId) return setNote('Your wallet is on another network. Nothing was sent.');
+    if ((await readDecimals(b.token)) !== b.decimals) return setNote('The token on this network doesn’t match. Nothing was sent.');
+    if ((await readBalance(b.token, from)) < b.raw) return setNote(`This wallet holds less than ${int(s.amount)} $QNTL. Nothing was sent.`);
+    const t = await sendBurn(from, b.token, b.raw, b.chainId);
     setReview(false);
     if (isTxHash(t)) onSent(t.toLowerCase()); else setNote('Your wallet didn’t return a transaction hash. Find it there and paste it in step 3.');
   });
@@ -208,14 +210,15 @@ function BurnStep({ s, wallet, ready, tx, onSent, clear }: { s: BurnSummary; wal
       {!wallet.present ? <p className="note">No wallet found in this browser. Send the burn from your own wallet with the details above, then paste its transaction hash in step 3.</p>
         : !wallet.account ? <div className="row"><Button disabled={busy} onClick={() => run(wallet.connect)}>Connect wallet</Button><span className="note">Or burn from any wallet and paste the hash in step 3.</span></div>
         : wrongChain ? <div className="row"><Button disabled={busy} onClick={() => run(async () => { await switchChain(s.chainId, s.explorer); await wallet.refresh(); })}>Switch network</Button><span className="note">To Robinhood Chain, chain ID {s.chainId}.</span></div>
-        : <div className="row"><Button disabled={!ready || busy || !s.amountRaw} onClick={() => { setNote(null); setReview(true); }}>Review burn</Button>{!ready ? <span className="note">Choose a scenario first.</span> : !s.amountRaw && <span className="note">Couldn’t read the token from the chain. Try again in a minute.</span>}</div>}
+        : <div className="row"><Button disabled={!!wait || busy} onClick={() => { setNote(null); setReview(true); }}>Review burn</Button><span className="note">{wait ?? `From ${addr(wallet.account)}.`}</span></div>}
       <p className="note burn-note" role="status">{!review && note}</p>
       <Sheet open={review} onClose={() => setReview(false)} title={`Burn ${int(s.amount)} $QNTL`}>
         <p className="burn-warn"><i className="fall" aria-hidden="true" />Burns can’t be undone.</p>
         <dl className="burn-review">
           <div><dt className="label">Amount</dt><dd className="mono">{int(s.amount)} $QNTL</dd></div>
           <div><dt className="label">Token</dt><dd className="mono">{s.token}</dd></div>
-          <div><dt className="label">To, the burn address</dt><dd className="mono">{s.burnAddress}</dd></div>
+          <div><dt className="label">From, your wallet</dt><dd className="mono">{wallet.account ?? 'Not connected'}</dd></div>
+          <div><dt className="label">To, the burn address</dt><dd className="mono">{DEAD_ADDRESS}</dd></div>
           <div><dt className="label">Network</dt><dd className="mono">Robinhood Chain, chain ID {s.chainId}</dd></div>
           <div><dt className="label">Kind</dt><dd className="mono">Transfer, no approval</dd></div>
         </dl>
@@ -263,7 +266,7 @@ function ConfirmStep({ s, wallet, scenario, hashText, setHashText, anon, setAnon
         <SegmentedTabs items={[{ id: 'address', label: 'Short address' }, { id: 'anonymous', label: 'Anonymous' }]} value={anon} onChange={setAnon} label="Name in the gallery" />
         <p className="note">The burn itself stays public on the chain either way.</p>
       </div>
-      <div className="row"><Button disabled={busy || !online || !scenario || !wallet.present} onClick={sign}>Sign and check burn</Button><span className="note">{!scenario ? 'Choose a scenario first.' : !wallet.present && 'No wallet found in this browser. Use the option below.'}</span></div>
+      <div className="row"><Button disabled={busy || !online || !scenario || !wallet.present} onClick={sign}>Sign and check burn</Button><span className="note">{!online ? 'You are offline.' : !scenario ? 'Choose a scenario first.' : !wallet.present && 'No wallet found in this browser. Use the option below.'}</span></div>
       <Accordion items={[{ q: 'Sign in another wallet', a: (
         <div className="burn-manual">
           <p className="note">Sign this exact text as a plain message (EIP-191) with the wallet that burned, then paste the signature.</p>
