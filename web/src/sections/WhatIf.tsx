@@ -6,6 +6,7 @@ import { runInBrowser } from '../lib/engineClient';
 import { Fan } from '../components/charts';
 import { Empty, SectionHead, Skeleton } from '../components/ui';
 import { pct, usd } from '../lib/format';
+import { daysUntil, shortDate } from '../lib/hearing';
 
 const PRESETS: { name: string; shock: Shock }[] = [
   { name: 'Guidance cut', shock: { drift: -0.12, jumpMult: 2, volMult: 1.4 } },
@@ -17,7 +18,11 @@ const PRESETS: { name: string; shock: Shock }[] = [
 const NONE: Shock = { drift: 0, jumpMult: 1, volMult: 1 };
 
 export function WhatIf() {
-  const { latest, output } = useData();
+  const { latest, output, config } = useData();
+  // direction-neutral: only volatility and jump odds rise
+  const presets = config?.hearing && daysUntil(config.hearing.date) >= 0
+    ? [{ name: `${shortDate(config.hearing.date)} hearing`, shock: { drift: 0, jumpMult: 2.5, volMult: 1.3 } }, ...PRESETS]
+    : PRESETS;
   const runId = latest?.run?.id;
   const [base, setBase] = useState<{ inputs: EngineInputs; seed: string } | null>(null);
   const [shock, setShock] = useState<Shock>(NONE);
@@ -75,7 +80,7 @@ export function WhatIf() {
           <div className="panel reveal wi-grid fade-in">
             <div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 22 }}>
-                {PRESETS.map((p) => (
+                {presets.map((p) => (
                   <button key={p.name} className="btn sm" onClick={() => setShock(p.shock)}
                     style={JSON.stringify(shock) === JSON.stringify(p.shock) ? { borderColor: 'var(--ice)', color: 'var(--ice-bright)' } : undefined}>{p.name}</button>
                 ))}

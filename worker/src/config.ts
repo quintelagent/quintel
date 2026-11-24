@@ -14,6 +14,10 @@ export interface Env {
   EVENT_DATE?: string;
   /** ISO launch time; gates the "locked on-chain from day one" claim */
   LAUNCH_AT?: string;
+  /** upcoming reported event shown as a countdown; empty date hides it */
+  HEARING_DATE?: string;
+  HEARING_LABEL?: string;
+  HEARING_URL?: string;
   /** level for P(back above within 1 month) */
   BACK_ABOVE_LEVEL?: string;
   TRIAGE_MODEL: string;

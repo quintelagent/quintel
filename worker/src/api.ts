@@ -120,6 +120,7 @@ function config(env: Env) {
     chainId: Number(env.CHAIN_ID),
     explorer: env.CHAIN_EXPLORER,
     nvdaToken: env.NVDA_TOKEN_ADDRESS,
+    hearing: env.HEARING_DATE ? { date: env.HEARING_DATE, label: env.HEARING_LABEL || 'Reported event', url: env.HEARING_URL || null } : null,
     fingerprintWallet: env.FINGERPRINT_ADDRESS || null,
     tokens: { pons: env.QNTL_TOKEN_PONS || null, solana: env.QNTL_TOKEN_SOLANA || null },
     deskRules: DESK_RULES,

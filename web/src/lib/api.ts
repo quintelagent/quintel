@@ -34,6 +34,7 @@ export interface Desk {
 export interface Scorecard { status: 'live' | 'collecting'; note: string | null; horizons: { horizon: number; n: number; rate50: number; rate90: number; brier: number }[]; recent: any[] }
 export interface SiteConfig {
   symbol: string; chainId: number; explorer: string; nvdaToken: string; fingerprintWallet: string | null;
+  hearing?: { date: string; label: string; url: string | null } | null;
   tokens: { pons: string | null; solana: string | null };
   deskRules: Record<string, number | boolean>;
   crisisWeights: Record<string, number>;
