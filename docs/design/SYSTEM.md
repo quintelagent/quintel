@@ -27,11 +27,11 @@ calm, light, lots of space, big confident type, one idea per screen, nothing fla
 - No buy/sell/hold advice. No "you should". No return promises.
 - Neutral wording on news: state facts and dates, never opinions about people or outcomes.
 - The user-facing name is **"Stress Level"** (0–33 Calm, 34–66 Elevated, 67–100 High; see docs/METHODOLOGY.md). "Crisis" must not appear anywhere.
-- Disclaimer (footer, token section, share images, Pro, board, burn):
+- Disclaimer (footer, token section, share images, and every token page):
   "Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice."
 - Token links are labeled neutrally: "View on Pons", "View on Pump.fun", "Explorer".
 - Paper desk is always labeled "Paper trading. No real money."
-- Never show a user's wallet address in public places except shortened (0x12…ab) where the user chose to be public (burn gallery). Never show amounts on public boards.
+- Never show a user's wallet address in public places except shortened (0x12…ab) where the user chose to be public. Never show amounts on public boards.
 
 ---
 
@@ -52,7 +52,7 @@ Derived (defined in tokens.css with color-mix, never new hues):
 
 Rules: no gradients, no glow, no blur/backdrop-filter, no drop shadows except `--shadow-bar` (one very soft shadow, phone sticky bar and toasts only). No dark mode at launch. `<meta name="theme-color" content="#F3F1EA">`, `color-scheme: light`.
 
-Inverted pill (ink background, paper text) is the only "loud" treatment. Use it for: Live, Pro, Chain mode, Shipped.
+Inverted pill (ink background, paper text) is the only "loud" treatment. Use it for: Live, Chain mode, Shipped, Today, Verified.
 
 ### Type
 - Sans: `-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif`. Inter is self-hosted (woff2, latin subset, `font-display: swap`) as fallback only. Never ship SF Pro files.
@@ -125,7 +125,7 @@ No other illustration style is allowed. No photos, no 3D, no stock art, no netwo
 
 ## 6. Components (src/components/ui — every page uses these, none builds its own)
 
-Header · Footer · MobileMenu (full-screen sheet) · StickyBar (phone only) · Section (eyebrow + H2 + sub) · Card · Button (primary = ink fill, secondary = line outline, ghost) · Pill (Live, Soon + date, Planned, Pro, Delayed, Up, Down, Inside band, Outside band, Shipped) · SegmentedTabs · Slider · Input (numeric uses `inputmode="decimal"`, 16px+) · Stat (label + mono number) · NumberRoll · DataTable (turns into stacked cards on phone) · Accordion · CodeBlock · CopyButton · AddressChip (0x12…ab + copy, tap to expand) · Toast + LiveToasts · Sheet (bottom sheet on phone, centered dialog on laptop) · Skeleton · EmptyState · ErrorState · LockedState · Countdown · ShareCard + ShareSheet · WalletChip · StockSwitcher · Timeline (scrubber) · plus all Pixel components.
+Header · Footer · MobileMenu (full-screen sheet) · StickyBar (phone only) · Section (eyebrow + H2 + sub) · Card · Button (primary = ink fill, secondary = line outline, ghost) · Pill (Live, Soon + date, Planned, Delayed, Up, Down, Inside band, Outside band, Shipped) · SegmentedTabs · Slider · Input (numeric uses `inputmode="decimal"`, 16px+) · Stat (label + mono number) · NumberRoll · DataTable (turns into stacked cards on phone) · Accordion · CodeBlock · CopyButton · AddressChip (0x12…ab + copy, tap to expand) · Toast + LiveToasts · Sheet (bottom sheet on phone, centered dialog on laptop) · Skeleton · EmptyState · ErrorState · LockedState · Countdown · plus all Pixel components.
 
 Adding a component: only if no existing one fits. Add it to this list with a one-line purpose in the same PR.
 
@@ -140,7 +140,7 @@ Adding a component: only if no existing one fits. Add it to this list with a one
 | Error | `ErrorState`, plain English, "Try again" | "Couldn't load the latest run. Try again." |
 | Delayed | keep last good data + `Delayed` pill | "Delayed · last run 10:10am ET" |
 | Offline | keep data, pause live updates | "Offline · updates paused" |
-| Locked | `LockedState`: line-pattern panel + lock icon + reason + action (never blur) | "Pro feature · Hold $QNTL to unlock" |
+| Locked | `LockedState`: line-pattern panel + lock icon + reason + action (never blur) | what it is, then the action |
 | Soon | `Pill` "Soon · Nov 25, 2pm ET" | — |
 | Planned | `Pill` "Planned" | — |
 | Live | inverted `Pill` with a stepped blinking red dot | "Live" |
@@ -209,9 +209,9 @@ Delayed means no new run for 20 min while the market is open, or 45 min while it
 ## 13. Feature flags and the features registry
 
 - One registry, `src/features.ts`: each feature has `flag`, `name`, `oneLine`, `status` (live / soon / planned), `releaseAt` (ET), `route`.
-- The registry drives: flag checks, the /status page, the ship log and "Soon" pills. Nothing hard-codes a status.
-- All flags default OFF in production. `npm run ship <FLAG>` turns one on, updates the registry and CHANGELOG.
-- A flagged-off feature renders nothing (or its "Soon" pill where the design says so). No broken links to flagged routes.
+- The registry drives: flag checks, the /status page and its pills. Nothing hard-codes a status.
+- All flags default OFF in production. The release command turns one on and updates the registry and CHANGELOG.
+- A feature that is off renders nothing, and its route is the 404 page. Planned items appear only on /status. Its design file is added in the same branch as its code.
 
 ---
 
@@ -233,7 +233,7 @@ A script that fails the build if it finds:
 - a `max-width` media query;
 - emoji or banned words (section 9) in UI strings. Allowed exceptions: the brand name "Pump.fun", and negations that explain what Quintel is not ("not predictions", "Are these predictions?" in the FAQ, and the Limits/Methodology docs). docs/design/ itself is not scanned;
 - "Crisis", or Nvidia/NVDA/Jensen/Huang/CUDA in component names, feature names, routes or logo assets;
-- a feature in `src/features.ts` with no matching `docs/design/features/*.md` file.
+- a live feature in `src/features.ts` with no matching `docs/design/features/*.md` file.
 
 ## 16. Living style guide
 

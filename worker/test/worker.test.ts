@@ -29,7 +29,7 @@ describe('briefing guards', () => {
     expect(g.ok).toBe(true);
   });
   it('rejects a number not in the RunOutput', () => {
-    const g = guardText(`The median is $${facts.oneMonth.median} and odds of 73.4% look strong`, allowed);
+    const g = guardText(`The median is $${facts['one month'].median} and odds of 73.4% look strong`, allowed);
     expect(g.ok).toBe(false);
     expect(g.badNumbers).toContain(73.4);
   });

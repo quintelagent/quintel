@@ -1,6 +1,6 @@
 # 03 · Check my position + watchlist
 
-**Flag:** none — launch (share button: POSITION_SHARE_CARDS) · **Phase:** P0 · **Location:** `/`, tool card, "My position" tab (`/#position`); StickyBar and hero buttons open it
+**Flag:** none — launch · **Phase:** P0 · **Location:** `/`, tool card, "My position" tab (`/#position`); StickyBar and hero buttons open it
 
 ## Purpose
 Enter your entry price and see your odds of profit from the latest run.
@@ -15,7 +15,7 @@ Enter your entry price and see your odds of profit from the latest run.
    - Three Stat rows: 1 day / 1 week / 1 month odds, each with PixelSpark
    - "Bad 5% outcome" — "In the worst 5% of futures, the price is $171.20 or lower by Dec 1 (−8.3%)." With shares: adds "(−$1,420)".
    - Footnote: "100,000 futures from run 4,182 · 10:40am ET. Scenario odds, not advice."
-3. Buttons: "Save to watchlist" (secondary) · "Share my odds" (ghost, only when POSITION_SHARE_CARDS is on)
+3. Buttons: "Save to watchlist" (secondary)
 4. Watchlist (below result): up to 5 saved rows — entry, horizon, odds (NumberRoll, updates each run), PixelSpark, remove (×). Line: "Saved only on this device."
 
 ## Layout — laptop
@@ -30,7 +30,7 @@ Inputs left, result right, watchlist full width below.
 - **Watchlist full:** "You can save up to 5. Remove one to add another."
 
 ## Copy (exact)
-Tab: "My position" · Fields: "Entry price", "Shares (optional)", "Horizon" · Result label: "odds of profit in {horizon}" · "Bad 5% outcome" · Buttons: "Save to watchlist", "Share my odds" · Toast on save: "Saved to watchlist".
+Tab: "My position" · Fields: "Entry price", "Shares (optional)", "Horizon" · Result label: "odds of profit in {horizon}" · "Bad 5% outcome" · Buttons: "Save to watchlist" · Toast on save: "Saved to watchlist".
 
 ## Motion
 NumberRoll on result; watchlist rows slide in. Reduced motion: instant.

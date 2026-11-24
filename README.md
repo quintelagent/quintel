@@ -12,25 +12,27 @@
   <a href="https://quintelagent.com/docs">Docs</a> ·
   <a href="https://x.com/quintelagent">X</a>
   <br/><br/>
-  <img alt="CI" src="https://github.com/quintelagent/quintel/actions/workflows/ci.yml/badge.svg" />
+  <a href="https://github.com/quintelagent/quintel/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/quintelagent/quintel/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
+  <a href="https://quintelagent.com/api/latest"><img alt="Latest run" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquintelagent.com%2Fapi%2Flatest&query=%24.run.id&label=latest%20run&color=121212" /></a>
+  <a href="https://quintelagent.com/verify"><img alt="Fingerprints on chain" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquintelagent.com%2Fapi%2Fproof&query=%24.sent&label=fingerprints%20on%20chain&color=121212" /></a>
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-121212" />
 </p>
 
 An AI research agent and five quant models simulate NVDA’s possible paths, turn them into **scenario odds**, explain what changed in plain English, run a public paper-trading desk on those odds, and post a cryptographic fingerprint of every hour’s work on **Robinhood Chain**. Anyone can check that nothing was edited after its fingerprint was posted.
 
-## Features
+## Live today
 
 | | |
 |---|---|
-| **1M-path engine** | Five models × 200,000 paths: random walk, jump-diffusion, history replay, GARCH(1,1) and mean reversion. Pure TypeScript with zero dependencies. ~1s per run. |
-| **Live, 24/7** | Runs every 10 minutes while the market is open. While it is closed, runs every 30 minutes priced off the on-chain NVDA token. |
-| **Stress Level** | A 0–100 blend of realised vol, tail odds, news intensity and the token/stock gap. The weights are public. |
-| **Research agent** | Triage of every headline plus a briefing every 30 minutes. Code guards reject any number that isn’t in the run, and any advice wording. |
+| **1,000,000 futures per run** | Five models × 200,000 paths: random walk, jump-diffusion, history replay, GARCH(1,1) and mean reversion. Pure TypeScript with zero dependencies. ~1s per run. |
+| **Around the clock** | Every 10 minutes while the market is open. Every 30 minutes while it is closed, priced off the on-chain NVDA token. |
+| **Does it hold?** | The odds that the Nov 23 gain holds, the odds of a close back above a set level, and a Stress Level from 0 to 100 with public weights. |
+| **Wall Street vs Chain** | The exchange price next to the on-chain token price, the gap, and the pool's 24-hour volume. |
+| **Tools** | Drag a price, what-if shocks, weekend gap, and Check my position with a watchlist. All worked out on your device. |
+| **Briefings** | An AI research agent every 30 minutes. Code rejects any number that isn't in the run or the news, and any advice wording. |
 | **Paper desk** | $100k virtual, published rules, every trade with a note. Losses are shown like gains. |
-| **Proof** | Hourly keccak256 fingerprint as calldata on Robinhood Chain. Late posts stay visible in `/api/proof`. Any run can be recomputed in the browser, byte for byte. |
-| **Touch odds** | The share of all 1,000,000 paths with a daily close back above a set level within a month, or back below half of the Nov 23 gain within a week. |
-| **Tools** | Drag a price, weekend gap, what-if shocks that rerun 500,000 paths in your browser, and a position check that runs 100,000 paths on your device. |
-| **Docs and incidents** | Every document on the site is rendered from this repo. Anything that broke is listed with what was done. |
+| **Proof** | An hourly fingerprint on Robinhood Chain. Any run can be recomputed in the browser, byte for byte. |
+| **Status, docs, incidents** | What is live, how it works, and anything that broke. |
 
 ## How it works
 
@@ -40,15 +42,39 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 4. **Explain and act.** A briefing is written and guard-checked. The paper desk applies its published rules.
 5. **Prove.** Each hour, every run, input, briefing and desk hash is rolled into one fingerprint and sent on-chain.
 
-**Quintel fingerprint wallet:** [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47) (Robinhood Chain, chain id 4663)
+## Trust
+
+Nothing here needs to be taken on trust. Each claim has a place to check it.
+
+| Claim | Where to check |
+|---|---|
+| 1,000,000 paths behind every run | `/api/run/<id>` has the inputs and seed. [Verify](https://quintelagent.com/verify) recomputes all of them in the browser. |
+| Nothing was edited after its fingerprint posted | The hour’s hash is the input data of a transaction from [the fingerprint wallet](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47). |
+| Late or missing fingerprints stay visible | [`/api/proof`](https://quintelagent.com/api/proof) lists every hour, its attempts and when it was sent. |
+| Same result in every browser | CI runs the engine in Chromium, WebKit and Firefox and compares hashes. |
+| The paper desk follows fixed rules | Rules in [Methodology](docs/METHODOLOGY.md), every trade in [`/api/desk`](https://quintelagent.com/api/desk). |
+| Mistakes are listed | [Incidents](docs/incidents), including the runs that started from a stale price. |
+
+More: [Trust](TRUST.md) · [Security](SECURITY.md) · [Security review](SECURITY-REVIEW.md) (internal, not an audit) · [Incidents](INCIDENTS.md).
+
+What is **not** proven: that the odds are right. See [Limits](docs/LIMITS.md). The code has not been audited by a third party.
+
+### Addresses
+
+| What | Robinhood Chain (chain id 4663) |
+|---|---|
+| Fingerprint wallet | [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47) |
+| $QNTL on Pons | Posted at launch |
+
+The full list is in [Deployments](DEPLOYMENTS.md). Quintel never asks for a private key, a seed phrase or a token approval.
 
 ## Verify a run
 
-In the browser, open `/verify?run=<id>`. From the command line:
+In the browser, open `https://quintelagent.com/verify?run=<id>`. From the command line:
 
 ```bash
 npm install
-QNTL_API=https://quintelagent.com npx tsx engine/verify.ts <runId>
+npx tsx engine/verify.ts <runId>
 ```
 
 See [docs/PROOF.md](docs/PROOF.md).
@@ -73,8 +99,8 @@ Secrets are set with `wrangler secret put`, or in `.dev.vars` locally (gitignore
 
 ## Docs
 
-[Methodology](docs/METHODOLOGY.md) · [Proof](docs/PROOF.md) · [Limits](docs/LIMITS.md) · [Security](docs/SECURITY.md) · [Deployments](docs/DEPLOYMENTS.md) · [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Incidents](docs/incidents) · [Changelog](CHANGELOG.md)
+[Methodology](docs/METHODOLOGY.md) · [Proof](docs/PROOF.md) · [Limits](docs/LIMITS.md) · [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Deployments](DEPLOYMENTS.md) · [Trust](TRUST.md) · [Security](SECURITY.md) · [Incidents](INCIDENTS.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ---
 
-**Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice.** Scenario odds are model outputs, not predictions. The paper desk uses virtual money only. MIT licensed.
+**Not financial advice. Not affiliated with Nvidia, Robinhood, Pons or Pump.fun.** Scenario odds are model outputs, not predictions. The paper desk uses virtual money only. MIT licensed.

@@ -12,7 +12,7 @@ describe('secret scan', () => {
   });
   it('blocks private paths', () => {
     for (const p of ['private/LAUNCH_PLAN.md', 'QUINTEL_LAUNCH_PLAN.md', '.dev.vars', 'web/.env.local', 'keys/id_rsa']) expect(badPath(p), p).toBe(true);
-    for (const p of ['docs/PROOF.md', 'web/src/features.ts', 'scripts/ship.mjs']) expect(badPath(p), p).toBe(false);
+    for (const p of ['docs/PROOF.md', 'web/src/features.ts', 'scripts/release.mjs']) expect(badPath(p), p).toBe(false);
   });
   it('only accepts Quintel', () => {
     expect(okIdentity('Quintel <build@quintelagent.com>')).toBe(true);

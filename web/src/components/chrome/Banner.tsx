@@ -4,7 +4,7 @@ import { isDelayed } from '../../lib/marketState';
 import { etTime } from '../../lib/format';
 import { Pill } from '../ui';
 
-/** One banner at a time: hearing live (18), then chain mode (16), then delayed. Pushes content, never overlays. */
+/** One banner at a time. Pushes content, never overlays. */
 export function Banner({ path }: { path: string }) {
   const { latest, online } = useData();
   const now = useNow(30000);

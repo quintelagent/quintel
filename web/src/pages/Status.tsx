@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react';
-import { FEATURES, flagOn, type FeatureStatus } from '../features';
+import { FEATURES, type Feature, type FeatureStatus } from '../features';
 import type { Latest, Proof } from '../lib/api';
 import { useData } from '../lib/data';
-import { ago, etDateTime, etTime, int } from '../lib/format';
+import { ago, etDateTime, etShortDate, etTime, int } from '../lib/format';
 import { useNow } from '../lib/hooks';
 import { isDelayed, marketState } from '../lib/marketState';
 import { useMeta } from '../lib/meta';
 import { Button, Card, ErrorState, Pill, Skeleton } from '../components/ui';
-import { FeaturePill } from '../sections/Token';
 import './status.css';
 
 type Health = 'OK' | 'Delayed' | 'Down';
@@ -54,13 +53,19 @@ function HealthRow({ label, row }: { label: string; row: Row | null }) {
   );
 }
 
+/** A feature's registry status as a pill. No date until the registry has one. */
+function FeaturePill({ feature: f }: { feature: Feature }) {
+  if (f.status === 'live') return <span className="paused"><Pill tone="invert" live>Live</Pill></span>;
+  if (f.status === 'planned') return <Pill tone="muted">Planned</Pill>;
+  return <Pill>{f.releaseAt ? `Soon · ${etShortDate(f.releaseAt)}, ${etTime(f.releaseAt)}` : 'Soon'}</Pill>;
+}
+
 const GROUPS: { status: FeatureStatus; title: string }[] = [{ status: 'live', title: 'Live' }, { status: 'soon', title: 'Soon' }, { status: 'planned', title: 'Planned' }];
 
 export function Status() {
   useMeta('Status · Quintel', 'What’s live, what’s next, and how the system is running.');
   const { latest, latestError, reload, proof, proofError } = useData();
   const now = useNow(30000);
-  const shipLog = flagOn('SHIP_LOG');
   const proofLoaded: Row | null = proof ? proofRow(proof, now) : proofError ? { value: 'Unavailable', health: null, note: 'Couldn’t load fingerprints. Checking again within a minute.' } : null;
   return (
     <div className="page">
@@ -87,7 +92,6 @@ export function Status() {
                       <div>
                         <h3>{f.name}</h3>
                         <p>{f.oneLine}</p>
-                        {shipLog && f.shippedAt && ageOf(f.shippedAt, now) < 24 * HOUR && <p className="note">Shipped {etTime(f.shippedAt)}</p>}
                       </div>
                       <FeaturePill feature={f} />
                     </li>

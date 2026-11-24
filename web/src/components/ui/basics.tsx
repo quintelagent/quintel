@@ -119,7 +119,7 @@ export function EmptyState({ text, action }: { text: ReactNode; action?: ReactNo
 export function ErrorState({ text = 'Couldn’t load the latest run. Try again.', onRetry }: { text?: string; onRetry?: () => void }) {
   return <div className="state" role="alert"><p>{text}</p>{onRetry && <Button variant="secondary" onClick={onRetry}>Try again</Button>}</div>;
 }
-export function LockedState({ title = 'Pro feature', text, action }: { title?: string; text: ReactNode; action?: ReactNode }) {
+export function LockedState({ title, text, action }: { title: string; text: ReactNode; action?: ReactNode }) {
   return <div className="state locked"><Lock size={20} strokeWidth={1.5} aria-hidden="true" /><b>{title}</b><p>{text}</p>{action}</div>;
 }
 

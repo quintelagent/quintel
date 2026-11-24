@@ -20,4 +20,4 @@ Hourly fingerprints from 9pm ET on Nov 22 through Nov 23 were not posted when th
 
 ## Where it stands
 
-The backlog cleared at 1:50am ET on Nov 24, with 27 hours posted. At 1:53am ET, one hour was waiting for its next post. The current count is on the [status page](/status).
+The backlog cleared at 1:50am ET on Nov 24, with 27 hours posted. At 1:53am ET, one hour was waiting for its next post. The current count is on the [status page](https://quintelagent.com/status).

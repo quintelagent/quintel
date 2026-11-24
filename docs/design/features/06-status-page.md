@@ -24,13 +24,13 @@ Health card as 3 columns; groups as single column, max 820px.
 ## States
 - **Loading:** Skeleton rows.
 - **Error:** "Status is unavailable right now. Try again." + button.
-- **Feature released:** moves from Soon to Live automatically (from the registry); when SHIP_LOG is on, a "Shipped {time} ET" line appears under it for 24h.
+- **Feature released:** moves from Soon to Live automatically (from the registry).
 
 ## Copy (exact)
 H1 "Status." · Health labels "Last run", "Last fingerprint", "Price feeds" · Group titles "Live", "Soon", "Planned".
 
 ## Data
-Rendered entirely from `src/features.ts` (name, oneLine, status, releaseAt) + health endpoint. No hand-written statuses. Feature names come from the registry and must follow product rules (e.g. "Holders Board", not "NVDA Holders Board").
+Rendered entirely from `src/features.ts` (name, oneLine, status, releaseAt) + health endpoint. No hand-written statuses.Feature names come from the registry and follow the product rules.
 
 ## Reuses
 Section, Card, Pill, Skeleton, ErrorState.

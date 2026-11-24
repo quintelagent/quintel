@@ -10,7 +10,10 @@ Every contract, wallet and service Quintel uses, with a link to check it. If an 
 | NVDA stock token (read only: price source while the market is closed) | [`0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC`](https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC) |
 | NVDA/USDG Uniswap V3 pool (read only) | [`0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3`](https://robinhoodchain.blockscout.com/address/0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3) |
 | Chainlink NVDA price feed (read only: cross-check) | [`0x321A36e441DfBadA01Aa6f9884F14a344E133D1F`](https://robinhoodchain.blockscout.com/address/0x321A36e441DfBadA01Aa6f9884F14a344E133D1F) |
-| $QNTL on Pons | Posted at launch |
+| $QNTL contract (Pons) | Posted at launch |
+| $QNTL page on Pons | Posted at launch |
+| Launch wallet | Posted at launch |
+| Dev-buy burn transaction | Posted at launch |
 
 The fingerprint wallet only sends 0-value transactions to itself, with the hour's hash as data. It holds a small amount of ETH for gas and nothing else. Every fingerprint in [/api/proof](https://quintelagent.com/api/proof) was posted from it, and the worker refuses to post from any other.
 
@@ -33,5 +36,7 @@ The fingerprint wallet only sends 0-value transactions to itself, with the hour'
 
 1. Open [/verify](https://quintelagent.com/verify) and enter any run number.
 2. Open its transaction on the explorer. It must come from the fingerprint wallet above, go to the same wallet, carry 0 value, and its input data must equal the fingerprint hash.
+
+Any $QNTL address seen before it is posted here is not ours.
 
 *Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice.*

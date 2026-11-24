@@ -18,7 +18,6 @@ One toast at a time, full width minus 16px each side, sitting just above the Sti
 | New briefing | "New briefing · {headline}" | the briefing |
 | Fingerprint | "Fingerprint posted on Robinhood Chain" + "View" | /verify (latest) |
 | Desk trade | "Paper desk opened a position" / "Paper desk closed a position" | paper desk |
-| Shipped (when SHIP_LOG is on) | "Shipped · {feature name}" | /changelog |
 
 Never show wallet addresses, amounts, sizes or P&L in toasts.
 

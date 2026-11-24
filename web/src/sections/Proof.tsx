@@ -1,11 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { AddressChip, Button, Card, CodeBlock, EmptyState, ErrorState, Input, Pill, Section, Skeleton, Stat } from '../components/ui';
-import { PixelBars, PixelFlow } from '../components/pixel';
-import { Link, navigate } from '../lib/router';
-import { useApi, type Proof as ProofData, type Scorecard } from '../lib/api';
+import { PixelFlow } from '../components/pixel';
+import type { Proof as ProofData } from '../lib/api';
+import { navigate } from '../lib/router';
 import { useData } from '../lib/data';
-import { etDate, etTime, int, pct } from '../lib/format';
-import { flagOn } from '../features';
+import { etDate, etTime, int } from '../lib/format';
 import './proof.css';
 
 const STEPS = [
@@ -72,29 +71,6 @@ function VerifyCard({ wallet, latestId }: { wallet: string | null | undefined; l
   );
 }
 
-/** Next-close results only. The stored bands are the 90% ones. */
-function ScorecardTeaser() {
-  const { data, error, reload } = useApi<Scorecard>('/api/scorecard', 300000);
-  const h = data?.horizons.find((x) => x.horizon === 1);
-  const rows = (data?.recent ?? []).filter((r) => r.horizon === 1).slice(0, 30).reverse();
-  const hits = h ? Math.round(h.n * h.rate90) : 0;
-  return (
-    <Card className="proof-score">
-      <h3>Daily scorecard</h3>
-      {error && !data ? <ErrorState text="Couldn’t load the scorecard. Try again." onRetry={reload} />
-        : !data ? <Skeleton h={144} />
-        : !h || !h.n ? <EmptyState text="Collecting data. The first score posts after the next market close." />
-        : (
-          <>
-            <p>Inside the 90% band {int(hits)} of {int(h.n)} {h.n === 1 ? 'day' : 'days'} ({pct(hits / h.n)}).</p>
-            {rows.length > 0 && <div className="stack"><div className="label">Last {rows.length} scored {rows.length === 1 ? 'day' : 'days'}, oldest first</div><PixelBars height={16} values={Array.from({ length: 30 }, (_, i) => (i < rows.length ? 1 : 0))} risk={(i) => i < rows.length && !rows[i].in90} label={`Last ${rows.length} scored days: ${rows.filter((r) => r.in90).length} inside the 90% band, ${rows.filter((r) => !r.in90).length} outside`} /></div>}
-          </>
-        )}
-      <Link className="proof-link" href="/scorecard">See the scorecard</Link>
-    </Card>
-  );
-}
-
 export function Proof() {
   const { proof: p, proofError, reloadProof, latest, config } = useData();
   const wallet = p?.wallet ?? config?.fingerprintWallet ?? (p || proofError ? null : undefined);
@@ -111,7 +87,6 @@ export function Proof() {
           {!p && proofError ? <Card><ErrorState text="Couldn’t load the fingerprints. Try again." onRetry={reloadProof} /></Card> : <LatestFingerprint p={p} />}
           <VerifyCard wallet={wallet} latestId={latest?.run?.id ?? null} />
         </div>
-        {flagOn('DAILY_SCORECARD_PUBLIC') && <ScorecardTeaser />}
       </div>
     </Section>
   );

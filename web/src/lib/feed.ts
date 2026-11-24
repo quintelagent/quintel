@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FEATURES, flagOn } from '../features';
 import type { Briefing, Desk, Latest, Proof, RunRow } from './api';
 import { displayText } from './briefing';
 import { useData } from './data';
@@ -7,7 +6,7 @@ import { etShortDate, etTime, odds, pts } from './format';
 import { isIncidentRun, keptChange, keptOf } from './metrics';
 import { DEFAULT_SYMBOL, symbolConfig } from './symbols';
 
-export type FeedKind = 'run' | 'briefing' | 'fingerprint' | 'desk' | 'shipped';
+export type FeedKind = 'run' | 'briefing' | 'fingerprint' | 'desk';
 export interface FeedEvent { key: string; kind: FeedKind; ts: string; label: string; text: string; toast: string; change: number | null; href: string; action?: string }
 interface Sources { latest: Latest | null; runs: RunRow[] | null; briefings: Briefing[] | null; proof: Proof | null; desk: Desk | null }
 
@@ -56,9 +55,6 @@ export function composeFeed({ latest, runs, briefings, proof, desk }: Sources, s
     if (t.action !== 'enter' && t.action !== 'exit') continue;
     const text = `Paper desk ${t.action === 'enter' ? 'opened' : 'closed'} a position`;
     out.push({ key: `desk-${t.id}`, kind: 'desk', ts: t.ts, label: 'Paper trading. No real money.', text, toast: text, change: null, href: '/#desk' });
-  }
-  if (flagOn('SHIP_LOG')) {
-    for (const f of FEATURES) if (f.shippedAt) out.push({ key: `ship-${f.id}`, kind: 'shipped', ts: f.shippedAt, label: 'Shipped', text: f.name, toast: `Shipped · ${f.name}`, change: null, href: '/changelog' });
   }
   return out.sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts));
 }

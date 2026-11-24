@@ -25,8 +25,6 @@ Two columns. Left: eyebrow, H1, sub, big number + label, the two Stat tiles, cou
 - **Delayed** (no run for 20 min while open, 45 min while closed): last good data + Delayed pill in eyebrow: "Delayed · last run 10:10am ET".
 - **Error:** same as delayed; never blank.
 - **Market states:** eyebrow shows Market open / After hours (runs every 30 min) / Weekend / Holiday / Half day.
-- **Chain mode on** (feature 16): sub swaps to "The market's closed. The chain isn't."
-- **Hearing live on** (feature 18): inverted "Live" pill before the eyebrow.
 
 ## Copy (exact)
 - Eyebrow: "{Market state} · run {n} · {time} ET"
