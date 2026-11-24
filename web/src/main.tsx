@@ -11,4 +11,12 @@ window.addEventListener('vite:preloadError', (e) => {
   e.preventDefault();
   location.reload();
 });
-createRoot(document.getElementById('root')!).render(<App />);
+// Safari can run this script before the stylesheet arrives, and the pixel graphics read their colors from it
+let mounted = false;
+const mount = () => { if (!mounted) { mounted = true; createRoot(document.getElementById('root')!).render(<App />); } };
+const styled = () => getComputedStyle(document.documentElement).getPropertyValue('--ink') !== '';
+if (styled() || document.readyState === 'complete') mount();
+else {
+  document.querySelectorAll('link[rel="stylesheet"]').forEach((l) => { l.addEventListener('load', () => { if (styled()) mount(); }); l.addEventListener('error', mount); });
+  window.addEventListener('load', mount);
+}

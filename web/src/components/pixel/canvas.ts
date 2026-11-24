@@ -6,7 +6,9 @@ export function palette(): Palette {
   if (cached) return cached;
   const s = getComputedStyle(document.documentElement);
   const g = (n: string) => s.getPropertyValue(n).trim();
-  return (cached = { ink: g('--ink'), ink2: g('--ink-2'), line: g('--line'), risk: g('--risk'), card: g('--card'), paper: g('--paper') });
+  const p = { ink: g('--ink'), ink2: g('--ink-2'), line: g('--line'), risk: g('--risk'), card: g('--card'), paper: g('--paper') };
+  if (p.ink) cached = p; // never remember colors read before the stylesheet is there
+  return p;
 }
 /** one solid cell */
 export function cell(c: CanvasRenderingContext2D, x: number, y: number, s: number, color: string) {
