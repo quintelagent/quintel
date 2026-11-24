@@ -1,11 +1,13 @@
 import { Link } from '../../lib/router';
+import { FEATURES, flagOn } from '../../features';
 import { LINKS } from '../../lib/links';
-import { flagOn } from '../../features';
 import { MuteToggle, Wordmark } from './Header';
 
+/** pages of released features link themselves */
+const released = FEATURES.filter((f) => f.flag && /^\/(?!changelog)\w/.test(f.route) && flagOn(f.flag)).map((f): [string, string] => [f.route, f.name]);
 export function Footer() {
   const groups: { t: string; l: [string, string][] }[] = [
-    { t: 'Product', l: [['/briefings', 'Briefings'], ['/verify', 'Verify'], ['/status', 'Status'], ['/changelog', 'Changelog'], ...(flagOn('MCP_SERVER') ? [['/mcp', 'Use from your AI'] as [string, string]] : [])] },
+    { t: 'Product', l: [['/briefings', 'Briefings'], ['/verify', 'Verify'], ['/status', 'Status'], ['/changelog', 'Changelog'], ...released] },
     { t: 'Docs', l: [['/docs/readme', 'Readme'], ['/docs/methodology', 'Methodology'], ['/docs/proof', 'Proof'], ['/docs/limits', 'Limits'], ['/docs/security', 'Security'], ['/docs/trust', 'Trust'], ['/docs/deployments', 'Deployments'], ['/incidents', 'Incidents']] },
     { t: 'Elsewhere', l: [[LINKS.x, 'X @quintelagent'], [LINKS.github, 'GitHub']] },
   ];
