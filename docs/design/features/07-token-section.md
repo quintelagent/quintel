@@ -8,6 +8,7 @@ Say plainly what $QNTL is for and give the official addresses.
 ## Layout — phone
 H2: "$QNTL runs your own 1,000,000 futures."
 Sub: "Its job: burn it to run your own scenario as a public run."
+0. Until an official address exists, a Card on top: "Launching on Pons, Wed Nov 25, 8:30am ET. Any CA you see before launch is fake."
 1. "What it does" Card: "Burning $QNTL requests a run on your own scenario. The burn and the result are public. What is open today is on Status."
 3. "Official addresses" Card:
    - "Robinhood Chain · Pons" — AddressChip (0x12…ab, Copy, tap to expand full)
