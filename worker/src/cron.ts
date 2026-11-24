@@ -7,7 +7,7 @@ import { choosePrice, historyStale } from './pricing';
 import { getStockQuote } from './data/stockPrice';
 import { getDailyHistory, intradayVol } from './data/history';
 import { getNews } from './data/news';
-import { getChainPrice } from './data/chainToken';
+import { getChainPrice, DEFAULT_POOL, poolVolume } from './data/chainToken';
 import { triageHeadlines, newsIntensity } from './agent/triage';
 import { writeBriefing, type NewsForBriefing } from './agent/briefing';
 import { writeDeskNote } from './agent/deskNote';
@@ -242,6 +242,9 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
   if (et.hour === 0 && et.minute >= 30 && et.minute < 40) {
     try { log.push(`scorecard: ${await scoreMatured(env)} rows`); } catch (e) { log.push('scorecard failed: ' + (e as Error).message); }
   }
+
+  // 8. 24h pool volume, last so it can never delay a run or a fingerprint
+  try { await setMeta(env, 'token_volume', await poolVolume(env.NVDA_POOL_ADDRESS || DEFAULT_POOL, now)); } catch (e) { log.push('token volume failed: ' + (e as Error).message); }
 
   const safeLog = log.map((l) => redact(l, env).slice(0, 400));
   await setMeta(env, 'last_tick', { ts: nowIso, session, log: safeLog });

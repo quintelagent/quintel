@@ -1,5 +1,7 @@
 import { DESK_RULES, SCHEDULE, type Env } from './config';
-import { counter, getMeta } from './db';
+import { cachedBody } from './cache';
+import type { TokenVolume } from './data/chainToken';
+import { getMeta } from './db';
 import { etParts, sessionAt, nextOpen } from './session';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
@@ -8,8 +10,8 @@ import { scorecardSummary } from './proof/scorecard';
 import { initialDesk, type DeskState } from './desk/desk';
 import { CRISIS_WEIGHTS, MODEL_INFO } from '../../engine/src/index';
 
-const json = (data: unknown, maxAge = 30, status = 200) =>
-  new Response(JSON.stringify(data), {
+const raw = (body: string, maxAge = 30, status = 200) =>
+  new Response(body, {
     status,
     headers: {
       'content-type': 'application/json; charset=utf-8',
@@ -17,6 +19,8 @@ const json = (data: unknown, maxAge = 30, status = 200) =>
       'access-control-allow-origin': '*',
     },
   });
+
+const json = (data: unknown, maxAge = 30, status = 200) => raw(JSON.stringify(data), maxAge, status);
 
 export function nextRunAt(now: Date): Date {
   const open = sessionAt(now) === 'open';
@@ -35,24 +39,32 @@ function withStress<T extends { crisis: number; summary: any }>(r: T) {
 
 async function latest(env: Env) {
   const now = new Date();
-  const run = await env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, cpu_ms, summary FROM runs ORDER BY id DESC LIMIT 1').first<any>();
-  const prev = await env.DB.prepare('SELECT crisis FROM runs ORDER BY id DESC LIMIT 1 OFFSET 1').first<{ crisis: number }>();
-  const lastB = await env.DB.prepare('SELECT ts FROM briefings ORDER BY id DESC LIMIT 1').first<{ ts: string }>();
   const today = etParts(now).date;
-  const runsToday = await counter(env, 'runs_' + today);
-  const runsTotal = await counter(env, 'runs_total');
-  const chainPrice = await env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'chain:%' ORDER BY ts DESC LIMIT 1").first<any>();
-  const stockPrice = await env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'stock:%' ORDER BY ts DESC LIMIT 1").first<any>();
+  // one round trip
+  const [runs, lastB, counters, chain, stock, vol] = await env.DB.batch<any>([
+    env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, cpu_ms, summary FROM runs ORDER BY id DESC LIMIT 2'),
+    env.DB.prepare('SELECT ts FROM briefings ORDER BY id DESC LIMIT 1'),
+    env.DB.prepare('SELECT key, value FROM counters WHERE key IN (?, ?)').bind('runs_' + today, 'runs_total'),
+    env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'chain:%' ORDER BY ts DESC LIMIT 1"),
+    env.DB.prepare("SELECT ts, price FROM prices WHERE source LIKE 'stock:%' ORDER BY ts DESC LIMIT 1"),
+    env.DB.prepare('SELECT value FROM meta WHERE key = ?').bind('token_volume'),
+  ]);
+  const [run, prev] = runs.results ?? [];
+  const count = (k: string) => Number((counters.results ?? []).find((r: any) => r.key === k)?.value ?? 0);
+  const briefed = lastB.results?.[0]?.ts as string | undefined;
+  const volume = vol.results?.[0] ? (JSON.parse(vol.results[0].value) as TokenVolume) : null;
+  const runsToday = count('runs_' + today), runsTotal = count('runs_total');
   return {
     now: now.toISOString(),
     session: sessionAt(now),
     nextRunAt: nextRunAt(now).toISOString(),
     nextOpen: nextOpen(now).toISOString(),
-    nextBriefingAt: lastB ? new Date(new Date(lastB.ts).getTime() + SCHEDULE.briefingEveryMin * 60000).toISOString() : null,
+    nextBriefingAt: briefed ? new Date(new Date(briefed).getTime() + SCHEDULE.briefingEveryMin * 60000).toISOString() : null,
     scenariosToday: runsToday * 1_000_000,
     runsToday,
     scenariosTotal: runsTotal * 1_000_000,
-    prices: { stock: stockPrice, chain: chainPrice },
+    prices: { stock: stock.results?.[0] ?? null, chain: chain.results?.[0] ?? null },
+    tokenVolume: volume && now.getTime() - new Date(volume.ts).getTime() < 2 * 3600_000 ? volume : null,
     prevCrisis: prev?.crisis ?? null,
     prevStress: prev?.crisis ?? null,
     run: run ? withStress({ ...run, summary: JSON.parse(run.summary) }) : null,
@@ -63,7 +75,7 @@ async function runById(env: Env, id: number) {
   const run = await env.DB.prepare('SELECT * FROM runs WHERE id = ?').bind(id).first<any>();
   if (!run) return null;
   const o = await env.DB.prepare('SELECT inputs, output FROM run_outputs WHERE id = ?').bind(id).first<any>();
-  return { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
+  return o ? { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) } : null;
 }
 
 async function proof(env: Env) {
@@ -143,64 +155,58 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
   }
   if (req.method !== 'GET') return json({ error: 'method not allowed' }, 0, 405);
 
-  // edge cache
-  const cache = (caches as unknown as { default: Cache }).default;
-  const hit = await cache.match(req);
-  if (hit) return hit;
-
-  let res: Response;
+  const int = (k: string, d: number, max: number) => { const n = Math.floor(Number(url.searchParams.get(k) ?? d)); return Number.isFinite(n) ? Math.min(max, Math.max(1, n)) : d; };
   let m: RegExpMatchArray | null;
+  // the cache key holds only what changes the answer, so extra parameters cannot get around the cache
+  const serve = async (key: string, fresh: number, swr: number, load: () => Promise<unknown>): Promise<Response> => {
+    const body = await cachedBody(key, { fresh, swr }, async () => { const v = await load(); return v === null || v === undefined ? null : JSON.stringify(v); }, (x) => ctx.waitUntil(x));
+    return body === null ? json({ error: 'not found' }, 0, 404) : raw(body, fresh);
+  };
+  const all = async (q: D1PreparedStatement) => (await q.all<any>()).results || [];
+  const fpRow = (r: any) => (r ? { ...r, error: r.error ? redact(r.error, env).slice(0, 200) : null, payload: JSON.parse(r.payload) } : null);
   try {
-    if (p === '/api/latest') res = json(await latest(env), 20);
-    else if (p === '/api/health') res = json(await health(env), 0);
-    else if (p === '/api/config') res = json(config(env), 300);
-    else if ((m = p.match(/^\/api\/run\/(\d+)$/))) {
-      const r = await runById(env, Number(m[1]));
-      res = r ? json(r, 3600) : json({ error: 'not found' }, 0, 404);
-    } else if (p === '/api/runs') {
-      const since = url.searchParams.get('since') || new Date(Date.now() - 86400000).toISOString();
-      const limit = Math.min(500, Number(url.searchParams.get('limit') || 200));
-      const r = await env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, summary FROM runs WHERE ts >= ? ORDER BY id DESC LIMIT ?').bind(since, limit).all<any>();
-      res = json((r.results || []).map((x) => withStress({ ...x, summary: JSON.parse(x.summary) })), 30);
-    } else if ((m = p.match(/^\/api\/sample\/(\d+|latest)$/))) {
-      const row = m[1] === 'latest'
-        ? await env.DB.prepare('SELECT id, sample FROM run_outputs ORDER BY id DESC LIMIT 1').first<any>()
-        : await env.DB.prepare('SELECT id, sample FROM run_outputs WHERE id = ?').bind(Number(m[1])).first<any>();
-      res = row ? json({ id: row.id, ...JSON.parse(row.sample) }, m[1] === 'latest' ? 30 : 3600) : json({ error: 'not found' }, 0, 404);
-    } else if ((m = p.match(/^\/api\/output\/(\d+|latest)$/))) {
-      const row = m[1] === 'latest'
-        ? await env.DB.prepare('SELECT id, output FROM run_outputs ORDER BY id DESC LIMIT 1').first<any>()
-        : await env.DB.prepare('SELECT id, output FROM run_outputs WHERE id = ?').bind(Number(m[1])).first<any>();
-      res = row ? json({ id: row.id, output: JSON.parse(row.output) }, m[1] === 'latest' ? 30 : 3600) : json({ error: 'not found' }, 0, 404);
-    } else if (p === '/api/briefings') {
-      const limit = Math.min(100, Number(url.searchParams.get('limit') || 20));
-      const r = await env.DB.prepare('SELECT id, ts, run_id, body, hash, model, fallback FROM briefings ORDER BY id DESC LIMIT ?').bind(limit).all<any>();
-      res = json((r.results || []).map((x) => ({ ...x, body: JSON.parse(x.body) })), 30);
-    } else if (p === '/api/news') {
-      const r = await env.DB.prepare('SELECT ts, title, url, source, score, category, one_line FROM news WHERE relevant = 1 ORDER BY ts DESC LIMIT 30').all();
-      res = json(r.results || [], 60);
-    } else if (p === '/api/desk') res = json(await desk(env), 30);
-    else if (p === '/api/proof') res = json(await proof(env), 30);
-    else if ((m = p.match(/^\/api\/fingerprint\/(.+)$/))) {
-      const r = await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(decodeURIComponent(m[1])).first<any>();
-      res = r ? json({ ...r, error: r.error ? redact(r.error, env).slice(0, 200) : null, payload: JSON.parse(r.payload) }, 60) : json({ error: 'not found' }, 0, 404);
-    } else if (p === '/api/fingerprint-for-run') {
-      const id = Number(url.searchParams.get('id'));
-      const run = await env.DB.prepare('SELECT ts FROM runs WHERE id = ?').bind(id).first<{ ts: string }>();
-      if (!run) res = json({ error: 'not found' }, 0, 404);
-      else {
+    if (p === '/api/latest') return await serve(p, 20, 60, () => latest(env));
+    if (p === '/api/health') return await serve(p, 10, 20, () => health(env));
+    if (p === '/api/config') return await serve(p, 300, 600, async () => config(env));
+    if ((m = p.match(/^\/api\/run\/(\d{1,9})$/))) { const id = Number(m[1]); return await serve(p, 3600, 86400, () => runById(env, id)); }
+    if (p === '/api/runs') {
+      const t = Date.parse(url.searchParams.get('since') ?? '');
+      const since = new Date(Math.floor((Number.isFinite(t) ? t : Date.now() - 86400000) / 3600_000) * 3600_000).toISOString(); // whole hours
+      const limit = int('limit', 200, 500);
+      return await serve(`${p}?since=${since}&limit=${limit}`, 30, 60, async () => (await all(env.DB.prepare('SELECT id, ts, session, seed, input_hash, output_hash, spot, price_source, crisis, summary FROM runs WHERE ts >= ? ORDER BY id DESC LIMIT ?').bind(since, limit))).map((x) => withStress({ ...x, summary: JSON.parse(x.summary) })));
+    }
+    if ((m = p.match(/^\/api\/(sample|output)\/(\d{1,9}|latest)$/))) {
+      const col = m[1], id = m[2];
+      return await serve(p, id === 'latest' ? 30 : 3600, id === 'latest' ? 60 : 86400, async () => {
+        const row = id === 'latest'
+          ? await env.DB.prepare(`SELECT id, ${col} AS v FROM run_outputs ORDER BY id DESC LIMIT 1`).first<any>()
+          : await env.DB.prepare(`SELECT id, ${col} AS v FROM run_outputs WHERE id = ?`).bind(Number(id)).first<any>();
+        return row ? (col === 'sample' ? { id: row.id, ...JSON.parse(row.v) } : { id: row.id, output: JSON.parse(row.v) }) : null;
+      });
+    }
+    if (p === '/api/briefings') {
+      const limit = int('limit', 20, 100);
+      return await serve(`${p}?limit=${limit}`, 30, 60, async () => (await all(env.DB.prepare('SELECT id, ts, run_id, body, hash, model, fallback FROM briefings ORDER BY id DESC LIMIT ?').bind(limit))).map((x) => ({ ...x, body: JSON.parse(x.body) })));
+    }
+    if (p === '/api/news') return await serve(p, 60, 120, () => all(env.DB.prepare('SELECT ts, title, url, source, score, category, one_line FROM news WHERE relevant = 1 ORDER BY ts DESC LIMIT 30')));
+    if (p === '/api/desk') return await serve(p, 30, 60, () => desk(env));
+    if (p === '/api/proof') return await serve(p, 30, 60, () => proof(env));
+    if ((m = p.match(/^\/api\/fingerprint\/(.{1,60})$/))) { const hour = decodeURIComponent(m[1]); return await serve('/api/fingerprint/' + encodeURIComponent(hour), 60, 120, async () => fpRow(await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>())); }
+    if (p === '/api/fingerprint-for-run') {
+      const id = Math.floor(Number(url.searchParams.get('id')));
+      if (!Number.isFinite(id) || id < 1) return json({ error: 'not found' }, 0, 404);
+      return await serve(`${p}?id=${id}`, 60, 60, async () => {
+        const run = await env.DB.prepare('SELECT ts FROM runs WHERE id = ?').bind(id).first<{ ts: string }>();
+        if (!run) return null;
         const hour = new Date(Math.floor(new Date(run.ts).getTime() / 3600_000) * 3600_000).toISOString();
-        const r = await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>();
-        res = json(r ? { ...r, error: r.error ? redact(r.error, env).slice(0, 200) : null, payload: JSON.parse(r.payload) } : { hour, status: 'not_yet' }, 60);
-      }
-    } else if (p === '/api/scorecard') res = json(await scorecardSummary(env), 300);
-    else if (p === '/api/history') {
-      const r = await env.DB.prepare('SELECT date, close FROM history_daily ORDER BY date DESC LIMIT 260').all<any>();
-      res = json((r.results || []).reverse(), 600);
-    } else res = json({ error: 'not found' }, 0, 404);
+        return fpRow(await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>()) ?? { hour, status: 'not_yet' };
+      });
+    }
+    if (p === '/api/scorecard') return await serve(p, 300, 600, () => scorecardSummary(env));
+    if (p === '/api/history') return await serve(p, 600, 1200, async () => (await all(env.DB.prepare('SELECT date, close FROM history_daily ORDER BY date DESC LIMIT 260'))).reverse());
+    return json({ error: 'not found' }, 0, 404);
   } catch (e) {
-    return json({ error: safeError(e, env) }, 0, 500);
+    console.error('api', p, safeError(e, env));
+    return json({ error: 'temporarily unavailable' }, 0, 503);
   }
-  if (res.status === 200 && res.headers.get('cache-control') !== 'no-store') ctx.waitUntil(cache.put(req, res.clone()));
-  return res;
 }

@@ -32,7 +32,7 @@ export function runFacts(o: RunOutput | null) {
     oneMonth: {
       p5: px(c.horizons[2].pct.p5), p25: px(c.horizons[2].pct.p25), median: px(c.horizons[2].pct.p50), p75: px(c.horizons[2].pct.p75), p95: px(c.horizons[2].pct.p95),
       pUpPct: pct(c.probs[2].pUp), pDown10Pct: pct(c.probs[2].pDown10), pDown20Pct: pct(c.probs[2].pDown20),
-      pAbovePreCrisisPct: pct(c.probs[2].pAbovePreCrisis),
+      pAboveRecentHighPct: pct(c.probs[2].pAbovePreCrisis),
       expectedMaxDrawdownPct: pct(c.expMaxDrawdown1m), var95Pct: pct(c.var95_1m),
     },
   };
@@ -47,6 +47,7 @@ Hard rules:
 - Describe legal/regulatory matters only as reported ("reported SEC probe"). Nothing about anyone's personal life.
 - Sources: only items from NEWS that you actually reference, copied exactly.
 - Write prices as $ with two decimals and fields ending in Pct with a % sign. Say "scenario odds" or "share of scenarios", not "probability".
+- Say "Stress Level" for stressLevel and "recent high" for pAboveRecentHighPct. Never write a field name, and never the word crisis.
 - Plain English, calm, precise. No emojis, no hype.`;
 
 const usd = (x: number) => '$' + x.toFixed(2);
