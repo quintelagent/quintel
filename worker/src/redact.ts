@@ -17,5 +17,5 @@ export function safeError(e: unknown, env?: Partial<Env>): string {
   const x = e as { details?: string; shortMessage?: string; message?: string };
   const head = x?.shortMessage || x?.message || String(e);
   const text = x?.details ? `${head.split('\n')[0]} (${x.details})` : head.split('\n')[0];
-  return redact(text, env).slice(0, 200);
+  return redact(text, env).slice(0, 240);
 }

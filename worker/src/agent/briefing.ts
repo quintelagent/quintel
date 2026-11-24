@@ -83,7 +83,7 @@ export async function writeBriefing(env: Env, cur: RunOutput, prev: RunOutput | 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         const extra = rejections.length ? `\n\nYOUR LAST DRAFT WAS REJECTED: ${rejections[rejections.length - 1]}. Fix it.` : '';
-        const r = await chatJson(env, 'briefing', env.BRIEFING_MODEL, SYSTEM, user + extra, 1400);
+        const r = await chatJson(env, 'briefing', env.BRIEFING_MODEL, SYSTEM, user + extra, 4000);
         const b = parseJsonLoose<Briefing>(r.text);
         if (!validShape(b)) { rejections.push('bad JSON shape'); continue; }
         const urls = new Set(news.map((n) => n.url));

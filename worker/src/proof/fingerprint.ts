@@ -1,6 +1,6 @@
 import type { Env } from '../config';
 import { hashObject } from '../../../engine/src/hash';
-import { safeError } from '../redact';
+import { redact, safeError } from '../redact';
 import { rpcUrls } from '../data/chainToken';
 
 export interface FingerprintPayload {
@@ -46,23 +46,33 @@ export async function buildPayload(env: Env, hourStart: Date): Promise<Fingerpri
 /** Send a 0-value self-transaction carrying the hash as calldata. Returns tx hash. */
 export async function sendFingerprintTx(env: Env, hash: string): Promise<string> {
   if (!env.FINGERPRINT_KEY) throw new Error('FINGERPRINT_KEY not set');
-  const { createWalletClient, http, fallback, defineChain } = await import('viem');
+  const { createWalletClient, http, defineChain } = await import('viem');
   const { privateKeyToAccount } = await import('viem/accounts');
-  const urls = rpcUrls(env);
-  const chain = defineChain({
-    id: Number(env.CHAIN_ID || 4663),
-    name: 'Robinhood Chain',
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    rpcUrls: { default: { http: urls } },
-  });
   const key = (env.FINGERPRINT_KEY.startsWith('0x') ? env.FINGERPRINT_KEY : '0x' + env.FINGERPRINT_KEY) as `0x${string}`;
   const account = privateKeyToAccount(key);
   // never post from a wallet other than the published one
   if (env.FINGERPRINT_ADDRESS && account.address.toLowerCase() !== env.FINGERPRINT_ADDRESS.toLowerCase()) {
     throw new Error(`FINGERPRINT_KEY belongs to ${account.address}, not the published wallet ${env.FINGERPRINT_ADDRESS}`);
   }
-  const client = createWalletClient({ account, chain, transport: fallback(urls.map((u) => http(u))) });
-  return client.sendTransaction({ to: account.address, value: 0n, data: hash as `0x${string}` });
+  // one RPC at a time, so a failure says which one failed (labels only, never the URL)
+  const urls = rpcUrls(env);
+  const errors: string[] = [];
+  for (const [i, url] of urls.entries()) {
+    const label = env.RPC_URL && i === 0 ? 'primary RPC' : 'public RPC';
+    try {
+      const chain = defineChain({
+        id: Number(env.CHAIN_ID || 4663),
+        name: 'Robinhood Chain',
+        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+        rpcUrls: { default: { http: [url] } },
+      });
+      const client = createWalletClient({ account, chain, transport: http(url, { retryCount: 1, timeout: 15000 }) });
+      return await client.sendTransaction({ to: account.address, value: 0n, data: hash as `0x${string}` });
+    } catch (e) {
+      errors.push(`${label}: ${safeError(e, env)}`);
+    }
+  }
+  throw new Error(errors.join(' | '));
 }
 
 /** Create the record for the hour that just ended and (re)try sending every pending fingerprint. */
@@ -89,8 +99,8 @@ export async function processFingerprints(env: Env, now: Date): Promise<string[]
       log.push(`sent ${p.hour} ${tx}`);
     } catch (e) {
       await env.DB.prepare('UPDATE fingerprints SET attempts = attempts + 1, error = ? WHERE hour = ?')
-        .bind(safeError(e, env), p.hour).run();
-      log.push(`fingerprint send failed ${p.hour}: ${safeError(e, env)}`);
+        .bind(redact((e as Error).message, env).slice(0, 400), p.hour).run();
+      log.push(`fingerprint send failed ${p.hour}: ${redact((e as Error).message, env).slice(0, 400)}`);
     }
   }
   return log;

@@ -59,7 +59,7 @@ async function triageNews(env: Env, now: Date, log: string[]): Promise<{ intensi
       if (!seen) fresh.push(h);
     }
     if (fresh.length) {
-      const tri = await triageHeadlines(env, fresh);
+      const tri = await triageHeadlines(env, fresh, log);
       const stmts = fresh.map((h, i) => env.DB.prepare(
         'INSERT OR IGNORE INTO news (id, ts, title, url, source, relevant, score, category, one_line, triaged_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
       ).bind(h.id, h.ts, h.title, h.url, h.source, tri[i].relevant ? 1 : 0, tri[i].score, tri[i].category, tri[i].oneLine, now.toISOString()));

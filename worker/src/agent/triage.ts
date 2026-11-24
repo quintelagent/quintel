@@ -1,5 +1,6 @@
 import type { Env } from '../config';
 import type { Headline } from '../data/news';
+import { safeError } from '../redact';
 import { chatJson, parseJsonLoose } from './openrouter';
 
 export interface Triage { id: string; relevant: boolean; score: number; category: string; oneLine: string }
@@ -21,11 +22,11 @@ export function heuristicTriage(h: Headline): Triage {
   return { id: h.id, relevant: score >= 0.3, score, category: 'other', oneLine: h.title.slice(0, 140) };
 }
 
-export async function triageHeadlines(env: Env, items: Headline[]): Promise<Triage[]> {
+export async function triageHeadlines(env: Env, items: Headline[], log: string[] = []): Promise<Triage[]> {
   if (!items.length) return [];
   try {
     const user = JSON.stringify(items.map((h) => ({ id: h.id, title: h.title, source: h.source })));
-    const r = await chatJson(env, 'triage', env.TRIAGE_MODEL, SYSTEM, user, 1500);
+    const r = await chatJson(env, 'triage', env.TRIAGE_MODEL, SYSTEM, user, 6000);
     const j = parseJsonLoose<{ items: Triage[] }>(r.text);
     const byId = new Map(j.items.map((x) => [x.id, x]));
     return items.map((h) => {
@@ -39,7 +40,8 @@ export async function triageHeadlines(env: Env, items: Headline[]): Promise<Tria
         oneLine: String(x.oneLine || h.title).slice(0, 200),
       };
     });
-  } catch {
+  } catch (e) {
+    log.push(`AI triage failed, used keyword scoring: ${safeError(e, env)}`);
     return items.map(heuristicTriage);
   }
 }

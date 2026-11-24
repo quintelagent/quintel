@@ -35,6 +35,7 @@ export async function chatJson(env: Env, purpose: string, model: string, system:
         temperature: 0.2,
         response_format: { type: 'json_object' },
         usage: { include: true },
+        reasoning: { effort: 'low' },
         messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
       }),
     });
@@ -45,7 +46,7 @@ export async function chatJson(env: Env, purpose: string, model: string, system:
     cost = typeof j?.usage?.cost === 'number' ? j.usage.cost : tokensIn * price.in + tokensOut * price.out;
     if (!res.ok) throw new Error(`openrouter ${res.status}: ${j?.error?.message ?? ''}`);
     const text: string = j?.choices?.[0]?.message?.content ?? '';
-    if (!text) throw new Error('empty completion');
+    if (!text) throw new Error(`empty completion (finish: ${j?.choices?.[0]?.finish_reason ?? 'unknown'})`);
     ok = 1;
     return { text, tokensIn, tokensOut, cost };
   } finally {

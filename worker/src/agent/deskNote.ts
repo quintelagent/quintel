@@ -11,7 +11,7 @@ export async function writeDeskNote(env: Env, t: TradeEvent, summary: unknown): 
   const fallback = `Paper ${t.action === 'enter' ? 'entry' : 'exit'} (${t.side}) at $${t.price.toFixed(2)} — rule: ${t.reason}.`;
   if (!env.OPENROUTER_API_KEY || (await capReached(env))) return fallback;
   try {
-    const r = await chatJson(env, 'desk_note', env.BRIEFING_MODEL, SYSTEM, `TRADE: ${JSON.stringify(t)}\nRUN: ${JSON.stringify(summary)}`, 200);
+    const r = await chatJson(env, 'desk_note', env.BRIEFING_MODEL, SYSTEM, `TRADE: ${JSON.stringify(t)}\nRUN: ${JSON.stringify(summary)}`, 1500);
     const note = String(parseJsonLoose<{ note: string }>(r.text).note || '').slice(0, 400);
     const g = guardText(note, allowedNumbers(t, summary));
     return note && g.ok ? note : fallback;
