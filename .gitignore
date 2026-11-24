@@ -8,3 +8,4 @@ test-results
 playwright-report
 web/test/engine.bundle.js
 .DS_Store
+private/

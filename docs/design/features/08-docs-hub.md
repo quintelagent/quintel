@@ -19,7 +19,7 @@ Stacked Cards (title, one line, "Read"):
 | Changelog | "Everything we've shipped." |
 | Incidents | "Anything that broke, and what we did about it." |
 
-Docs that do not exist yet (Security, Deployments) are left out until written; Architecture and Decisions are listed.
+Docs that do not exist yet (Security) are left out until written; Architecture and Decisions are listed.
 
 Laptop: 2-column grid (3 at 1100px+).
 
