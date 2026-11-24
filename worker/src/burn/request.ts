@@ -9,6 +9,8 @@ import {
 
 export const MAX_BODY = 8192;
 const GALLERY_SIZE = 24;
+/** The page never waits longer than this for a slow node; the next answer has the decimals. */
+const DECIMALS_WAIT = 4000;
 const now = () => new Date().toISOString();
 
 export function burnDomain(env: Pick<Env, 'SITE_URL'>): string {
@@ -20,7 +22,7 @@ export function burnDomain(env: Pick<Env, 'SITE_URL'>): string {
 export async function burnSummary(env: Env): Promise<BurnSummary> {
   const cfg = burnConfig(env);
   const sum = await env.DB.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(tokens), 0) AS t FROM burn_requests').first<{ n: number; t: number }>();
-  const decimals = cfg ? await tokenDecimals(env, cfg.token).catch(() => null) : null;
+  const decimals = cfg ? await Promise.race([tokenDecimals(env, cfg.token).catch(() => null), new Promise<null>((f) => setTimeout(() => f(null), DECIMALS_WAIT))]) : null;
   return {
     open: !!cfg, status: cfg ? 'Open' : NOT_OPEN,
     domain: burnDomain(env), chainId: Number(env.CHAIN_ID || 4663), explorer: env.CHAIN_EXPLORER, burnAddress: DEAD_ADDRESS, confirmations: CONFIRMATIONS,
@@ -31,6 +33,7 @@ export async function burnSummary(env: Env): Promise<BurnSummary> {
 }
 
 interface Row { id: number; tx: string; burner: string; price: number; horizon: Scenario['horizon']; shock: string | null; anonymous: number; status: BurnStatus; created_at: string; queued_at: string }
+interface Stored { id: number; log_index: number; burner: string; request_hash: string; status: BurnStatus }
 interface RunRow { ts: string; base_run_id: number; seed: string; input_hash: string; output_hash: string; paths_per_model: number; inputs: string; result: string }
 const scenarioOf = (r: Pick<Row, 'price' | 'horizon' | 'shock'>): Scenario => ({ price: r.price, horizon: r.horizon, shock: r.shock ? JSON.parse(r.shock) : null });
 const shown = (r: Pick<Row, 'burner' | 'anonymous' | 'tx'>) => (r.anonymous ? { by: null, tx: null } : { by: shortAddress(r.burner), tx: r.tx });
@@ -72,12 +75,20 @@ export function limiter(max: number, windowMs: number) {
     const e = seen.get(key);
     if (e && t < e.until) return ++e.n <= max;
     if (seen.size > 5000) for (const [k, v] of seen) if (t >= v.until) seen.delete(k);
-    if (seen.size > 5000) return false;
+    // still full: the oldest goes, so a crowd can never lock everyone else out
+    if (seen.size > 5000) seen.delete(seen.keys().next().value!);
     seen.set(key, { n: 1, until: t + windowMs });
     return true;
   };
 }
-const perVisitor = limiter(20, 60_000), everyone = limiter(240, 60_000);
+const perVisitor = limiter(30, 60_000), everyone = limiter(240, 60_000);
+/** One IPv6 visitor owns a whole /64, so that is what counts. */
+export function visitorKey(ip: string | null): string {
+  if (!ip?.includes(':')) return ip || 'none';
+  const [head, tail] = ip.toLowerCase().split('::'), a = head ? head.split(':') : [], b = tail ? tail.split(':') : [];
+  const all = tail === undefined ? a : [...a, ...Array(Math.max(0, 8 - a.length - b.length)).fill('0'), ...b];
+  return all.slice(0, 4).map((x) => x.replace(/^0+(?=.)/, '')).join(':');
+}
 
 /** The body as text, or null when it is over the limit. Never reads past it. */
 async function readBody(req: Request): Promise<string | null> {
@@ -128,47 +139,52 @@ export async function postBurn(req: Request, env: Env): Promise<Answer> {
 async function handle(req: Request, env: Env): Promise<Answer> {
   const cfg = burnConfig(env);
   if (!cfg) return no(503, 'not_open');
-  if (!perVisitor(req.headers.get('cf-connecting-ip') || 'none') || !everyone('all')) return no(429, 'slow_down');
+  if (!perVisitor(visitorKey(req.headers.get('cf-connecting-ip')))) return no(429, 'slow_down');
   // a JSON content type also keeps other sites' pages from posting here
   if (!/^application\/json\b/i.test(req.headers.get('content-type') || '')) return no(400, 'bad_request');
   const text = await readBody(req);
   if (text === null) return no(413, 'too_large');
   const b = parseBody(text);
   if (!b) return no(400, 'bad_request');
+  // only what costs something counts here, so junk cannot use it up
+  if (!everyone('all')) return no(429, 'slow_down');
 
   const message = burnMessage({ domain: burnDomain(env), chainId: cfg.chainId, tx: b.tx, scenario: b.scenario, anonymous: b.anonymous });
   const signer = await signerOf(message, b.signature);
   if (!signer) return no(400, 'bad_request');
 
+  const hash = keccak256(message + '\n' + signer), s = b.scenario, shock = s.shock ? JSON.stringify(s.shock) : null, anon = b.anonymous ? 1 : 0;
   const last = await env.DB.prepare('SELECT spot FROM runs ORDER BY id DESC LIMIT 1').first<{ spot: number }>();
   if (!last) return no(503, 'unavailable');
-  if (!priceInSpan(b.scenario.price, last.spot)) return no(422, 'out_of_range');
-
-  const found = await fetchBurn(env, b.tx, cfg.token);
-  if (!found) return no(404, 'not_found');
-  const decimals = await tokenDecimals(env, cfg.token);
-  const c = checkBurn(found.receipt, found.head, signer, rawAmount(cfg.amount, decimals), cfg.fromBlock);
-  if (c.kind === 'waiting') return { status: 202, body: { waiting: true, confirmations: c.confirmations, needed: CONFIRMATIONS } };
-  if (c.kind !== 'ok') return no(422, c.kind);
-
-  // a transaction can hold several burns: each one is good for one run, and the same message never uses two
-  const hash = keccak256(message + '\n' + signer), at = now(), s = b.scenario, shock = s.shock ? JSON.stringify(s.shock) : null;
   for (let tries = 0; tries < 3; tries++) {
-    const rows = (await env.DB.prepare('SELECT id, log_index, burner, request_hash, status FROM burn_requests WHERE tx = ?').bind(b.tx).all<{ id: number; log_index: number; burner: string; request_hash: string; status: BurnStatus }>()).results || [];
-    const same = rows.find((r) => r.request_hash === hash);
+    const rows = (await env.DB.prepare('SELECT id, log_index, burner, request_hash, status FROM burn_requests WHERE tx = ?').bind(b.tx).all<Stored>()).results || [];
+    const mine = rows.filter((r) => r.burner === signer), same = mine.find((r) => r.request_hash === hash);
     if (same && same.status !== 'failed') return yes(same.id, same.status);
-    const free = same ? undefined : c.burns.find((t) => !rows.some((r) => r.log_index === t.logIndex));
-    if (free) {
-      const ins = await env.DB.prepare('INSERT OR IGNORE INTO burn_requests (tx, log_index, block, burner, amount, tokens, price, horizon, shock, anonymous, request_hash, signature, created_at, queued_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id')
-        .bind(b.tx, free.logIndex, c.block, signer, free.value.toString(), tokensOf(free.value, decimals), s.price, s.horizon, shock, b.anonymous ? 1 : 0, hash, b.signature, at, at).first<{ id: number }>();
-      if (ins) return yes(ins.id, 'queued');
-      continue; // another request took this burn a moment ago: look again
+    if (!priceInSpan(s.price, last.spot)) return no(422, 'out_of_range');
+    // a burn that was already verified keeps counting, whatever the settings are now
+    const retry = same ?? mine.find((r) => r.status === 'failed');
+    if (retry) {
+      const up = await env.DB.prepare("UPDATE burn_requests SET status = 'queued', attempts = 0, error = NULL, price = ?, horizon = ?, shock = ?, anonymous = ?, request_hash = ?, signature = ?, queued_at = ?, started_at = NULL WHERE id = ? AND status = 'failed' RETURNING id")
+        .bind(s.price, s.horizon, shock, anon, hash, b.signature, now(), retry.id).first<{ id: number }>();
+      if (up) return yes(up.id, 'queued');
+      continue; // another request retried it a moment ago: look again
     }
-    const retry = same ?? rows.find((r) => r.status === 'failed' && r.burner === signer);
-    if (!retry) return no(409, 'used');
-    const up = await env.DB.prepare("UPDATE burn_requests SET status = 'queued', attempts = 0, error = NULL, price = ?, horizon = ?, shock = ?, anonymous = ?, request_hash = ?, signature = ?, queued_at = ?, started_at = NULL WHERE id = ? AND status = 'failed' RETURNING id")
-      .bind(s.price, s.horizon, shock, b.anonymous ? 1 : 0, hash, b.signature, at, retry.id).first<{ id: number }>();
-    if (up) return yes(up.id, 'queued');
+
+    const found = await fetchBurn(env, b.tx, cfg.token);
+    if (!found) return no(404, 'not_found');
+    const decimals = await tokenDecimals(env, cfg.token);
+    const c = checkBurn(found.receipt, found.head, signer, rawAmount(cfg.amount, decimals), cfg.fromBlock);
+    if (c.kind === 'waiting') return { status: 202, body: { waiting: true, confirmations: c.confirmations, needed: CONFIRMATIONS } };
+    if (c.kind !== 'ok') return no(422, c.kind);
+    // a transaction can hold several burns: each one is good for one run.
+    // The count is checked too: if the chain puts the transaction in another block, its log numbers change.
+    const free = mine.length < c.burns.length ? c.burns.find((t) => !rows.some((r) => r.log_index === t.logIndex)) : undefined;
+    if (!free) return no(409, 'used');
+    const at = now();
+    const ins = await env.DB.prepare('INSERT OR IGNORE INTO burn_requests (tx, log_index, block, burner, amount, tokens, price, horizon, shock, anonymous, request_hash, signature, created_at, queued_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id')
+      .bind(b.tx, free.logIndex, c.block, signer, free.value.toString(), tokensOf(free.value, decimals), s.price, s.horizon, shock, anon, hash, b.signature, at, at).first<{ id: number }>();
+    if (ins) return yes(ins.id, 'queued');
+    // another request took this burn a moment ago: look again
   }
   return no(503, 'unavailable');
 }

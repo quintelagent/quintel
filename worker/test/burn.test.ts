@@ -5,7 +5,7 @@ import { handleApi } from '../src/api';
 import { resetCache } from '../src/cache';
 import { burnConfig, checkBurn, fetchBurn, rawAmount, readReceipt, resetChain, rpc, tokenDecimals, TRANSFER_TOPIC, type Receipt } from '../src/burn/chain';
 import { customRun, skipReason } from '../src/burn/queue';
-import { burnDomain, limiter, parseBody, signerOf, tokensOf } from '../src/burn/request';
+import { burnDomain, limiter, parseBody, signerOf, tokensOf, visitorKey } from '../src/burn/request';
 import { burnMessage, customInputs, parseScenario, priceInSpan, shockText } from '../src/burn/scenario';
 import { account, DOMAIN, env, fakeRpc, log, ONE, OTHER, post, receipt, SCENARIO, signedBody, TOKEN, TX } from './burnFixtures';
 
@@ -138,6 +138,14 @@ describe('burn settings', () => {
   it('open only when every value is set and well formed', () => {
     expect(burnConfig(env())).toEqual({ token: TOKEN, amount: 1000, fromBlock: 100, chainId: 4663 });
     for (const o of [{ QNTL_TOKEN_PONS: '' }, { QNTL_TOKEN_PONS: undefined }, { QNTL_TOKEN_PONS: '0x12' }, { BURN_AMOUNT: '' }, { BURN_AMOUNT: undefined }, { BURN_AMOUNT: '0' }, { BURN_AMOUNT: '-5' }, { BURN_AMOUNT: '1.5' }, { BURN_AMOUNT: '1e6' }, { BURN_FROM_BLOCK: undefined }, { BURN_FROM_BLOCK: '' }, { BURN_FROM_BLOCK: 'latest' }]) expect(burnConfig(env(o)), JSON.stringify(o)).toBeNull();
+  });
+  it('counts an IPv6 visitor by its /64', () => {
+    expect([visitorKey('1.2.3.4'), visitorKey(null), visitorKey('2001:db8:1:2:3:4:5:6'), visitorKey('2001:0DB8:1:2::9'), visitorKey('2001:db8::1')]).toEqual(['1.2.3.4', 'none', '2001:db8:1:2', '2001:db8:1:2', '2001:db8:0:0']);
+  });
+  it('a crowd cannot lock everyone else out', () => {
+    const ok = limiter(1, 1000);
+    for (let i = 0; i < 6000; i++) expect(ok('v' + i, 0)).toBe(true);
+    expect([ok('v5999', 1), ok('new', 1)]).toEqual([false, true]);
   });
   it('limits requests without storing anything', () => {
     const ok = limiter(3, 1000);

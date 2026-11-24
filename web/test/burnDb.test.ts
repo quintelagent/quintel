@@ -99,6 +99,27 @@ describe('burn requests', () => {
     expect(row(1)).toMatchObject({ amount: '2500000000', tokens: 2500 });
     expect(await burnSummary(env)).toMatchObject({ decimals: 6, amountRaw: '1000000000', burned: 2500 });
   });
+  it('a retry needs no node, and settings that changed since do not strand the burn', async () => {
+    await send();
+    D.db.exec("UPDATE burn_requests SET status = 'failed', attempts = 3");
+    chain.down = true; resetChain(); env = { ...env, BURN_AMOUNT: '5000', BURN_FROM_BLOCK: '900' };
+    expect((await send(me, { scenario: { ...SCENARIO, price: 171 } })).body).toEqual({ id: 1, status: 'queued' });
+    expect((await send(me, { scenario: { ...SCENARIO, price: 171 } })).body).toEqual({ id: 1, status: 'queued' });
+    expect(row(1)).toMatchObject({ price: 171, amount: (1000n * ONE).toString() });
+    expect((await send(you)).status).toBe(503);
+  });
+  it('a burn the chain moved to another block is still one burn', async () => {
+    await send();
+    chain.receipts[TX] = receipt([log({ from: me.address, index: 6 })], { blockNumber: '0x1f5' });
+    chain.head = 600;
+    expect((await send(me, { scenario: { ...SCENARIO, price: 170 } })).body).toEqual({ error: 'used' });
+    expect(await burnSummary(env)).toMatchObject({ burned: 1000, requests: 1 });
+  });
+  it('an answer already given does not depend on today’s price', async () => {
+    await send();
+    D.db.exec('UPDATE runs SET spot = 1700');
+    expect((await send()).body).toEqual({ id: 1, status: 'queued' });
+  });
   it('a price far from the market is refused before the burn is used', async () => {
     expect(await send(me, { scenario: { ...SCENARIO, price: 17 } })).toEqual({ status: 422, body: { error: 'out_of_range' } });
     expect((await send()).status).toBe(200);
@@ -112,8 +133,8 @@ describe('burn requests', () => {
     expect(await raw(JSON.stringify(b) + ' '.repeat(8200))).toBe(413);
     expect(await raw({ ...b, signature: '0x' + 'ff'.repeat(65) })).toBe(400);
     const same = [];
-    for (let i = 0; i < 22; i++) same.push((await postBurn(post('{', { 'cf-connecting-ip': 'one' }), env)).status);
-    expect([same.filter((s) => s === 400).length, same.filter((s) => s === 429).length]).toEqual([20, 2]);
+    for (let i = 0; i < 32; i++) same.push((await postBurn(post('{', { 'cf-connecting-ip': 'one' }), env)).status);
+    expect([same.filter((s) => s === 400).length, same.filter((s) => s === 429).length]).toEqual([30, 2]);
   });
   it('not open until the owner sets every value', async () => {
     for (const k of ['QNTL_TOKEN_PONS', 'BURN_AMOUNT', 'BURN_FROM_BLOCK']) {
