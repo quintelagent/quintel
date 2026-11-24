@@ -25,7 +25,7 @@ export function PixelFan({ output, label }: { output: RunOutput | null; label: s
       ctx.clearRect(a * pitch, 0, (b - a) * pitch, c.height);
       for (let x = a; x < b; x++) for (let y = 0; y < rows; y++) {
         const v = f ? f.cells[y * cols + x] : x % 2 || y % 2 ? 0 : 3; // loading: a light dot grid
-        if (v) cell(ctx, x * pitch, y * pitch, s, v === 1 ? p.ink : v === 2 ? p.risk : p.line, v === 2);
+        if (v) cell(ctx, x * pitch, y * pitch, s, v === 1 ? p.ink : v === 2 ? p.risk : p.line);
       }
     };
     const prev = shown.current && shown.current.cols === cols ? shown.current : null;

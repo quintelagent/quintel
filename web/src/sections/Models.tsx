@@ -92,7 +92,7 @@ export function Models({ symbol = DEFAULT_SYMBOL }: { symbol?: string }) {
             </ul>
           </div>
           <p className="note models-key">
-            Each chart is that model’s own spread of prices 1 month out, on one shared scale. The dashed line is the price the run starts from: ink is above it, hollow red is below. Ends too thin to draw are left out.
+            Each chart is that model’s own spread of prices 1 month out, on one shared scale. The dashed line is the price the run starts from: ink is above it, red is below. Ends too thin to draw are left out.
           </p>
         </div>
       )}

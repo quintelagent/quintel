@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { reducedMotion } from '../../lib/hooks';
 
-/** 10 blocks. `riskFrom` is the value (0-1) at which blocks turn red and hollow; null keeps them ink. */
+/** 10 blocks. `riskFrom` is the value (0-1) at which blocks turn red; null keeps them ink. */
 export function PixelMeter({ value, riskFrom = null, label }: { value: number | null; riskFrom?: number | null; label: string }) {
   const target = value === null ? 0 : Math.max(0, Math.min(10, Math.round(value * 10)));
   const [n, set] = useState(target);

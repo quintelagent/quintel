@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 export interface Palette { ink: string; ink2: string; line: string; risk: string; card: string; paper: string }
 let cached: Palette | null = null;
@@ -8,14 +8,10 @@ export function palette(): Palette {
   const g = (n: string) => s.getPropertyValue(n).trim();
   return (cached = { ink: g('--ink'), ink2: g('--ink-2'), line: g('--line'), risk: g('--risk'), card: g('--card'), paper: g('--paper') });
 }
-/** one solid cell, or a hollow one (risk always carries the hollow centre) */
-export function cell(c: CanvasRenderingContext2D, x: number, y: number, s: number, color: string, hollow: boolean) {
+/** one solid cell */
+export function cell(c: CanvasRenderingContext2D, x: number, y: number, s: number, color: string) {
   c.fillStyle = color;
   c.fillRect(x, y, s, s);
-  if (hollow && s >= 3) {
-    const w = Math.max(1, Math.round(s * 0.28));
-    c.clearRect(x + w, y + w, s - 2 * w, s - 2 * w);
-  }
 }
 /** Small deterministic generator so a run always draws the same grid. */
 export function seeded(seed: number) {
@@ -25,7 +21,7 @@ export function seeded(seed: number) {
 /** Size of a fixed box in device pixels; redraws when it changes. */
 export function useBox(ref: RefObject<HTMLElement | null>) {
   const [box, set] = useState({ w: 0, h: 0, dpr: 1 });
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     const m = () => {

@@ -1,4 +1,4 @@
-export { PixelField, futuresPerPixel } from './PixelField';
+export { PixelField } from './PixelField';
 export { PixelMeter } from './PixelMeter';
 export { PixelBars } from './PixelBars';
 export { PixelSpark } from './PixelSpark';

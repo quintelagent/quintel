@@ -155,7 +155,7 @@ function Chart({ b, out, missing, failed, retry }: { b: Briefing; out: RunOutput
       <div className="label">1 week after run {b.run_id}</div>
       <PixelBars values={hist.counts} risk={risk} height={144} label={`Where 1,000,000 futures end 1 week after run ${b.run_id}. ${odds(up)} end above the start price of ${usd(spot)}.`} />
       <div className="brf-axis label"><span>{usd(hist.lo)}</span><span>{usd(hist.hi)}</span></div>
-      <figcaption className="note">{odds(up)} of futures end the week above the {usd(spot)} start price. Hollow red columns end below it, ink columns at or above it. The end columns hold everything beyond them.</figcaption>
+      <figcaption className="note">{odds(up)} of futures end the week above the {usd(spot)} start price. Red columns end below it, ink columns at or above it. The end columns hold everything beyond them.</figcaption>
     </Card>
   );
 }

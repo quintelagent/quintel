@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { cell, palette, useBox } from './canvas';
 
-/** Distributions as stacked pixel columns. `risk(i)` marks a column as downside (hollow red). `marker` is a 0-1 x position. */
+/** Distributions as stacked pixel columns. `risk(i)` marks a column as downside (red). `marker` is a 0-1 x position. */
 export function PixelBars({ values, risk, marker, label, height = 160 }: { values: number[] | null; risk?: (i: number) => boolean; marker?: number | null; label: string; height?: number }) {
   const box = useRef<HTMLDivElement>(null), cv = useRef<HTMLCanvasElement>(null);
   const { w, h, dpr } = useBox(box);
@@ -22,7 +22,7 @@ export function PixelBars({ values, risk, marker, label, height = 160 }: { value
       for (let y = 0; y < rows; y++) {
         const on = y < filled && !!values;
         if (!on && y > 0) continue;
-        cell(ctx, Math.round((i * w) / n), h - (y + 1) * pitch, s, !on ? p.line : r ? p.risk : p.ink, on && r);
+        cell(ctx, Math.round((i * w) / n), h - (y + 1) * pitch, s, !on ? p.line : r ? p.risk : p.ink);
       }
     }
     if (marker !== null && marker !== undefined) {

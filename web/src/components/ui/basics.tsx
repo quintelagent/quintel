@@ -40,7 +40,7 @@ export type PillTone = 'default' | 'invert' | 'risk' | 'muted';
 export function Pill({ tone = 'default', live, children, className }: { tone?: PillTone; live?: boolean; children: ReactNode; className?: string }) {
   return <span className={cx('pill', `pill-${tone}`, className)}>{live && <i className="live-dot" aria-hidden="true" />}{children}</span>;
 }
-/** A signed change with the right sign and a hollow red marker for falls (small text stays ink). */
+/** A signed change with the right sign and a red marker for falls (small text stays ink). */
 export function Change({ value, text }: { value: number | null | undefined; text: string }) {
   return <span className="mono change">{value !== null && value !== undefined && value < 0 && <i className="fall" aria-hidden="true" />}{text}</span>;
 }
