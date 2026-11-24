@@ -18,4 +18,4 @@ QNTL_API=https://quintelagent.com npm run dev   # the site, with live data
 - **No secrets.** A pre-commit hook and CI scan for them.
 - **Wallet code gets extra care.** Pull requests that add wallet connections, signatures, approvals or new network hosts are closed unless discussed in an issue first.
 
-Security problems: please report them privately, see [docs/SECURITY.md](docs/SECURITY.md).
+Security problems: please report them privately, see [SECURITY.md](docs/SECURITY.md).

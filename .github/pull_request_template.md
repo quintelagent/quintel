@@ -1,12 +1,14 @@
-## What this changes
+## What changed
 
-Plain English, one idea per pull request.
+## Why
 
-## Checks
+## How it was tested
 
 - [ ] `npm test`, `npm run typecheck` and `npm run build` pass
-- [ ] Checked at 375px and 1440px if it touches the site
-- [ ] Does not change engine output, hashing or fingerprints (or says exactly how, with a new input version)
-- [ ] Nothing here asks for a wallet, a key, a signature or a token approval
+- [ ] Checked at 375px and 1440px if it is visible
+- [ ] Engine output, hashing and fingerprints are unchanged (or: which new input version)
+- [ ] Nothing asks for a key or a token approval
 
-Pull requests that add wallet code, token approvals or new network hosts are closed unless discussed in an issue first.
+## Screenshot or clip
+
+Scenario odds, not advice. Pull requests that add wallet code, approvals or new network hosts are closed unless discussed in an issue first.
