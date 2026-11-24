@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import type { RunOutput } from '@engine/types';
-import { Info } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Info, Pause, Play } from 'lucide-react';
 import { prevTradingDay } from '../../../worker/src/session';
 import { Button, Countdown, EmptyState, ErrorState, NumberRoll, Pill, Sheet, Skeleton, Stat, Tile } from '../components/ui';
-import { PixelFan, PixelMeter } from '../components/pixel';
+import { PixelField, PixelMeter } from '../components/pixel';
 import { flagOn } from '../features';
 import type { RunRow } from '../lib/api';
 import { useData } from '../lib/data';
 import { ago, etShortDate, etTime, int, odds, usd } from '../lib/format';
-import { useNow } from '../lib/hooks';
+import { reducedMotion, useLaptop, useNow } from '../lib/hooks';
 import { cadenceMin, isDelayed, marketState } from '../lib/marketState';
 import { backAboveOf, keptOf } from '../lib/metrics';
+import { futuresPerPixel, MOVE_TICKS, TICK_MS } from '../lib/pixelGrid';
 import { Link } from '../lib/router';
 import { stressLabel } from '../lib/stress';
 import { DEFAULT_SYMBOL, symbolConfig } from '../lib/symbols';
@@ -64,25 +64,32 @@ function Meaning({ run, gainName, open, onClose }: { run: RunRow | null; gainNam
   );
 }
 
-function fanLabel(out: RunOutput | null, none: boolean, gainName: string): string {
-  if (none) return 'Futures over 1 week, no run loaded';
-  if (!out) return 'Futures over 1 week, loading';
-  const week = out.combined.horizons.find((h) => h.days === 5), half = out.touch?.giveBack.level;
-  return `1,000,000 futures starting from ${usd(out.spot)}.${week ? ` After 1 week the middle 90% end between ${usd(week.pct.p5)} and ${usd(week.pct.p95)}.` : ''}${half ? ` Hollow red marks prices below ${usd(half)}, halfway back through ${gainName}.` : ''}`;
+/** The big number follows the grid: it rolls once the grid has reached the new split. */
+function useAfterGrid(kept: number | null, moving: boolean): number | null {
+  const [shown, set] = useState(kept);
+  const wait = shown !== null && kept !== null && shown !== kept && moving && !reducedMotion() && !document.hidden;
+  useEffect(() => {
+    if (!wait) { set(kept); return; }
+    const t = window.setTimeout(() => set(kept), MOVE_TICKS * TICK_MS);
+    return () => clearTimeout(t);
+  }, [kept, wait]);
+  return wait ? shown : kept;
 }
 
 export function Hero({ symbol = DEFAULT_SYMBOL }: { symbol?: string }) {
-  const { latest, latestError, output, online, reload } = useData();
+  const { latest, latestError, online, reload } = useData();
   const [info, setInfo] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const laptop = useLaptop();
   const { headline, gainName } = symbolConfig(symbol);
 
   const run = latest?.run ?? null;
   const s = run?.summary ?? null;
   const kept = keptOf(s), back = backAboveOf(s);
+  const shown = useAfterGrid(kept, !paused);
   const failed = latestError && online;
   const none = !run && (latestError || !!latest); // nothing to show yet, and not still loading
   const stress = run?.stress ?? null;
-  const halfway = output?.touch?.giveBack.level;
   const lines = headline(s?.event?.pct ?? null).split('. '); // one sentence per line
 
   return (
@@ -95,11 +102,13 @@ export function Hero({ symbol = DEFAULT_SYMBOL }: { symbol?: string }) {
         </div>
 
         <figure className="hero-field">
-          <PixelFan output={none ? null : output} label={fanLabel(output, none, gainName)} />
-          <div className="hero-axis label"><span>Now{output ? ` · ${usd(output.spot)}` : ''}</span><span>1 week</span></div>
+          <PixelField kept={none ? null : kept} seed={run?.id} paused={paused} label={none ? 'Scenario grid, no run loaded' : run && kept === null ? 'Scenario grid, no odds in this run' : undefined} />
           <figcaption className="small">
-            <span>{halfway ? `Halfway price ${usd(halfway)}` : '1,000,000 futures'}</span>
-            {(halfway || !output) && <span className="hero-key"><span><i className="hero-kept" aria-hidden="true" />above</span><span><i className="fall" aria-hidden="true" />below</span></span>}
+            <span>Each pixel is about {futuresPerPixel(laptop ? 100 : 64)} futures</span>
+            <span className="hero-key">
+              <span><i className="hero-kept" aria-hidden="true" />kept</span><span><i className="fall" aria-hidden="true" />lost</span>
+              <button type="button" className="icon-btn hero-pause" aria-label={paused ? 'Play the pixel grid' : 'Pause the pixel grid'} onClick={() => setPaused(!paused)}>{paused ? <Play size={16} strokeWidth={1.5} aria-hidden="true" /> : <Pause size={16} strokeWidth={1.5} aria-hidden="true" />}</button>
+            </span>
           </figcaption>
         </figure>
 
@@ -111,7 +120,7 @@ export function Hero({ symbol = DEFAULT_SYMBOL }: { symbol?: string }) {
           ) : (
             <>
               <div className="hero-odds">
-                <div className="big hero-num">{run ? <NumberRoll text={odds(kept)} /> : <Skeleton h="1.1em" w="2.8em" />}</div>
+                <div className="big hero-num">{run ? <NumberRoll text={odds(shown)} /> : <Skeleton h="1.1em" w="2.8em" />}</div>
                 <div className="hero-label">
                   <p>of futures keep at least half of {gainName} for a week {run && kept === null && <span className="note hero-missing">Not in this run.</span>}</p>
                   <button type="button" className="icon-btn" aria-label={`What “${gainName} kept” means`} aria-haspopup="dialog" onClick={() => setInfo(true)}><Info size={20} strokeWidth={1.5} aria-hidden="true" /></button>
