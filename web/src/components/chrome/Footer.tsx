@@ -5,7 +5,7 @@ import { MuteToggle, Wordmark } from './Header';
 export function Footer() {
   const groups: { t: string; l: [string, string][] }[] = [
     { t: 'Product', l: [['/briefings', 'Briefings'], ['/verify', 'Verify'], ['/status', 'Status'], ['/changelog', 'Changelog']] },
-    { t: 'Docs', l: [['/docs/readme', 'Readme'], ['/docs/methodology', 'Methodology'], ['/docs/proof', 'Proof'], ['/docs/limits', 'Limits'], ['/docs/security', 'Security'], ['/docs/deployments', 'Deployments'], ['/incidents', 'Incidents']] },
+    { t: 'Docs', l: [['/docs/readme', 'Readme'], ['/docs/methodology', 'Methodology'], ['/docs/proof', 'Proof'], ['/docs/limits', 'Limits'], ['/docs/security', 'Security'], ['/docs/trust', 'Trust'], ['/docs/deployments', 'Deployments'], ['/incidents', 'Incidents']] },
     { t: 'Elsewhere', l: [[LINKS.x, 'X @quintelagent'], [LINKS.github, 'GitHub']] },
   ];
   return (
