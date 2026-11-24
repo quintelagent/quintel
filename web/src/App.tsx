@@ -3,6 +3,7 @@ import { DataProvider } from './lib/data';
 import { anchorFor, scrollToId, useRoute } from './lib/router';
 import { ToastProvider } from './components/ui';
 import { Header } from './components/chrome/Header';
+import { CaBar } from './components/chrome/CaBar';
 import { Banner } from './components/chrome/Banner';
 import { StickyBar } from './components/chrome/StickyBar';
 import { Footer } from './components/chrome/Footer';
@@ -43,6 +44,7 @@ export function App() {
       <ToastProvider>
         <a className="skip" href="#main">Skip to content</a>
         <Header path={path} />
+        <CaBar />
         <Banner path={path} />
         <main id="main" tabIndex={-1}><Suspense fallback={<div style={{ minHeight: '100dvh' }} />}><Page path={path} /></Suspense></main>
         <Footer />

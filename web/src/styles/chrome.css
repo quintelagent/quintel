@@ -36,3 +36,11 @@
 .footer-top li a:hover { text-decoration: underline; }
 @media (min-width: 768px) { .footer { padding-bottom: var(--s8); } }
 @media (min-width: 1100px) { .footer-top { grid-template-columns: 2fr 1fr 1fr 1fr; } .footer-top .wordmark { grid-column: auto; align-self: start; } }
+
+.ca-bar { border-bottom: 1px solid var(--line); background: var(--card); padding-block: var(--s2); }
+.ca-bar-in { display: grid; gap: var(--s2); }
+.ca-bar code { font-size: var(--fs-label); overflow-wrap: anywhere; }
+.ca-bar-act { gap: var(--s2) var(--s4); }
+.ca-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; }
+.ca-pump { font-size: var(--fs-label); color: var(--ink-2); }
+@media (min-width: 1100px) { .ca-bar-in { grid-template-columns: 1fr auto; align-items: center; } .ca-pump { grid-column: 1 / -1; } }
