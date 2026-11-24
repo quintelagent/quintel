@@ -26,6 +26,8 @@ export interface Env {
   QNTL_TOKEN_PONS?: string;
   QNTL_TOKEN_SOLANA?: string;
   FINGERPRINT_ADDRESS?: string;
+  /** preview and local only: flags to turn on, comma separated */
+  PREVIEW_FLAGS?: string;
   SITE_URL?: string;
   // secrets
   /** primary Robinhood Chain RPC (e.g. Alchemy); falls back to the public RPC */
