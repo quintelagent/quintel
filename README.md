@@ -38,7 +38,7 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 4. **Explain and act.** A briefing is written and guard-checked. The paper desk applies its published rules.
 5. **Prove.** Each hour, every run, input, briefing and desk hash is rolled into one fingerprint and sent on-chain.
 
-**Quintel fingerprint wallet:** [`0xfbA600991E6d76a17e45Fec9F68b002c97def19D`](https://robinhoodchain.blockscout.com/address/0xfbA600991E6d76a17e45Fec9F68b002c97def19D) (Robinhood Chain, chain id 4663)
+**Quintel fingerprint wallet:** [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47) (Robinhood Chain, chain id 4663)
 
 ## Verify a run
 

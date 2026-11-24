@@ -56,6 +56,10 @@ export async function sendFingerprintTx(env: Env, hash: string): Promise<string>
   });
   const key = (env.FINGERPRINT_KEY.startsWith('0x') ? env.FINGERPRINT_KEY : '0x' + env.FINGERPRINT_KEY) as `0x${string}`;
   const account = privateKeyToAccount(key);
+  // never post from a wallet other than the published one
+  if (env.FINGERPRINT_ADDRESS && account.address.toLowerCase() !== env.FINGERPRINT_ADDRESS.toLowerCase()) {
+    throw new Error(`FINGERPRINT_KEY belongs to ${account.address}, not the published wallet ${env.FINGERPRINT_ADDRESS}`);
+  }
   const client = createWalletClient({ account, chain, transport: fallback(urls.map((u) => http(u))) });
   return client.sendTransaction({ to: account.address, value: 0n, data: hash as `0x${string}` });
 }

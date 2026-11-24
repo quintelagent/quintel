@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { allowedNumbers, extractNumbers, guardText, briefingText } from '../src/agent/guards';
 import { runFacts, templatedBriefing } from '../src/agent/briefing';
 import { initialDesk, stepDesk, deskHash, markToMarket } from '../src/desk/desk';
-import { fingerprintHash, lockedFromDayOne } from '../src/proof/fingerprint';
+import { fingerprintHash, lockedFromDayOne, sendFingerprintTx } from '../src/proof/fingerprint';
 import { priceFromSqrtX96 } from '../src/data/chainToken';
 import { sessionAt, addTradingDays, nextOpen, lastCloseDate } from '../src/session';
 import { choosePrice, historyStale } from '../src/pricing';
@@ -167,5 +167,13 @@ describe('"locked from day one" claim', () => {
     expect(lockedFromDayOne([], L)).toBe(false);
     expect(lockedFromDayOne([ok, { ...ok, status: 'pending', sent_at: null }], L)).toBe(false);
     expect(lockedFromDayOne([{ ...ok, sent_at: '2026-11-25T15:00:00.000Z' }], L)).toBe(false);
+  });
+});
+
+describe('fingerprint wallet guard', () => {
+  it('refuses a key that is not the published wallet (throws before any network call)', async () => {
+    const { generatePrivateKey } = await import('viem/accounts');
+    const env = { FINGERPRINT_KEY: generatePrivateKey(), FINGERPRINT_ADDRESS: '0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47' } as any;
+    await expect(sendFingerprintTx(env, '0x00')).rejects.toThrow(/not the published wallet/);
   });
 });
