@@ -1,8 +1,0 @@
-name: Question about the method
-description: How a number is made, or a problem with a model.
-labels: [method]
-body:
-  - type: textarea
-    id: question
-    attributes: { label: Question, description: "Methodology and limits: https://quintelagent.com/docs" }
-    validations: { required: true }
