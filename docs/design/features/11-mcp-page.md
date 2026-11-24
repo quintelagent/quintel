@@ -32,3 +32,13 @@ None beyond press and tab switch crossfade.
 
 ## Reuses
 Section, SegmentedTabs, Card, CodeBlock, CopyButton, DataTable, Pill, Toast.
+
+## As built
+- **Server:** `POST https://quintelagent.com/api/mcp` (`worker/src/mcp.ts`). Streamable HTTP, stateless, read-only, no sign-in. It answers both protocol eras: 2026-07-28 (per-request metadata, `server/discover`) and the older `initialize` handshake (2025-11-25, 2025-06-18, 2025-03-26). GET is 405, bodies stop at 64 KB, batches only exist for 2025-03-26 (10 at most). With the flag off every method is 404.
+- **Tools:** one list, `web/src/lib/mcpTools.ts`, used by the server and the page: `get_latest_odds`, `get_odds_at_price`, `get_run`, `get_briefings`, `get_proof`. Every answer carries the run number, its time (Eastern and ISO) and "Scenario odds, not advice."
+- **Odds at a price** use the same function as "Drag a price" (end of horizon). Only when the price is the level each run tracks (now $186.64) is the any-daily-close figure added, labeled as a different question. Past the stored range the text says <0.1% or >99.9% and no number is given.
+- **Data:** tools read the public API in-process, so they share its cache. Run numbers past the newest run are refused before any read. Nothing sent to the server is logged or stored.
+- **Setup steps** were checked against the Claude and Cursor docs on Nov 24, 2026. Step 2 for Claude has two ways in: a custom connector, and one command for Claude Code. Team and Enterprise need an Owner, and the Free plan has one custom connector, so a note says so. The example question uses the tracked level from the latest run.
+- **Status line:** under the sub, the page pings the server once a minute. "OK" with "The server is answering.", or "Down" with the copy above and "Try again". Offline shows "Offline · updates paused". Its height is the same in every state.
+- **Tools on tablet:** cards, two across. The table starts at 1100px.
+- **Docs hub card** is last in the hub and says "Read" like the others.

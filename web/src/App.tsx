@@ -18,6 +18,7 @@ const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })
 const Incidents = lazy(() => import('./pages/Incidents').then((m) => ({ default: m.Incidents })));
 const Changelog = lazy(() => import('./pages/Changelog').then((m) => ({ default: m.Changelog })));
 const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })));
+const Mcp = lazy(() => import('./pages/Mcp').then((m) => ({ default: m.Mcp })));
 
 function Page({ path }: { path: string }) {
   let m: RegExpMatchArray | null;
@@ -30,6 +31,7 @@ function Page({ path }: { path: string }) {
   if (path === '/incidents') return <Incidents />;
   if (path === '/status') return <Status />;
   if (path === '/changelog') return <Changelog />; // renders with SHIP_LOG off too (feature 14)
+  if (path === '/mcp' && flagOn('MCP_SERVER')) return <Mcp />;
   const f = featureByRoute(path);
   if (f?.flag && !flagOn(f.flag)) return <Soon feature={f} />;
   return <NotFound />;
