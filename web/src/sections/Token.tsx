@@ -1,3 +1,4 @@
+import { flagOn } from '../features';
 import { useData } from '../lib/data';
 import { Link } from '../lib/router';
 import { TOKEN_CONFIG } from '../lib/tokenConfig';
@@ -17,6 +18,7 @@ export function Token() {
           <Card className="token-card">
             <div className="token-head"><h3>What it does</h3></div>
             <p className="muted">Burning $QNTL requests a run on your own scenario. The burn and the result are public. What is open today is on <Link href="/status">Status</Link>.</p>
+            {flagOn('BURN_TO_RUN') && <div className="row"><Button variant="secondary" href="/burn">Burn to run</Button></div>}
           </Card>
           <Card className="token-card">
             <div className="token-head"><h3>Official addresses</h3></div>
