@@ -188,7 +188,8 @@ export function Hero() {
         </div>
         <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>Scenario odds: share of simulated paths with at least one daily close past the level. Not advice.</div>
         <div style={{ display: 'flex', gap: 12, marginTop: 34, flexWrap: 'wrap' }}>
-          <button className="btn primary" onClick={() => scrollToId('tools')}>Try the tools</button>
+          <button className="btn primary" onClick={() => scrollToId('position')}>Check my position</button>
+          <button className="btn" onClick={() => scrollToId('tools')}>Try the tools</button>
           <button className="btn" onClick={() => navigate(run ? `/verify?run=${run.id}` : '/verify')}>Verify a run →</button>
         </div>
 

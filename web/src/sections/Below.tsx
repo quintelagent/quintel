@@ -1,4 +1,5 @@
 // Everything below the first tool, split into its own chunk and fetched when the page is idle.
+import { Position } from './Position';
 import { WhatIf } from './WhatIf';
 import { Briefing } from './Briefing';
 import { Models } from './Models';
@@ -11,6 +12,7 @@ import { FAQ } from './FAQ';
 export default function Below() {
   return (
     <>
+      <Position />
       <WhatIf />
       <Briefing />
       <Models />

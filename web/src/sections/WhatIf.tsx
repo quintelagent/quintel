@@ -70,7 +70,7 @@ export function WhatIf() {
   return (
     <section className="block" ref={sectionRef} style={{ paddingTop: 0 }}>
       <div className="wrap">
-        <SectionHead eyebrow="Tool 02 · What if" title="Shock the inputs. Rerun 500,000 futures in your browser." lede="Presets set a drift shock, jump intensity and volatility multiplier. The same engine as the official run executes locally in a Web Worker — nothing leaves your device." />
+        <SectionHead eyebrow="Tool 03 · What if" title="Shock the inputs. Rerun 500,000 futures in your browser." lede="Presets set a drift shock, jump intensity and volatility multiplier. The same engine as the official run executes locally in a Web Worker — nothing leaves your device." />
         {!output ? <Skeleton h={360} label="Loading the latest run" /> : (
           <div className="panel reveal wi-grid fade-in">
             <div>
