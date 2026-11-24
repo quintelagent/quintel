@@ -1,22 +1,15 @@
 .token-stack { display: flex; flex-direction: column; gap: var(--s4); }
 .token-card { display: flex; flex-direction: column; gap: var(--s3); }
 .token-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s2) var(--s4); min-height: 28px; }
-.token-bullets { display: grid; border-top: 1px solid var(--line); margin-top: var(--s1); }
-.token-bullets li { display: flex; align-items: center; gap: var(--s3); padding-block: var(--s3); border-bottom: 1px solid var(--line); }
-.token-bullets li:last-child { border-bottom: 0; padding-bottom: 0; }
-.token-bullets svg { flex: none; }
 .token-addrs { display: grid; gap: var(--s4); margin: 0; }
 .token-addrs > div { display: grid; align-content: start; gap: var(--s2); min-width: 0; }
 .token-card .state p { text-wrap: balance; }
 .token-links { min-height: 48px; margin-top: var(--s2); }
 .token-notes { gap: var(--s1); max-width: 680px; }
 @media (min-width: 768px) {
-  .token-stack > .token-card .token-bullets { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s4); padding-top: var(--s4); }
-  .token-stack > .token-card .token-bullets li { border: 0; padding: 0; }
   .token-addrs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 1100px) {
   .token-stack { gap: var(--s5); }
-  .token-tiers { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
   .token-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); }
 }

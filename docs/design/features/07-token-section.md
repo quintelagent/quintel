@@ -3,13 +3,12 @@
 **Flag:** none — launch · **Phase:** P0 · **Location:** `/`, section 10
 
 ## Purpose
-Explain plainly what $QNTL does (Pro by holding, custom runs by burning) and give the official addresses.
+Say plainly what $QNTL is for and give the official addresses.
 
 ## Layout — phone
-H2: "$QNTL unlocks Pro and runs custom scenarios."
-Sub: "Hold it for Pro features. Burn it to run your own 1,000,000 futures."
-1. "Pro hold tiers" — stacked Cards, one per tier (amounts from config): tier name, "Hold {amount} $QNTL", 3–4 bullet features (Custom runs · Alerts · Pro share cards · Early briefings). Pill "Soon · {date}" while PRO_TIERS is off.
-2. "Burn-to-run" Card — two lines: "Burn $QNTL to request a custom run of 1,000,000 futures. The burn is public and the result is posted to the gallery." Pill "Soon · {date}" while BURN_TO_RUN is off; link "How it works" → /docs/burn.
+H2: "$QNTL runs your own 1,000,000 futures."
+Sub: "Its job: burn it to run your own scenario as a public run."
+1. "What it does" Card: "Burning $QNTL requests a run on your own scenario. The burn and the result are public. What is open today is on Status."
 3. "Official addresses" Card:
    - "Robinhood Chain · Pons" — AddressChip (0x12…ab, Copy, tap to expand full)
    - "Solana · Pump.fun" — AddressChip
@@ -18,7 +17,7 @@ Sub: "Hold it for Pro features. Burn it to run your own 1,000,000 futures."
 5. Disclaimer (13px, `--ink-2`): "Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice."
 
 ## Layout — laptop
-Tiers as a 3-column row; burn card and addresses card side by side below.
+The two cards side by side.
 
 ## States
 - **Copied:** Toast "Address copied".
@@ -34,6 +33,5 @@ Press scale on copy buttons only.
 Section, Card, Pill, AddressChip, CopyButton, Toast, Button.
 
 ## As built
-- While tier amounts are not set: one "Pro hold tiers" card with "Amounts posted at launch".
 - Adds "The coin does not change the odds, and holding it is not a share of anything."
 - "View on Pons" and "View on Pump.fun" show once their links are set in web/src/lib/tokenConfig.ts; addresses come from the worker config.
