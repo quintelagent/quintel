@@ -189,3 +189,13 @@ describe('public errors never leak secrets', () => {
     expect(safeError(viem, env)).toContain('Too Many Requests');
   });
 });
+
+describe('briefing wording', () => {
+  it('never sends or accepts the retired name or raw field names', () => {
+    const f = runFacts(out)!;
+    expect(JSON.stringify(f)).not.toMatch(/crisis/i);
+    const a = allowedNumbers(f);
+    for (const t of ['a return above pre-crisis levels', 'with var95Pct at 48%', 'pUpPct moved', 'the share pAboveRecentHighPct']) expect(guardText(t, [48, ...a]).bannedHits, t).not.toHaveLength(0);
+    expect(guardText('Stress Level held and fewer scenarios end above the recent high.', a).bannedHits).toEqual([]);
+  });
+});
