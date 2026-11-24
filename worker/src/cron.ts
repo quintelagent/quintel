@@ -14,6 +14,8 @@ import { writeDeskNote } from './agent/deskNote';
 import { initialDesk, stepDesk, deskHash, type DeskState } from './desk/desk';
 import { processFingerprints } from './proof/fingerprint';
 import { scoreMatured } from './proof/scorecard';
+import { workerFlag } from './flags';
+import { processBurns } from './burn/queue';
 import {
   runScenarios, deriveSeed, outputHash, samplePaths, hashObject,
   type EngineInputs, type RunOutput,
@@ -136,6 +138,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
 
   const history = await loadCloses(env);
   let ranId: number | undefined;
+  let officialMs = 0;
   if (shouldRun && history.length >= 120) {
     const closes = history.map((h) => h.close);
     const lastClose = closes[closes.length - 1];
@@ -185,6 +188,7 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
       'INSERT INTO runs (ts, session, seed, input_hash, output_hash, spot, price_source, crisis, cpu_ms, summary) VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING id',
     ).bind(nowIso, session, seed, out.inputHash, oh, out.spot, priceSource, out.crisis.level, ms > 0 ? ms : null, JSON.stringify(summary)).first<{ id: number }>();
     ranId = ins!.id;
+    officialMs = Date.now() - t0;
     await env.DB.prepare('INSERT INTO run_outputs (id, inputs, output, sample) VALUES (?,?,?,?)')
       .bind(ranId, JSON.stringify(inputs), JSON.stringify(out), JSON.stringify(sample)).run();
     await incr(env, 'runs_' + et.date);
@@ -248,5 +252,13 @@ export async function tick(env: Env, now = new Date(), opts: { force?: boolean }
 
   const safeLog = log.map((l) => redact(l, env).slice(0, 400));
   await setMeta(env, 'last_tick', { ts: nowIso, session, log: safeLog });
+
+  // 9. Burn-to-run: one queued custom run at most, after everything official is stored
+  if (workerFlag(env, 'BURN_TO_RUN')) {
+    try {
+      const burns = await processBurns(env, { startedMs: now.getTime(), officialFailed: shouldRun && ranId === undefined, officialMs });
+      safeLog.push(...burns.map((l) => redact(l, env).slice(0, 400)));
+    } catch (e) { safeLog.push('burn queue failed: ' + redact((e as Error).message, env).slice(0, 400)); }
+  }
   return { ts: nowIso, session, ran: ranId !== undefined, runId: ranId, log: safeLog };
 }
