@@ -67,6 +67,18 @@ async function triageNews(env: Env, now: Date, log: string[]): Promise<{ intensi
       bigNews = tri.some((t, i) => t.relevant && t.score >= SCHEDULE.bigNewsScore && now.getTime() - new Date(fresh[i].ts).getTime() < 3600_000);
       log.push(`news: ${fresh.length} new, ${tri.filter((t) => t.relevant).length} relevant${bigNews ? ', BIG NEWS' : ''}`);
     }
+    // headlines that only got keyword scores (AI down) are re-scored once the AI is back
+    if (env.OPENROUTER_API_KEY) {
+      const redo = (await env.DB.prepare(
+        "SELECT id, ts, title, url, source FROM news WHERE ts >= ? AND triaged_at < ? AND (category = 'unscored' OR (category = 'other' AND triaged_at <= '2026-11-24T05:31' AND one_line = substr(title, 1, 140))) ORDER BY ts DESC LIMIT 30",
+      ).bind(new Date(now.getTime() - 86400000).toISOString(), now.toISOString()).all<(typeof items)[number]>()).results || [];
+      if (redo.length) {
+        const tri = await triageHeadlines(env, redo, log);
+        await env.DB.batch(redo.map((h, i) => env.DB.prepare('UPDATE news SET relevant = ?, score = ?, category = ?, one_line = ?, triaged_at = ? WHERE id = ?')
+          .bind(tri[i].relevant ? 1 : 0, tri[i].score, tri[i].category, tri[i].oneLine, now.toISOString(), h.id)));
+        log.push(`news: re-scored ${redo.length} headlines, ${tri.filter((t) => t.category !== 'unscored').length} by AI`);
+      }
+    }
   } catch (e) {
     log.push('news failed: ' + (e as Error).message);
   }

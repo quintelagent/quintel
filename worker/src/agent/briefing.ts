@@ -16,19 +16,21 @@ export interface Briefing {
 export interface NewsForBriefing { title: string; url: string; ts: string; oneLine: string; score: number; category: string }
 
 const pct = (x: number) => Math.round(x * 1000) / 10;
+/** prices in cents: what the model sees is what it may print */
+const px = (x: number) => Math.round(x * 100) / 100;
 
 /** Compact, briefing-relevant view of a run (the model sees only these numbers). */
 export function runFacts(o: RunOutput | null) {
   if (!o) return null;
   const c = o.combined;
   return {
-    spot: o.spot,
+    spot: px(o.spot),
     stressLevel: o.crisis.level,
     modelAgreement: o.agreement,
-    nextClose: { p5: c.horizons[0].pct.p5, median: c.horizons[0].pct.p50, p95: c.horizons[0].pct.p95, pUpPct: pct(c.probs[0].pUp) },
-    oneWeek: { p5: c.horizons[1].pct.p5, median: c.horizons[1].pct.p50, p95: c.horizons[1].pct.p95, pUpPct: pct(c.probs[1].pUp), pDown10Pct: pct(c.probs[1].pDown10) },
+    nextClose: { p5: px(c.horizons[0].pct.p5), median: px(c.horizons[0].pct.p50), p95: px(c.horizons[0].pct.p95), pUpPct: pct(c.probs[0].pUp) },
+    oneWeek: { p5: px(c.horizons[1].pct.p5), median: px(c.horizons[1].pct.p50), p95: px(c.horizons[1].pct.p95), pUpPct: pct(c.probs[1].pUp), pDown10Pct: pct(c.probs[1].pDown10) },
     oneMonth: {
-      p5: c.horizons[2].pct.p5, p25: c.horizons[2].pct.p25, median: c.horizons[2].pct.p50, p75: c.horizons[2].pct.p75, p95: c.horizons[2].pct.p95,
+      p5: px(c.horizons[2].pct.p5), p25: px(c.horizons[2].pct.p25), median: px(c.horizons[2].pct.p50), p75: px(c.horizons[2].pct.p75), p95: px(c.horizons[2].pct.p95),
       pUpPct: pct(c.probs[2].pUp), pDown10Pct: pct(c.probs[2].pDown10), pDown20Pct: pct(c.probs[2].pDown20),
       pAbovePreCrisisPct: pct(c.probs[2].pAbovePreCrisis),
       expectedMaxDrawdownPct: pct(c.expMaxDrawdown1m), var95Pct: pct(c.var95_1m),
@@ -44,6 +46,7 @@ Hard rules:
 - Call outputs "scenario odds" — never "prediction" or "forecast". Never give advice; never use the words buy, sell, guaranteed, fraud.
 - Describe legal/regulatory matters only as reported ("reported SEC probe"). Nothing about anyone's personal life.
 - Sources: only items from NEWS that you actually reference, copied exactly.
+- Write prices as $ with two decimals and fields ending in Pct with a % sign. Say "scenario odds" or "share of scenarios", not "probability".
 - Plain English, calm, precise. No emojis, no hype.`;
 
 const usd = (x: number) => '$' + x.toFixed(2);

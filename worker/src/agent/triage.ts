@@ -19,7 +19,7 @@ export function heuristicTriage(h: Headline): Triage {
   const strong = /(probe|investigat|sec\b|doj|lawsuit|export|ban|restrict|guidance|earnings|downgrade|upgrade|recall|resign|steps down|ceo|cfo|antitrust|tariff)/;
   const mentions = /(nvidia|nvda)/.test(t);
   const score = mentions ? (strong.test(t) ? 0.7 : 0.35) : strong.test(t) ? 0.25 : 0.05;
-  return { id: h.id, relevant: score >= 0.3, score, category: 'other', oneLine: h.title.slice(0, 140) };
+  return { id: h.id, relevant: score >= 0.3, score, category: 'unscored', oneLine: h.title.slice(0, 140) };
 }
 
 export async function triageHeadlines(env: Env, items: Headline[], log: string[] = []): Promise<Triage[]> {
