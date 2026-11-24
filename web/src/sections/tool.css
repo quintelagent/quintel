@@ -1,7 +1,8 @@
 .tool { display: flex; flex-direction: column; gap: var(--s6); }
 /* phone: let the tab row reach into the card padding so the last tab shows it can be swiped to */
 .tool > .tabs { margin-inline: calc(-1 * var(--s3)); max-width: none; }
-.tool > .tabs button { padding-inline: var(--s2); }
+.tool > .tabs { gap: 0; }
+.tool > .tabs button { padding-inline: var(--s1); }
 .tool [role='tabpanel'] { min-width: 0; }
 .tool-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s6); }
 .tool-side, .tool-main { display: flex; flex-direction: column; gap: var(--s5); min-width: 0; }
@@ -44,6 +45,7 @@
 
 @media (min-width: 768px) {
   .tool > .tabs { margin-inline: 0; max-width: 100%; }
+  .tool > .tabs { gap: var(--s1); }
   .tool > .tabs button { padding-inline: var(--s5); }
   .tool-answer .label { min-height: 1.4em; }
   .tool-bad p { min-height: 3em; }

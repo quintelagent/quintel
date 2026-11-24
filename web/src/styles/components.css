@@ -43,7 +43,7 @@
 
 .tabs { display: flex; gap: var(--s1); padding: var(--s1); background: var(--ink-soft); border-radius: var(--r-pill); overflow-x: auto; scrollbar-width: none; max-width: 100%; }
 .tabs::-webkit-scrollbar { display: none; }
-.tabs button { flex: 1 0 auto; min-height: 44px; padding: 0 var(--s3); border-radius: var(--r-pill); font-size: 13px; font-weight: 500; white-space: nowrap; color: var(--ink-2); }
+.tabs button { flex: 1 0 auto; min-height: 44px; padding: 0 var(--s1); border-radius: var(--r-pill); font-size: 13px; font-weight: 500; white-space: nowrap; color: var(--ink-2); }
 .tabs button[aria-selected='true'] { background: var(--ink); color: var(--paper); }
 .tabs button:focus-visible { outline-offset: -4px; }
 @media (min-width: 768px) { .tabs { width: fit-content; } .tabs button { padding: 0 var(--s5); font-size: var(--fs-body); } }
@@ -86,6 +86,8 @@
 
 .roll { display: inline-block; white-space: nowrap; }
 .roll-in { display: inline-flex; user-select: none; -webkit-user-select: none; line-height: 1.1; }
+
+.roll-c { white-space: pre; }
 .roll-d { display: inline-block; height: 1.1em; overflow: hidden; }
 .roll-s { display: flex; flex-direction: column; transition: transform 300ms var(--ease); }
 .roll-s > span { height: 1.1em; line-height: 1.1; }

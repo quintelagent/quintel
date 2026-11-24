@@ -34,3 +34,7 @@ Rendered entirely from `src/features.ts` (name, oneLine, status, releaseAt) + he
 
 ## Reuses
 Section, Card, Pill, Skeleton, ErrorState.
+
+## As built
+- Pill sits on the label line with one detail line under each value. Thresholds: run OK / Delayed (20 min open, 45 min closed) / Down (3h); fingerprint OK within 2h of a post, with the waiting count; exchange 20 min (while open), token 30 min.
+- Live pills on this page have a still dot.

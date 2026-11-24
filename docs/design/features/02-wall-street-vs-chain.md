@@ -38,3 +38,8 @@ Section, Card, Pill, NumberRoll, PixelSpark, Countdown, Skeleton.
 
 ## Data and privacy
 Existing exchange + token price sources. Volume is total token volume, never per-wallet.
+
+## As built
+- Extra row "Opens in" / "Closes in". Token label adds "as of {time} ET".
+- The card says "Close" only when the stored last close is known to be that session's close; otherwise "Last price · as of {time} ET".
+- A "Pause" control stops the live dot.

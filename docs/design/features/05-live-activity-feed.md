@@ -38,3 +38,7 @@ Slide up 16px + fade, 250ms; exit fade 150ms. Reduced motion: appear/disappear o
 
 ## Reuses
 Toast, LiveToasts, Pill, EmptyState. Announce new runs via a polite live region (max once per minute).
+
+## As built
+- Fingerprints posted within 2 minutes share one row ("3 fingerprints posted on Robinhood Chain").
+- Incident runs read "Run {n} is listed in incidents"; runs without gain odds read "Run {n} finished".

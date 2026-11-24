@@ -26,8 +26,9 @@ export function PixelBars({ values, risk, marker, label, height = 160 }: { value
       }
     }
     if (marker !== null && marker !== undefined) {
-      const x = Math.round(marker * w);
-      ctx.clearRect(x - Math.round(2 * dpr), 0, Math.round(4 * dpr), h);
+      // sits on the nearest column edge, so it never cuts a pixel in half
+      const x = Math.round((Math.round(marker * n) * w) / n) - Math.round(dpr / 2);
+      ctx.clearRect(x - Math.round(1.5 * dpr), 0, Math.round(3 * dpr), h);
       ctx.fillStyle = p.ink2;
       for (let y = 0; y < h; y += pitch) ctx.fillRect(x - Math.ceil(dpr), y, Math.max(2, Math.round(dpr * 2)), Math.max(1, Math.floor(pitch / 2)));
     }

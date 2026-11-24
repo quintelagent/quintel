@@ -32,3 +32,8 @@ Press scale on copy buttons only.
 
 ## Reuses
 Section, Card, Pill, AddressChip, CopyButton, Toast, Button.
+
+## As built
+- While tier amounts are not set: one "Pro hold tiers" card with "Amounts posted at launch".
+- Adds "The coin does not change the odds, and holding it is not a share of anything."
+- "View on Pons" and "View on Pump.fun" show once their links are set in web/src/lib/tokenConfig.ts; addresses come from the worker config.

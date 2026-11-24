@@ -39,3 +39,7 @@ Section, Card, Countdown, Pill, Button, EmptyState; tool tabs (deep link + prese
 
 ## Data
 Events come from one config list (date, time ET, type, preset), so new events are one line to add.
+
+## As built
+- Closures count down to the close before them ("Until Wed 4:00pm ET"); after it, a "Market closed" pill shows until the day itself ("Today").
+- The hearing row keeps "Time not reported" and a "Source" link.

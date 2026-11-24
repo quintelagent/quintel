@@ -49,3 +49,10 @@ Section, PixelField, NumberRoll, Stat, PixelMeter, Countdown, Pill, Button, Shee
 - [ ] Big number and H1 fit at 375px without overflow
 - [ ] All market states + delayed checked
 - [ ] No layout shift between loading and loaded (CLS < 0.02)
+
+## As built
+- H1 is one line per sentence (three lines on phone). The size of the move comes from the run, never typed.
+- Laptop: the field is 500px (exact 5px cells) and the label sits beside the big number, so the hero fits 1440×900.
+- Caption under the field: "Each pixel is about 244 futures" (phone) or "Each pixel is 100 futures" (laptop), with a kept / lost key.
+- "Back above" tile note: "any daily close". Countdown past due: "Run in progress", then "Next run delayed" after 5 minutes. No touch data: "Not in this run."
+- The Delayed pill lives in the hero eyebrow on the home page; the top banner shows Delayed on the other pages only, so nothing shifts.

@@ -40,3 +40,9 @@ SegmentedTabs, Input, Card, Stat, NumberRoll, PixelSpark, Button, EmptyState, To
 
 ## Data and privacy
 Calculated from the latest run. Inputs and watchlist live in localStorage only — never sent to the server: the calculation runs in the browser (100,000 paths, same engine and inputs as the run). Dates use the scorecard rule: N trading days after the day of the run. No account needed.
+
+## As built
+- Section sub: "Four ways to ask the latest run. The answers are worked out on your device."
+- A PixelBars chart sits under the result. No sparks per horizon: odds history for a typed price is not stored.
+- Watchlist rows read "1 week odds". Extra errors: "Enter a price below $1,000,000." and "Enter a number above 0."
+- The last entry is remembered on the device only.

@@ -31,19 +31,15 @@ export function PixelField({ kept, seed = 1, n: fixedN, label, animate = true }:
     const c = cv.current;
     if (!c || !w) return;
     const ctx = c.getContext('2d')!;
-    const pitch = Math.max(2, Math.floor(w / n)), fill = pitch >= 8;
-    // large cells spread the leftover pixels so the grid fills its box; small ones stay uniform
-    const edge = (i: number) => (fill ? Math.round((i * (w + 1)) / n) : i * pitch);
-    const px = edge(n) - 1;
+    const pitch = Math.max(2, Math.floor(w / n)), s = pitch - 1, px = pitch * n - 1;
     if (c.width !== px) { c.width = px; c.height = px; }
     c.style.width = c.style.height = px / dpr + 'px';
     const p = palette();
     const col = (x: number, g: Uint8Array | null, flash = false) => {
-      const x0 = edge(x), s = edge(x + 1) - x0 - 1;
-      ctx.clearRect(x0, 0, s + 1, px);
+      ctx.clearRect(x * pitch, 0, pitch, px);
       for (let y = 0; y < n; y++) {
         const v = flash || !g ? 2 : g[y * n + x];
-        cell(ctx, x0, edge(y), fill ? Math.min(s, edge(y + 1) - edge(y) - 1) : s, v === 2 ? p.line : v === 1 ? p.risk : p.ink, v === 1);
+        cell(ctx, x * pitch, y * pitch, s, v === 2 ? p.line : v === 1 ? p.risk : p.ink, v === 1);
       }
     };
     const all = (g: Uint8Array | null) => { for (let x = 0; x < n; x++) col(x, g); };

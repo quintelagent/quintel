@@ -177,6 +177,7 @@ Delayed means no new run for 20 min while the market is open, or 45 min while it
 
 ## 10. Accessibility
 
+- Numbers that roll expose one plain value to screen readers; digits are hidden from them.
 - Contrast: body text ≥ 4.5:1 (`--ink` and `--ink-2` on `--paper` both pass).
 - Visible focus ring: 2px `--ink` outline, 2px offset, on everything clickable.
 - Sliders and tabs work with arrow keys. Sheets trap focus and close on Esc.

@@ -37,3 +37,6 @@ Render the repo's markdown files (README.md, docs/*.md, CHANGELOG.md, incidents)
 
 ## Reuses
 Section, Card, CodeBlock, CopyButton, Pill, EmptyState, Skeleton.
+
+## As built
+- The phone picker also lists sections. Changelog and Incidents have their own routes (/changelog, /incidents).
