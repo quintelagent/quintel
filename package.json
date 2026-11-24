@@ -16,11 +16,11 @@
     "deploy": "npm test && npm run build && wrangler deploy",
     "verify": "tsx engine/verify.ts",
     "typecheck": "tsc -p engine && tsc -p worker && tsc -p monitor && tsc -p web",
-    "ship": "node scripts/ship.mjs",
     "check:design": "node scripts/check-design.mjs",
     "secret-scan": "node scripts/secret-scan.mjs --all",
     "prepare": "git config core.hooksPath .githooks || true",
-    "deploy:monitor": "wrangler deploy -c wrangler.monitor.jsonc"
+    "deploy:monitor": "wrangler deploy -c wrangler.monitor.jsonc",
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261119.1",

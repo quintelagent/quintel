@@ -52,7 +52,7 @@ export function parseIncident(path: string, md: string): Incident {
   return { slug, file: `docs/incidents/${slug}.md`, date: head.date || slug.slice(0, 10), status: head.status || 'Investigating', title: head.title || slug, summary: head.summary || '', body: parseDoc(m?.[2] ?? md) };
 }
 
-/** One release line. Lines written by scripts/ship.mjs also carry a title and a time. */
+/** One release line. Lines written by scripts/release.mjs also carry a title and a time. */
 export interface Entry { tokens: Token[]; ship: { title: string; time: string; line: string } | null }
 export interface Release { title: string; sections: { title: string | null; entries: Entry[] }[] }
 export function parseChangelog(md: string): { intro: Token[]; releases: Release[] } {

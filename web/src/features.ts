@@ -1,4 +1,4 @@
-/** Features registry: the only place a feature's status lives. `npm run ship <FLAG>` edits this file (one feature per line). */
+/** Features registry: the only place a feature's status lives. `npm run release <feature>` edits this file (one feature per line). */
 export type FeatureStatus = 'live' | 'soon' | 'planned';
 export interface Feature { id: string; flag: string | null; on: boolean; name: string; oneLine: string; status: FeatureStatus; releaseAt: string | null; shippedAt: string | null; route: string; doc: string | null }
 
