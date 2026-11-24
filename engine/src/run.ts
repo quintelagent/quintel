@@ -2,7 +2,7 @@ import { calibrate, logReturns } from './calibrate';
 import { crisisLevel } from './crisis';
 import { hashObject, keccak256, canonical } from './hash';
 import { dexp, dlog, dsqrt, r6 } from './math';
-import { HORIZONS, type SimContext, type SimOut } from './models/common';
+import { DAYS, DN_DAYS, HORIZONS, type SimContext, type SimOut } from './models/common';
 import { simulateGbm } from './models/gbm';
 import { simulateJump } from './models/jump';
 import { simulateBootstrap } from './models/bootstrap';
@@ -35,7 +35,9 @@ export function deriveSeed(inputs: EngineInputs): string {
 }
 
 export function validateInputs(inp: EngineInputs) {
-  if (inp.version !== 1) throw new Error('unsupported input version');
+  if (inp.version !== 1 && inp.version !== 2) throw new Error('unsupported input version');
+  if (inp.version === 1 && inp.levels) throw new Error('levels need input version 2');
+  if (inp.levels && !(inp.levels.backAbove > 0 && inp.levels.giveBack > 0)) throw new Error('levels must be > 0');
   if (!(inp.spot > 0)) throw new Error('spot must be > 0');
   if (!Array.isArray(inp.closes) || inp.closes.length < 120) throw new Error('need ≥ 120 daily closes');
   if (inp.closes.some((c) => !(c > 0))) throw new Error('closes must be > 0');
@@ -138,10 +140,13 @@ export function runScenarios(inputs: EngineInputs, seed: string, opts: RunOption
   const returns = new Float64Array(logReturns(inputs.closes));
   const logSpot = dlog(inputs.spot);
 
+  const touch = inputs.levels
+    ? { up: dlog(inputs.levels.backAbove), dn: dlog(inputs.levels.giveBack), upHits: 0, dnHits: 0 }
+    : undefined;
   const sims: SimOut[] = [];
   MODEL_IDS.forEach((id, idx) => {
     const ctx: SimContext = {
-      spot: inputs.spot, logSpot, calib, returns, logMa: calib.logMa, n: N, rng: new Rng(seed, idx),
+      spot: inputs.spot, logSpot, calib, returns, logMa: calib.logMa, n: N, rng: new Rng(seed, idx), touch,
     };
     const out = SIMS[id](ctx);
     for (const t of out.term) for (let i = 0; i < N; i++) t[i] = dexp(t[i]);
@@ -201,7 +206,13 @@ export function runScenarios(inputs: EngineInputs, seed: string, opts: RunOption
   });
 
   return {
-    version: 1,
+    version: inputs.version,
+    ...(touch && inputs.levels ? {
+      touch: {
+        backAbove: { level: r6(inputs.levels.backAbove), days: DAYS, p: r6(touch.upHits / total) },
+        giveBack: { level: r6(inputs.levels.giveBack), days: DN_DAYS, p: r6(touch.dnHits / total) },
+      },
+    } : {}),
     seed,
     inputHash,
     spot: r6(inputs.spot),

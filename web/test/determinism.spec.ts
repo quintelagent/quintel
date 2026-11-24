@@ -8,6 +8,7 @@ const bundle = readFileSync(new URL('./engine.bundle.js', import.meta.url), 'utf
 const CASES = [
   { name: 'official-like', inputs: baseInputs(), paths: 20000 },
   { name: 'shocked', inputs: baseInputs({ newsIntensity: 0.9, tokenPremium: -0.04, shock: { drift: -0.15, jumpMult: 2.5, volMult: 1.6 } }), paths: 20000 },
+  { name: 'touch-v2', inputs: baseInputs({ version: 2, levels: { backAbove: 33, giveBack: 26 } }), paths: 20000 },
 ];
 
 for (const c of CASES) {

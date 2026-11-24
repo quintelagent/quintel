@@ -3,6 +3,8 @@ import type { Rng } from '../rng';
 
 export const HORIZONS = [1, 5, 21] as const;
 export const DAYS = 21;
+/** days in which the give-back level may be touched (1 week) */
+export const DN_DAYS = 5;
 
 export interface SimContext {
   spot: number;
@@ -14,6 +16,8 @@ export interface SimContext {
   logMa: number;
   n: number;
   rng: Rng;
+  /** v2: log-price levels; simulators count paths that close beyond them */
+  touch?: { up: number; dn: number; upHits: number; dnHits: number };
 }
 
 export interface SimOut {

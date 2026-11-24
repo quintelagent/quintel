@@ -10,7 +10,8 @@ export interface Shock {
 }
 
 export interface EngineInputs {
-  version: 1;
+  /** 1 = original; 2 = adds `levels` (touch odds) and daily steps for GBM/jump. */
+  version: 1 | 2;
   /** ISO timestamp of the run. */
   asOf: string;
   /** Price the scenarios start from. */
@@ -27,6 +28,8 @@ export interface EngineInputs {
   preCrisisLevel: number;
   /** (chain token − stock) / stock, 0 if unknown. */
   tokenPremium: number;
+  /** v2 only: price levels for touch odds (daily closes). */
+  levels?: { backAbove: number; giveBack: number };
   /** Hypothetical shock (what-if tool). Absent for official runs. */
   shock?: Shock;
 }
@@ -87,8 +90,16 @@ export interface Calibration {
   ou: { phi: number; sigma: number; maWindow: number; d0: number };
 }
 
+/** Share of all paths with at least one daily close beyond a level. */
+export interface TouchOdds {
+  backAbove: { level: number; days: number; p: number };
+  giveBack: { level: number; days: number; p: number };
+}
+
 export interface RunOutput {
-  version: 1;
+  version: 1 | 2;
+  /** v2 only */
+  touch?: TouchOdds;
   seed: string;
   inputHash: string;
   spot: number;

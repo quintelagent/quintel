@@ -1,4 +1,4 @@
-import { allocOut, DAYS, type SimContext, type SimOut } from './common';
+import { allocOut, DAYS, DN_DAYS, type SimContext, type SimOut } from './common';
 
 export const BLOCK = 5;
 
@@ -20,16 +20,20 @@ export function simulateBootstrap(ctx: SimContext, onDraw?: (r: number) => void)
   const pure = volMult === 1 && driftAdj === 0;
   const [t1, t5, t21] = out.term;
   const dd = out.dd!;
+  const tc = ctx.touch;
   for (let i = 0; i < n; i++) {
     let x = logSpot;
     let peak = x;
     let mdd = 0;
+    let hi = -Infinity, lo = Infinity;
     let start = 0;
     for (let d = 0; d < DAYS; d++) {
       if (d % BLOCK === 0) start = rng.int(m - BLOCK + 1);
       const raw = returns[start + (d % BLOCK)];
       if (onDraw) onDraw(raw);
       x += pure ? raw : mean + (raw - mean) * volMult + driftAdj;
+      if (x > hi) hi = x;
+      if (d < DN_DAYS && x < lo) lo = x;
       if (x > peak) peak = x;
       else if (peak - x > mdd) mdd = peak - x;
       if (d === 0) t1[i] = x;
@@ -37,6 +41,10 @@ export function simulateBootstrap(ctx: SimContext, onDraw?: (r: number) => void)
     }
     t21[i] = x;
     dd[i] = mdd;
+    if (tc) {
+      if (hi > tc.up) tc.upHits++;
+      if (lo <= tc.dn) tc.dnHits++;
+    }
   }
   return out;
 }

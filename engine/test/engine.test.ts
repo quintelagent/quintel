@@ -156,3 +156,31 @@ describe('performance', () => {
     expect(ms).toBeLessThan(20000);
   });
 });
+
+describe('engine versions', () => {
+  it('v1 output is frozen — stored runs must verify forever (golden hash)', () => {
+    expect(outputHash(runScenarios(inputs, seed))).toBe('0xd2fc24f82d3691a39db4b8bc545312f19f7faa8e4b73b31e7f1aead8bfcdd56e');
+  });
+  const spot = inputs.spot;
+  const v2 = (backAbove: number, giveBack: number) =>
+    runScenarios({ ...inputs, version: 2, levels: { backAbove, giveBack } }, seed, { pathsPerModel: 20000 });
+  it('v2 touch odds are sane, deterministic and at least the end-of-horizon odds', () => {
+    const o = v2(spot * 1.1, spot * 0.9);
+    expect(outputHash(o)).toBe(outputHash(v2(spot * 1.1, spot * 0.9)));
+    expect(o.touch!.giveBack.p).toBeGreaterThanOrEqual(o.combined.probs[1].pDown10 - 1e-6);
+    const end = runScenarios({ ...inputs, version: 2, preCrisisLevel: spot * 1.1, levels: { backAbove: spot * 1.1, giveBack: spot * 0.9 } }, seed, { pathsPerModel: 20000 });
+    expect(end.touch!.backAbove.p).toBeGreaterThanOrEqual(end.combined.probs[2].pAbovePreCrisis);
+    expect(end.touch!.backAbove.p).toBeLessThan(1);
+  });
+  it('touch odds move the right way and hit the extremes', () => {
+    expect(v2(spot * 1.05, spot * 0.95).touch!.backAbove.p).toBeGreaterThan(v2(spot * 1.2, spot * 0.95).touch!.backAbove.p);
+    const x = v2(spot * 100, spot * 100).touch!;
+    expect(x.backAbove.p).toBe(0);
+    expect(x.giveBack.p).toBe(1);
+  });
+  it('v2 daily GBM keeps the v1 distribution', () => {
+    const a = runScenarios(inputs, seed, { pathsPerModel: 100000 }).models[0].horizons[2].pct;
+    const b = runScenarios({ ...inputs, version: 2, levels: { backAbove: 1e6, giveBack: 1 } }, seed, { pathsPerModel: 100000 }).models[0].horizons[2].pct;
+    for (const k of ['p5', 'p50', 'p95'] as const) expect(Math.abs(a[k] / b[k] - 1)).toBeLessThan(0.01);
+  });
+});
