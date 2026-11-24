@@ -1,0 +1,60 @@
+.tool { display: flex; flex-direction: column; gap: var(--s6); }
+/* phone: let the tab row reach into the card padding so the last tab shows it can be swiped to */
+.tool > .tabs { margin-inline: calc(-1 * var(--s3)); max-width: none; }
+.tool > .tabs button { padding-inline: var(--s2); }
+.tool [role='tabpanel'] { min-width: 0; }
+.tool-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s6); }
+.tool-side, .tool-main { display: flex; flex-direction: column; gap: var(--s5); min-width: 0; }
+.tool-main > .state { flex: 1; }
+.tool .state p, .tool-head h3 { text-wrap: balance; }
+.tool-head { gap: var(--s3); }
+
+.tool-answer { display: flex; flex-direction: column; gap: var(--s2); }
+.tool-answer .label { min-height: 2.8em; }
+.tool-bars { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; }
+.tool-bars figcaption { display: flex; justify-content: space-between; min-height: 1.4em; }
+
+/* stat rows: label and note left, number right */
+.tool-rows { display: flex; flex-direction: column; }
+.tool-rows .stat { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--s4); row-gap: 0; align-items: center; padding-block: var(--s3); border-top: 1px solid var(--line); }
+.tool-rows .label, .tool-rows .note { grid-column: 1; }
+.tool-rows .note { min-height: 1.5em; }
+.tool-rows .stat-v { grid-column: 2; grid-row: 1 / span 2; }
+.tool-rows .stat-v:last-child { grid-row: 1; }
+
+/* no lone last words */
+.tool-run .note, .tool-run.note, .tool-head p, .tool-side > .note { text-wrap: pretty; }
+.tool-run { display: flex; flex-direction: column; gap: var(--s2); }
+.tool-presets { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.tool-presets .btn { min-height: 44px; padding-inline: var(--s4); font-size: var(--fs-label); }
+.tool-presets .skeleton { border-radius: var(--r-pill); }
+.tool-bad { display: flex; flex-direction: column; gap: var(--s2); border-top: 1px solid var(--line); padding-top: var(--s4); }
+.tool-bad p { min-height: 4.5em; }
+.tool-run > .note, .tool-run.note { min-height: 3em; }
+.tool-save { display: flex; flex-direction: column; gap: var(--s3); }
+
+.tool-nb { white-space: nowrap; }
+.tool-watch { display: flex; flex-direction: column; gap: var(--s4); margin-top: var(--s6); padding-top: var(--s6); border-top: 1px solid var(--line); }
+.tool-watch-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s1) var(--s4); }
+.tool-watch li { display: grid; grid-template-columns: minmax(min-content, 1fr) minmax(0, 1fr) 44px; align-items: center; gap: var(--s3); padding-block: var(--s3); border-top: 1px solid var(--line); animation: rise var(--t-ui) var(--ease); }
+.tool-watch li:first-child { border-top: 0; }
+.tool-watch .icon-btn { justify-self: end; margin-right: calc(-1 * var(--s3)); }
+.tool-watch-v { white-space: nowrap; font-weight: 500; font-size: var(--fs-h3); line-height: 1.2; }
+.tool-watch-by { display: none; }
+
+@media (min-width: 768px) {
+  .tool > .tabs { margin-inline: 0; max-width: 100%; }
+  .tool > .tabs button { padding-inline: var(--s5); }
+  .tool-answer .label { min-height: 1.4em; }
+  .tool-bad p { min-height: 3em; }
+  .tool-run > .note, .tool-run.note { min-height: 1.5em; }
+  .tool-save { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .tool-watch-by { display: inline; }
+}
+@media (min-width: 1100px) {
+  .tool-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto 1fr; gap: var(--s6) var(--s8); }
+  .tool-main { grid-column: 2; grid-row: 1 / span 2; }
+  .tool-grid-2 .tool-main { grid-row: 1; }
+  .tool-grid-2 .tool-rest { grid-row: 2; }
+  .tool-more { align-self: start; }
+}
