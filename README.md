@@ -73,7 +73,7 @@ Secrets are set with `wrangler secret put`, or in `.dev.vars` locally (gitignore
 
 ## Docs
 
-[Methodology](docs/METHODOLOGY.md) · [Proof](docs/PROOF.md) · [Limits](docs/LIMITS.md) · [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Incidents](docs/incidents) · [Changelog](CHANGELOG.md)
+[Methodology](docs/METHODOLOGY.md) · [Proof](docs/PROOF.md) · [Limits](docs/LIMITS.md) · [Deployments](docs/DEPLOYMENTS.md) · [Architecture](docs/ARCHITECTURE.md) · [Decisions](docs/DECISIONS.md) · [Incidents](docs/incidents) · [Changelog](CHANGELOG.md)
 
 ---
 
