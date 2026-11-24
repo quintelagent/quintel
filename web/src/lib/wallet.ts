@@ -43,8 +43,8 @@ export async function switchChain(id: number, explorer: string) {
     await ask('wallet_addEthereumChain', [{ chainId: chainHex(id), chainName: 'Robinhood Chain', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://rpc.mainnet.chain.robinhood.com'], blockExplorerUrls: [explorer] }]);
   }
 }
-/** Opens the wallet on one token transfer to the burn address. Returns the transaction hash. */
-export const sendBurn = (from: string, token: string, raw: bigint) => ask<string>('eth_sendTransaction', [{ from, to: token, value: '0x0', data: burnCalldata(raw) }]);
+/** Opens the wallet on one token transfer to the burn address. The chain ID makes a wallet that has just moved to another network refuse. Returns the transaction hash. */
+export const sendBurn = (from: string, token: string, raw: bigint, chainId: number) => ask<string>('eth_sendTransaction', [{ from, to: token, value: '0x0', data: burnCalldata(raw), chainId: chainHex(chainId) }]);
 /** Opens the wallet on a plain message (EIP-191). Costs nothing. */
 export const signText = (message: string, account: string) => ask<string>('personal_sign', [hexText(message), account]);
 

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { burnCalldata, hexText, problemOf, sendBurn, signText, switchChain, WalletError } from '../src/lib/wallet';
-import { errorText, sendRequest, shockLine, waitMinutes, when } from '../src/lib/burn';
+import { burnTransfer, DEAD_ADDRESS, errorText, sendRequest, type BurnSummary, shockLine, waitMinutes, when } from '../src/lib/burn';
 
 const TOKEN = '0x1111111111111111111111111111111111111111', ME = '0x2222222222222222222222222222222222222222';
 const stub = (f: (m: string, p?: unknown[]) => unknown) => { const calls: [string, unknown[] | undefined][] = []; vi.stubGlobal('ethereum', { request: async ({ method, params }: { method: string; params?: unknown[] }) => { calls.push([method, params]); return f(method, params); } }); return calls; };
@@ -10,8 +10,8 @@ describe('wallet', () => {
   it('a burn is one transfer to the burn address, never an approval', async () => {
     expect(burnCalldata(1000n * 10n ** 18n)).toBe('0xa9059cbb000000000000000000000000000000000000000000000000000000000000dead00000000000000000000000000000000000000000000003635c9adc5dea00000');
     const calls = stub(() => '0xabc');
-    await sendBurn(ME, TOKEN, 5n);
-    expect(calls).toEqual([['eth_sendTransaction', [{ from: ME, to: TOKEN, value: '0x0', data: burnCalldata(5n) }]]]);
+    await sendBurn(ME, TOKEN, 5n, 4663);
+    expect(calls).toEqual([['eth_sendTransaction', [{ from: ME, to: TOKEN, value: '0x0', data: burnCalldata(5n), chainId: '0x1237' }]]]);
   });
   it('signs plain text, unicode included', async () => {
     const calls = stub(() => '0x1');
@@ -30,11 +30,19 @@ describe('wallet', () => {
   it('tells problems apart', async () => {
     expect([{ code: 4001 }, { code: -32002 }, { code: -32000 }, null, new Error('x'), new WalletError('none')].map(problemOf)).toEqual(['rejected', 'busy', 'failed', 'failed', 'failed', 'none']);
     vi.stubGlobal('ethereum', undefined);
-    await expect(sendBurn(ME, TOKEN, 1n)).rejects.toMatchObject({ problem: 'none' });
+    await expect(sendBurn(ME, TOKEN, 1n, 4663)).rejects.toMatchObject({ problem: 'none' });
   });
 });
 
 describe('burn page', () => {
+  it('sends only what the page shows', () => {
+    const s: BurnSummary = { open: true, status: 'Open', domain: 'x', chainId: 4663, explorer: '', burnAddress: DEAD_ADDRESS, confirmations: 2, token: TOKEN, amount: 1000, decimals: 6, amountRaw: '1000000000', fromBlock: 1, burned: 0, requests: 0 };
+    const official = { token: TOKEN, chainId: 4663 };
+    expect(burnTransfer(s, s, official)).toEqual({ token: TOKEN, raw: 1_000_000_000n, chainId: 4663, decimals: 6 });
+    for (const x of [{ open: false }, { token: ME }, { token: null }, { amount: 2000, amountRaw: '2000000000' }, { amountRaw: '1000000001' }, { amountRaw: null }, { decimals: null }, { decimals: 18 }, { chainId: 1 }, { burnAddress: ME }]) expect(burnTransfer(s, { ...s, ...x }, official), JSON.stringify(x)).toBeNull();
+    for (const o of [{ token: ME, chainId: 4663 }, { token: null, chainId: 4663 }, { token: TOKEN, chainId: 1 }]) expect(burnTransfer(s, s, o)).toBeNull();
+    expect(burnTransfer({ ...s, burnAddress: ME }, s, official)).toBeNull();
+  });
   it('wait is the next slot, then one slot per run ahead', () => {
     const t = new Date('2026-11-24T15:04:00Z');
     expect([waitMinutes(0, t), waitMinutes(2, t)]).toEqual([7, 27]);

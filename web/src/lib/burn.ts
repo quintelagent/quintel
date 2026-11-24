@@ -1,5 +1,5 @@
 import type { HorizonStats } from '@engine/types';
-import type { BurnBodyJson, BurnErrorCode, BurnHorizon, BurnReply, BurnResult, Scenario } from '../../../worker/src/burn/scenario';
+import { DEAD_ADDRESS, type BurnBodyJson, type BurnErrorCode, type BurnHorizon, type BurnReply, type BurnResult, type BurnSummary, type Scenario } from '../../../worker/src/burn/scenario';
 import { pctChange, usd } from './format';
 import type { WalletProblem } from './wallet';
 
@@ -12,6 +12,14 @@ export const aboveLine = (s: Scenario) => `of futures end above ${usd(s.price)} 
 /** Minutes until a queued run should start: the next ten-minute slot, then one per slot. */
 export const waitMinutes = (ahead: number, now: Date) => Math.ceil((600_000 - (now.getTime() % 600_000)) / 60_000) + 1 + ahead * 10;
 export const statsOf = (r: BurnResult, days: number) => ({ days, mean: r.mean, pct: r.pct, hist: r.hist }) as unknown as HorizonStats;
+
+/** The exact transfer, or null when anything read just now differs from what the page shows. */
+export function burnTransfer(shown: BurnSummary, now: BurnSummary, official: { token: string | null; chainId: number }): { token: string; raw: bigint; chainId: number; decimals: number } | null {
+  const { token, amount, amountRaw, decimals, chainId } = now;
+  if (!now.open || !token || amount === null || decimals === null || !same(token, shown.token) || !same(token, official.token) || chainId !== shown.chainId || chainId !== official.chainId) return null;
+  const raw = BigInt(amount) * 10n ** BigInt(decimals);
+  return amount === shown.amount && amountRaw === raw.toString() && now.burnAddress === DEAD_ADDRESS && shown.burnAddress === DEAD_ADDRESS ? { token, raw, chainId, decimals } : null;
+}
 
 export function errorText(code: BurnErrorCode, amount: string): string {
   const t: Record<BurnErrorCode, string> = {
@@ -28,7 +36,7 @@ export function errorText(code: BurnErrorCode, amount: string): string {
     wrong_signer: 'The signature isn’t from the wallet that burned. Sign with that wallet.',
     used: 'This burn already has its run.',
     out_of_range: 'The price is too far from the latest run. Choose a closer one.',
-    unavailable: 'Couldn’t check the burn just now. Nothing was used. Try again.',
+    unavailable: 'Couldn’t check the burn just now. Try again: a burn is never used twice.',
   };
   return t[code];
 }
