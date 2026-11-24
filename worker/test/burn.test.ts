@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { workerFlag } from '../src/flags';
 import { baseInputs } from '../../engine/test/fixtures';
 import { deriveSeed, hashObject, outputHash, runScenarios } from '../../engine/src/index';
 import { handleApi } from '../src/api';
@@ -188,7 +189,7 @@ describe('custom runs', () => {
   });
 });
 
-describe('burn flag off', () => {
+describe.skipIf(workerFlag({}, 'BURN_TO_RUN'))('burn flag off', () => {
   const ctx = { waitUntil: () => {} } as any, none = async () => ({});
   beforeEach(resetCache);
   it('every endpoint is 404 and nothing is read', async () => {
