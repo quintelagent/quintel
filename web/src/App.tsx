@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useRef } from 'react';
-import { flagOn } from './features';
+import { lazy, Suspense, useEffect, useRef, type ComponentType } from 'react';
 import { DataProvider } from './lib/data';
 import { anchorFor, scrollToId, useRoute } from './lib/router';
+import { FEATURES, flagOn } from './features';
 import { ToastProvider } from './components/ui';
 import { Header } from './components/chrome/Header';
 import { Banner } from './components/chrome/Banner';
@@ -16,8 +16,17 @@ const Briefings = lazy(() => import('./pages/Briefings').then((m) => ({ default:
 const Docs = lazy(() => import('./pages/Docs').then((m) => ({ default: m.Docs })));
 const Incidents = lazy(() => import('./pages/Incidents').then((m) => ({ default: m.Incidents })));
 const Changelog = lazy(() => import('./pages/Changelog').then((m) => ({ default: m.Changelog })));
-const Burn = lazy(() => import('./pages/Burn').then((m) => ({ default: m.Burn })));
 const Status = lazy(() => import('./pages/Status').then((m) => ({ default: m.Status })));
+
+// a feature's page is web/src/pages/flagged/<route>.tsx and opens only while its flag is on
+const flagged = import.meta.glob<{ default: ComponentType }>('./pages/flagged/*.tsx');
+const opened = new Map<string, ComponentType>();
+function flaggedPage(path: string): ComponentType | null {
+  const load = flagged[`./pages/flagged${path}.tsx`];
+  if (!load || !FEATURES.some((f) => f.flag && f.route === path && flagOn(f.flag))) return null;
+  if (!opened.has(path)) opened.set(path, lazy(load));
+  return opened.get(path)!;
+}
 
 function Page({ path }: { path: string }) {
   let m: RegExpMatchArray | null;
@@ -29,9 +38,9 @@ function Page({ path }: { path: string }) {
   if ((m = path.match(/^\/docs\/([\w-]+)$/))) return <Docs slug={m[1]} />;
   if (path === '/incidents') return <Incidents />;
   if (path === '/status') return <Status />;
-  if (path === '/burn' && flagOn('BURN_TO_RUN')) return <Burn />;
   if (path === '/changelog') return <Changelog />;
-  return <NotFound />;
+  const Feature = flaggedPage(path);
+  return Feature ? <Feature /> : <NotFound />;
 }
 
 export function App() {

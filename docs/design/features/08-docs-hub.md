@@ -15,6 +15,8 @@ Stacked Cards (title, one line, "Read"):
 | Proof | "How hourly fingerprints let anyone check a run." |
 | Limits | "What Quintel can't tell you." |
 | Security | "Keys, contracts and how we handle them." |
+| Security review | "Our own review of the code. Not an audit." |
+| Trust | "What the dev can and can't do." |
 | Deployments | "Every contract and service, with addresses." |
 | Changelog | "Everything we've shipped." |
 | Incidents | "Anything that broke, and what we did about it." |

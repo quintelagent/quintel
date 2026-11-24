@@ -8,6 +8,6 @@ updates:
     commit-message: { prefix: "Fix" }
   - package-ecosystem: github-actions
     directory: /
-    schedule: { interval: monthly }
+    schedule: { interval: weekly }
     open-pull-requests-limit: 1
     commit-message: { prefix: "Fix" }

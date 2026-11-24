@@ -8,12 +8,14 @@ export const DOCS: Doc[] = [
   { slug: 'methodology', title: 'Methodology', oneLine: 'How the five models and 1,000,000 futures work.', href: '/docs/methodology', file: 'docs/METHODOLOGY.md', load: () => import('../../../docs/METHODOLOGY.md?raw') },
   { slug: 'proof', title: 'Proof', oneLine: 'How hourly fingerprints let anyone check a run.', href: '/docs/proof', file: 'docs/PROOF.md', load: () => import('../../../docs/PROOF.md?raw') },
   { slug: 'limits', title: 'Limits', oneLine: 'What Quintel can’t tell you.', href: '/docs/limits', file: 'docs/LIMITS.md', load: () => import('../../../docs/LIMITS.md?raw') },
-  { slug: 'security', title: 'Security', oneLine: 'Keys, contracts and how we handle them.', href: '/docs/security', file: 'docs/SECURITY.md', load: () => import('../../../docs/SECURITY.md?raw') },
-  { slug: 'deployments', title: 'Deployments', oneLine: 'Every contract and service, with addresses.', href: '/docs/deployments', file: 'docs/DEPLOYMENTS.md', load: () => import('../../../docs/DEPLOYMENTS.md?raw') },
+  { slug: 'security', title: 'Security', oneLine: 'Keys, contracts and how we handle them.', href: '/docs/security', file: 'SECURITY.md', load: () => import('../../../SECURITY.md?raw') },
+  { slug: 'security-review', title: 'Security review', oneLine: 'Our own review of the code. Not an audit.', href: '/docs/security-review', file: 'SECURITY-REVIEW.md', load: () => import('../../../SECURITY-REVIEW.md?raw') },
+  { slug: 'trust', title: 'Trust', oneLine: 'What the dev can and can’t do.', href: '/docs/trust', file: 'TRUST.md', load: () => import('../../../TRUST.md?raw') },
+  { slug: 'deployments', title: 'Deployments', oneLine: 'Every contract and service, with addresses.', href: '/docs/deployments', file: 'DEPLOYMENTS.md', load: () => import('../../../DEPLOYMENTS.md?raw') },
   { slug: 'architecture', title: 'Architecture', oneLine: 'How the pieces fit together.', href: '/docs/architecture', file: 'docs/ARCHITECTURE.md', load: () => import('../../../docs/ARCHITECTURE.md?raw') },
   { slug: 'decisions', title: 'Decisions', oneLine: 'The judgment calls, one line each.', href: '/docs/decisions', file: 'docs/DECISIONS.md', load: () => import('../../../docs/DECISIONS.md?raw') },
   { slug: 'changelog', title: 'Changelog', oneLine: 'Everything we’ve shipped.', href: '/changelog', file: 'CHANGELOG.md' },
-  { slug: 'incidents', title: 'Incidents', oneLine: 'Anything that broke, and what we did about it.', href: '/incidents', file: 'docs/incidents' },
+  { slug: 'incidents', title: 'Incidents', oneLine: 'Anything that broke, and what we did about it.', href: '/incidents', file: 'INCIDENTS.md' },
 ];
 
 /** Markdown to blocks. The page supplies its own title, so the first h1 and raw HTML are left out. */
@@ -35,6 +37,7 @@ export function docHref(href: string, file: string): string {
   const path = decodeURIComponent(u.pathname.slice(1)).replace(/\/$/, '');
   const doc = DOCS.find((d) => d.file === path);
   if (doc) return doc.href + u.hash;
+  if (path === 'docs/incidents') return '/incidents';
   const incident = path.match(/^docs\/incidents\/(.+)\.md$/);
   if (incident) return '/incidents#' + incident[1];
   return `${LINKS.github}/${/\.\w+$/.test(path) ? 'blob' : 'tree'}/main/${path}${u.hash}`;
@@ -49,7 +52,7 @@ export function parseIncident(path: string, md: string): Incident {
   return { slug, file: `docs/incidents/${slug}.md`, date: head.date || slug.slice(0, 10), status: head.status || 'Investigating', title: head.title || slug, summary: head.summary || '', body: parseDoc(m?.[2] ?? md) };
 }
 
-/** One release line. Lines written by scripts/ship.mjs also carry a title and a time. */
+/** One release line. Lines written by scripts/release.mjs also carry a title and a time. */
 export interface Entry { tokens: Token[]; ship: { title: string; time: string; line: string } | null }
 export interface Release { title: string; sections: { title: string | null; entries: Entry[] }[] }
 export function parseChangelog(md: string): { intro: Token[]; releases: Release[] } {
@@ -57,7 +60,7 @@ export function parseChangelog(md: string): { intro: Token[]; releases: Release[
   for (const t of parseDoc(md)) {
     const r = releases[releases.length - 1];
     if (t.type === 'heading') {
-      const title = plain(t.tokens).replace(/^\[(.+)\]$/, '$1');
+      const title = plain(t.tokens).replace(/^\[(.+?)\](?:\s*-\s*(.+))?$/, (_, v, d) => (d ? `${v} · ${d}` : v));
       if ((t as Tokens.Heading).depth === 2) releases.push({ title, sections: [] });
       else r?.sections.push({ title, entries: [] });
     } else if (!r) intro.push(t);

@@ -18,7 +18,7 @@ Canonical JSON means object keys are sorted, there is no whitespace, numbers use
 
 At the first tick of each hour, the worker builds that payload for the hour that just ended. It then sends a **0-value transaction from the fingerprint wallet to itself on Robinhood Chain (chain id 4663)** with the hash as calldata. The tx hash is stored. If the chain call fails, the fingerprint stays `pending` and is retried every 10 minutes, up to three hours at a time, oldest first. The attempts and the final send time are public in `/api/proof`, so any delay is visible.
 
-Fingerprint wallet: [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47). The worker refuses to post if its key does not match this address. All addresses: [Deployments](DEPLOYMENTS.md).
+Fingerprint wallet: [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47). The worker refuses to post if its key does not match this address. All addresses: [Deployments](../DEPLOYMENTS.md).
 
 ## Verify in the browser
 

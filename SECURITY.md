@@ -22,7 +22,7 @@ Quintel has deployed no smart contracts of its own. It reads the contracts liste
 
 ## What the proof does and does not show
 
-A fingerprint shows that a run existed by the time it was posted and has not changed since. It does not show that the odds are right. See [Proof](PROOF.md) and [Limits](LIMITS.md).
+A fingerprint shows that a run existed by the time it was posted and has not changed since. It does not show that the odds are right. See [Proof](docs/PROOF.md) and [Limits](docs/LIMITS.md).
 
 ## Known limits
 
@@ -32,6 +32,13 @@ A fingerprint shows that a run existed by the time it was posted and has not cha
 
 ## Report a problem
 
-Please report security problems privately through [GitHub security advisories](https://github.com/quintelagent/quintel/security/advisories/new). Include what you found and how to reproduce it. Please do not test against the live site in a way that could disrupt it. There is no bounty program.
+Please report security problems privately through [GitHub security advisories](https://github.com/quintelagent/quintel/security/advisories/new). Include what you found and how to reproduce it.
+
+- **Response:** we aim to reply within 3 days.
+- **In scope:** this repository, quintelagent.com, its API, the fingerprint flow and the monitoring worker.
+- **Out of scope:** third-party services (Cloudflare, Robinhood Chain, Pons, Pump.fun, data providers), spam, and anything that needs access to someone else's device.
+- **Please do not** disrupt the live site, flood it with requests or touch other people's data. There is no bounty program.
+
+See also [Security review](SECURITY-REVIEW.md), [Trust](TRUST.md) and [Incidents](INCIDENTS.md).
 
 *Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice.*
