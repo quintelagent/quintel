@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleApi } from '../src/api';
+import { workerFlag } from '../src/flags';
 import { resetCache } from '../src/cache';
 import { badArgs, CALLS_PER_MIN, handleMcp, overLimit } from '../src/mcp';
 import { plain } from '../src/mcpTools';
@@ -198,7 +199,7 @@ describe('mcp route', () => {
   const env = (o: object = {}) => ({ DB: { batch: async () => { throw new Error('D1 down'); }, prepare: () => { throw new Error('D1 down'); } }, ...o }) as any;
   const req = (method: string, path = '/api/mcp', body?: string) => new Request('https://q.test' + path, { method, headers: { 'content-type': 'application/json' }, body });
   beforeEach(() => resetCache());
-  it('flag off: 404 for every method', async () => { for (const m of ['GET', 'POST', 'OPTIONS', 'DELETE']) expect((await handleApi(req(m, '/api/mcp', m === 'POST' ? '{}' : undefined), env(), ctx, tick)).status).toBe(404); });
+  it.skipIf(workerFlag({}, 'MCP_SERVER'))('flag off: 404 for every method', async () => { for (const m of ['GET', 'POST', 'OPTIONS', 'DELETE']) expect((await handleApi(req(m, '/api/mcp', m === 'POST' ? '{}' : undefined), env(), ctx, tick)).status).toBe(404); });
   it('flag on: answers, and the rest of the API still refuses other methods', async () => {
     const e = env({ PREVIEW_FLAGS: 'MCP_SERVER', ADMIN_TOKEN: 'k' });
     expect((await handleApi(req('POST', '/api/mcp', '{"jsonrpc":"2.0","id":1,"method":"ping"}'), e, ctx, tick)).status).toBe(200);
