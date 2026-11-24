@@ -16,6 +16,7 @@ export interface Latest {
   now: string; session: 'open' | 'closed'; nextRunAt: string; nextOpen: string; nextBriefingAt: string | null;
   scenariosToday: number; runsToday: number; scenariosTotal: number;
   prices: { stock: { ts: string; price: number } | null; chain: { ts: string; price: number } | null };
+  tokenVolume?: { ts: string; usd24h: number; scope: 'pool'; source: string } | null;
   prevStress: number | null;
   run: RunRow | null;
 }

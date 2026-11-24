@@ -29,3 +29,4 @@
   .ws-dot { display: none; }
   .ws-note { margin-top: var(--s5); }
 }
+.ws-vol { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s4); padding-bottom: var(--s2); }

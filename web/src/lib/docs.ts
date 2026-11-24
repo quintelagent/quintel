@@ -8,6 +8,7 @@ export const DOCS: Doc[] = [
   { slug: 'methodology', title: 'Methodology', oneLine: 'How the five models and 1,000,000 futures work.', href: '/docs/methodology', file: 'docs/METHODOLOGY.md', load: () => import('../../../docs/METHODOLOGY.md?raw') },
   { slug: 'proof', title: 'Proof', oneLine: 'How hourly fingerprints let anyone check a run.', href: '/docs/proof', file: 'docs/PROOF.md', load: () => import('../../../docs/PROOF.md?raw') },
   { slug: 'limits', title: 'Limits', oneLine: 'What Quintel can’t tell you.', href: '/docs/limits', file: 'docs/LIMITS.md', load: () => import('../../../docs/LIMITS.md?raw') },
+  { slug: 'security', title: 'Security', oneLine: 'Keys, contracts and how we handle them.', href: '/docs/security', file: 'docs/SECURITY.md', load: () => import('../../../docs/SECURITY.md?raw') },
   { slug: 'deployments', title: 'Deployments', oneLine: 'Every contract and service, with addresses.', href: '/docs/deployments', file: 'docs/DEPLOYMENTS.md', load: () => import('../../../docs/DEPLOYMENTS.md?raw') },
   { slug: 'architecture', title: 'Architecture', oneLine: 'How the pieces fit together.', href: '/docs/architecture', file: 'docs/ARCHITECTURE.md', load: () => import('../../../docs/ARCHITECTURE.md?raw') },
   { slug: 'decisions', title: 'Decisions', oneLine: 'The judgment calls, one line each.', href: '/docs/decisions', file: 'docs/DECISIONS.md', load: () => import('../../../docs/DECISIONS.md?raw') },

@@ -7,7 +7,7 @@ const on = (flag: string, href: string, t: string): [string, string][] => (flagO
 export function Footer() {
   const groups: { t: string; l: [string, string][] }[] = [
     { t: 'Product', l: [['/briefings', 'Briefings'], ['/verify', 'Verify'], ['/status', 'Status'], ['/changelog', 'Changelog'], ...on('PRO_TIERS', '/pro', 'Pro'), ...on('HOLDERS_BOARD', '/board', 'Holders Board'), ...on('DAILY_SCORECARD_PUBLIC', '/scorecard', 'Scorecard'), ...on('MCP_SERVER', '/mcp', 'Use from your AI'), ...on('BURN_TO_RUN', '/burn', 'Burn-to-run'), ...on('REPLAY', '/replay', 'Replay')] },
-    { t: 'Docs', l: [['/docs/readme', 'Readme'], ['/docs/methodology', 'Methodology'], ['/docs/proof', 'Proof'], ['/docs/limits', 'Limits'], ['/docs/deployments', 'Deployments'], ['/incidents', 'Incidents']] },
+    { t: 'Docs', l: [['/docs/readme', 'Readme'], ['/docs/methodology', 'Methodology'], ['/docs/proof', 'Proof'], ['/docs/limits', 'Limits'], ['/docs/security', 'Security'], ['/docs/deployments', 'Deployments'], ['/incidents', 'Incidents']] },
     { t: 'Elsewhere', l: [[LINKS.x, 'X @quintelagent'], [LINKS.github, 'GitHub']] },
   ];
   return (
