@@ -73,7 +73,7 @@ export const checkNote = (b: Briefing) => (b.fallback
 /** big_move and big_news briefings post outside the schedule */
 export const triggerLabel = (b: Briefing) => (b.body.trigger === 'big_move' ? 'Big move' : b.body.trigger === 'big_news' ? 'Big news' : null);
 export const changeLabel = (c: number) => `Kept odds ${pts(c)}`;
-export const incidentNote = (b: Briefing) => (isIncidentRun(b.run_id) ? `Run ${b.run_id} started from a stale price, so its odds were wrong. It is kept as published and can still be checked.` : null);
+export const incidentNote = (b: Pick<Briefing, 'run_id'>) => (isIncidentRun(b.run_id) ? `Run ${b.run_id} started from a stale price, so its odds were wrong. It is kept as published and can still be checked.` : null);
 
 /** The archive list can trail the live list, so both are merged. Newest first. */
 export function mergeBriefings(...lists: (Briefing[] | null)[]): Briefing[] | null {
