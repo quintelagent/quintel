@@ -6,11 +6,11 @@
 .hero-phrase { display: inline-block; }
 
 .hero-field { display: flex; flex-direction: column; gap: var(--s3); min-width: 0; }
-/* 64 whole cells: round to the nearest size that fills the box, so the grid lines up with the text */
+/* 64 whole cells: round to the nearest size that fills the box, on whole CSS pixels, so it stays sharp and lines up with the text */
 @supports (width: round(nearest, 100px, 32px)) {
-  .hero-field .pixel-field { align-self: center; width: round(nearest, 100%, 64px); }
-  @media (min-resolution: 2dppx) { .hero-field .pixel-field { width: round(nearest, 100%, 32px); } }
-  @media (min-resolution: 3dppx) { .hero-field .pixel-field { width: calc(round(nearest, 100%, 64px / 3) + 0.5px); } }
+  .hero-field .pixel-field { --w: round(nearest, 100%, 64px); width: var(--w); margin-left: round(down, (100% - var(--w)) / 2, 1px); }
+  @media (min-resolution: 2dppx) { .hero-field .pixel-field { --w: round(nearest, 100%, 32px); } }
+  @media (min-resolution: 3dppx) { .hero-field .pixel-field { --w: round(up, round(nearest, 100%, 64px / 3), 1px); } }
 }
 /* before the first draw a canvas has its default size; hold the full box so nothing shifts */
 .hero-field canvas:not([style]) { width: 100%; height: 100%; visibility: hidden; }
@@ -52,7 +52,7 @@
   .hero-copy { grid-area: 1 / 1; }
   .hero-data { grid-area: 2 / 1; }
   .hero-field { grid-area: 1 / 2 / 3 / 3; align-self: center; width: 500px; }
-  .hero-field .pixel-field { width: 100%; }
+  .hero-field .pixel-field { width: 100%; margin-left: 0; }
   .hero-odds { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s5); }
   .hero-label { flex: 1 1 144px; }
   .hero-none { min-height: 292px; }

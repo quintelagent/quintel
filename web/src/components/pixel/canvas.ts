@@ -31,7 +31,13 @@ export function useBox(ref: RefObject<HTMLElement | null>) {
     m();
     const ro = new ResizeObserver(m);
     ro.observe(el);
-    return () => ro.disconnect();
+    // another monitor or a page zoom changes the pixel ratio without changing the box
+    let mq: MediaQueryList | null = null;
+    const arm = () => { mq?.removeEventListener('change', onDpr); mq = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`); mq.addEventListener('change', onDpr); };
+    const onDpr = () => { m(); arm(); };
+    arm();
+    window.addEventListener('resize', m);
+    return () => { ro.disconnect(); window.removeEventListener('resize', m); mq?.removeEventListener('change', onDpr); };
   }, [ref]);
   return box;
 }
