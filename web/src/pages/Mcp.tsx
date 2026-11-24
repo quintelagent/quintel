@@ -19,8 +19,9 @@ const TOOLS: readonly McpTool[] = MCP_TOOLS;
 
 type Health = 'checking' | 'ok' | 'down';
 /** Asks the server itself, once a minute while the tab is visible. */
-function useServer(online: boolean): { health: Health; check: () => void } {
+function useServer(online: boolean): { health: Health; busy: boolean; check: () => void } {
   const [health, set] = useState<Health>('checking');
+  const [busy, setBusy] = useState(false);
   const [n, again] = useState(0);
   useEffect(() => {
     if (!online) return;
@@ -32,25 +33,26 @@ function useServer(online: boolean): { health: Health; check: () => void } {
         const r = await fetch('/api/mcp', { method: 'POST', cache: 'no-store', signal: stop.signal, headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' }, body: '{"jsonrpc":"2.0","id":1,"method":"ping"}' });
         up = r.ok && !!(await r.json()).result;
       } catch { /* down */ } finally { clearTimeout(timer); }
-      if (alive) set(up ? 'ok' : 'down');
+      if (alive) { set(up ? 'ok' : 'down'); setBusy(false); }
     };
     const vis = () => { clearInterval(t); if (document.hidden) return; ping(); t = window.setInterval(ping, 60000); };
     vis();
     document.addEventListener('visibilitychange', vis);
     return () => { alive = false; clearInterval(t); document.removeEventListener('visibilitychange', vis); };
   }, [online, n]);
-  return { health, check: useCallback(() => { set('checking'); again((x) => x + 1); }, []) };
+  // a retry keeps the line and the focused button in place until the answer is in
+  return { health, busy, check: useCallback(() => { setBusy(true); again((x) => x + 1); }, []) };
 }
 
 function ServerLine() {
   const { online } = useData();
-  const { health, check } = useServer(online);
+  const { health, busy, check } = useServer(online);
   return (
     <div className="mcp-server" role="status">
       {!online ? <p className="note">Offline · updates paused</p>
         : health === 'checking' ? <Skeleton h={28} w={160} />
         : health === 'ok' ? <><Pill>OK</Pill><p className="note">The server is answering.</p></>
-        : <><Pill tone="risk">Down</Pill><p className="note">The MCP server is down right now. <Link href="/status">Check status.</Link></p><Button variant="secondary" onClick={check}>Try again</Button></>}
+        : <><Pill tone="risk">Down</Pill><p className="note">The MCP server is down right now. <Link href="/status">Check status.</Link></p><Button variant="secondary" onClick={check} aria-disabled={busy}>{busy ? 'Checking' : 'Try again'}</Button></>}
     </div>
   );
 }
@@ -68,7 +70,7 @@ function Steps({ app, question }: { app: AppId; question: string }) {
         <h2><span className="label">2</span>Add it to {name}</h2>
         {app === 'claude' ? (
           <>
-            <p>Open Customize, then Connectors. Select Add, then Add custom connector. Name it Quintel, paste the address and choose No sign-in.</p>
+            <p>Open Customize, then Connectors. Select Add, then Add custom connector. Name it Quintel, paste the address and continue. If it asks how to sign in, choose No sign-in. Then select Add.</p>
             <p className="note">On Team and Enterprise plans an Owner adds it first, in Organization settings under Connectors. The Free plan has room for one custom connector.</p>
             <p>In Claude Code, run this.</p>
             <CodeBlock code={CLAUDE_CODE} />
