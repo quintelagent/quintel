@@ -22,7 +22,7 @@ One Cloudflare Worker serves the static site, the JSON API and the 10-minute cro
 2. Refresh daily history once per day, and retry every tick until the latest session is present. Triage new headlines and update news intensity.
 3. Run the 1M-path engine. While the market is closed this happens every 30 minutes, priced off the token.
 4. Update the paper desk. Write a briefing every 30 minutes, or immediately on big news or a move over 3%.
-5. At the first tick of each hour, fingerprint the previous hour. Every tick retries up to three pending fingerprints, oldest first. Each one is signed once, and the chain is asked about it before another is signed.
+5. At the first tick of each hour, fingerprint the previous hour. Every tick retries up to three pending fingerprints, oldest first. Before an hour is tried again, the chain is asked whether an earlier transaction landed.
 6. At 00:30 ET, score matured horizons for the scorecard.
 
 ## AI cost control

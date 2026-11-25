@@ -15,7 +15,7 @@ The fingerprints for the hours starting 11am and 2pm ET on Nov 24 reached Robinh
 | 2pm | [3:00:40pm](https://robinhoodchain.blockscout.com/tx/0x89115017de5b94afb65c9e1c9649f61ed02e5a7cb0d88948f32fdb2baae8bb16) | [3:10:43pm](https://robinhoodchain.blockscout.com/tx/0xe69a7f9df0e80ab69756bbec544e3d3b7070200e9fbc489b8409efad243ac208) |
 
 - The most likely cause: a node can accept a transaction and still answer with an error, and the worker took the error as "not sent". The error text was cleared when the second try succeeded, so this is not certain.
-- The wallet has 47 transactions for 45 hours. The two extra ones are these.
+- At 6:55pm ET on Nov 24 the wallet had 47 transactions for 45 hours. The two extra ones are these.
 
 ## What was affected
 
@@ -24,5 +24,5 @@ The fingerprints for the hours starting 11am and 2pm ET on Nov 24 reached Robinh
 
 ## What was done
 
-- The worker now signs each fingerprint once, sends the same signed bytes to every node, and asks the chain before signing another for that hour. This is written and tested, and goes live with the next deploy.
+- The worker now notes each transaction before it goes out, and asks the chain about the noted ones before it tries an hour again. If the chain cannot be asked it still posts, so a second copy is unlikely but possible.
 - The stored record is left as it is.

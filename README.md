@@ -50,7 +50,7 @@ Nothing here needs to be taken on trust. Each claim has a place to check it.
 |---|---|
 | 1,000,000 paths behind every run | `/api/run/<id>` has the inputs and seed. [Verify](https://quintelagent.com/verify) recomputes all of them in the browser. |
 | Nothing was edited after its fingerprint posted | The hour’s hash is the input data of a transaction from [the fingerprint wallet](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47). |
-| Late or missing fingerprints stay visible | [`/api/proof?all=1`](https://quintelagent.com/api/proof?all=1) lists every hour, its attempts and when it was sent. |
+| Late or missing fingerprints stay visible | [`/api/proof?all=1`](https://quintelagent.com/api/proof?all=1) lists every recorded hour, its attempts and when it was sent. |
 | Same result in every browser | CI runs the engine in Chromium, WebKit and Firefox and compares hashes. |
 | The paper desk follows fixed rules | Rules in [Methodology](docs/METHODOLOGY.md), every trade in [`/api/desk`](https://quintelagent.com/api/desk). |
 | Mistakes are listed | [Incidents](docs/incidents), including the runs that started from a stale price. |

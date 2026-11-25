@@ -44,7 +44,7 @@ One operator holds the Cloudflare account, the repository and the fingerprint ke
 ## Known limits
 
 - One operator, one database, one hosting provider.
-- A fingerprint marked as posted means it was sent; the worker does not wait for a receipt. If a node answers with an error, the chain is asked before anything is sent again. Verify reads the transaction from the chain.
+- A fingerprint marked as posted means it was sent; the worker does not wait for a receipt. Before an hour is tried again, the chain is asked whether an earlier transaction landed. Verify reads the transaction from the chain.
 - Outside price and news sources can fail or be wrong. The worker cross-checks prices, and what went wrong is in [Incidents](INCIDENTS.md).
 - The site does not set a content security policy yet.
 
