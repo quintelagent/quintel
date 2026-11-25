@@ -1,6 +1,6 @@
 ---
 date: 2026-11-24
-status: Investigating
+status: Resolved
 title: Two hourly fingerprints were posted twice
 summary: Both copies carry the right hash. The record shows the second one, 10 minutes late.
 ---
@@ -25,4 +25,5 @@ The fingerprints for the hours starting 11am and 2pm ET on Nov 24 reached Robinh
 ## What was done
 
 - The worker now notes each transaction before it goes out, and asks the chain about the noted ones before it tries an hour again. If the chain cannot be asked it still posts, so a second copy is unlikely but possible.
+- This went live on the evening of Nov 24, 2026. If a double post happens again, it gets a report of its own here.
 - The stored record is left as it is.
