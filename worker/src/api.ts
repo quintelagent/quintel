@@ -5,6 +5,7 @@ import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
 import { workerFlag } from './flags';
 import { etParts, sessionAt, nextOpen } from './session';
+import { mcpRoute } from './mcp';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
 import { redact, safeError } from './redact';
@@ -81,8 +82,9 @@ async function runById(env: Env, id: number) {
   return { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
 }
 
-async function proof(env: Env) {
-  const fps = await env.DB.prepare('SELECT hour, hash, tx, status, attempts, created_at, sent_at, error FROM fingerprints ORDER BY hour DESC LIMIT 48').all();
+/** The newest 48 hours, or every recorded hour. */
+async function proof(env: Env, every: boolean) {
+  const fps = await env.DB.prepare(`SELECT hour, hash, tx, status, attempts, created_at, sent_at, error FROM fingerprints ORDER BY hour DESC${every ? '' : ' LIMIT 48'}`).all();
   const all = (await env.DB.prepare('SELECT hour, status, sent_at FROM fingerprints').all<{ hour: string; status: string; sent_at: string | null }>()).results || [];
   return {
     sent: all.filter((r) => r.status === 'sent').length,
@@ -97,7 +99,7 @@ async function proof(env: Env) {
 
 async function desk(env: Env) {
   const state = (await getMeta<DeskState>(env, 'desk_state')) ?? initialDesk(new Date().toISOString());
-  const trades = await env.DB.prepare('SELECT * FROM desk_trades ORDER BY id DESC LIMIT 50').all();
+  const trades = await env.DB.prepare('SELECT * FROM desk_trades ORDER BY id DESC LIMIT 500').all();
   const eq = await env.DB.prepare('SELECT ts, equity, price FROM (SELECT ts, equity, price FROM desk_equity ORDER BY ts DESC LIMIT 2000) ORDER BY ts').all();
   const closed = (trades.results || []).filter((t: any) => t.action === 'exit');
   return {
@@ -151,6 +153,13 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
   const url = new URL(req.url);
   const p = url.pathname.replace(/\/+$/, '');
 
+  if (p === '/api/mcp') {
+    return mcpRoute(req, env, async (path) => {
+      const r = await handleApi(new Request(url.origin + path), env, ctx, tickFn);
+      if (!r.ok && r.status !== 404) throw new Error('unavailable');
+      return r.ok ? r.json() : null;
+    });
+  }
   if (p === '/api/admin/tick' && req.method === 'POST') {
     const auth = req.headers.get('authorization') || '';
     if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: 'unauthorized' }, 0, 401);
@@ -197,7 +206,7 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
     }
     if (p === '/api/news') return await serve(p, 60, 120, () => all(env.DB.prepare('SELECT ts, title, url, source, score, category, one_line FROM news WHERE relevant = 1 ORDER BY ts DESC LIMIT 30')));
     if (p === '/api/desk') return await serve(p, 30, 60, () => desk(env));
-    if (p === '/api/proof') return await serve(p, 30, 60, () => proof(env));
+    if (p === '/api/proof') { const every = url.searchParams.get('all') === '1'; return await serve(every ? `${p}?all=1` : p, 30, 60, () => proof(env, every)); }
     if ((m = p.match(/^\/api\/fingerprint\/(.{1,60})$/))) { let hour = ''; try { hour = decodeURIComponent(m[1]); } catch { return json({ error: 'not found' }, 0, 404); } return await serve('/api/fingerprint/' + encodeURIComponent(hour), 60, 120, async () => fpRow(await env.DB.prepare('SELECT * FROM fingerprints WHERE hour = ?').bind(hour).first<any>())); }
     if (p === '/api/fingerprint-for-run') {
       const id = Math.floor(Number(url.searchParams.get('id')));

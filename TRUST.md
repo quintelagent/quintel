@@ -6,9 +6,9 @@ Plain answers about $QNTL and about Quintel itself. Values that exist only after
 
 | Question | Answer | Check it |
 |---|---|---|
-| Contract address | Posted at launch | [Deployments](DEPLOYMENTS.md) |
-| Launch wallet | Posted at launch | explorer link at launch |
-| Dev buy, and the burn of it | Posted at launch, with the transaction | explorer link at launch |
+| Contract address | [`0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F`](https://robinhoodchain.blockscout.com/token/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) | [Deployments](DEPLOYMENTS.md) |
+| Launch wallet | [`0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459`](https://robinhoodchain.blockscout.com/address/0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459) | [Deployments](DEPLOYMENTS.md) |
+| Dev buy, and the burn of it | 6,810,442 $QNTL, burned in [0x3811204b…](https://robinhoodchain.blockscout.com/tx/0x3811204b40426281b1403018881c5caa9ae6390786853de687c00c9eb33505fe) | [Launch transaction](https://robinhoodchain.blockscout.com/tx/0x5cb5a8bf334ced60fbc109fbac90bdfb992a1ea9855b7526d30e8cf552d2adfa) |
 | Creator fee | Posted at launch: the rate, and that it pays for the engine, the data and the AI | [Pons fees](https://docs.ponsfamily.com) |
 
 $QNTL is launched through Pons. The points below describe the Pons v2 contracts as published ([verified source](https://sourcify.dev/server/v2/contract/4663/0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e?fields=sources)). They are checked again against the real token at launch, and this page is corrected if anything differs.
@@ -19,16 +19,18 @@ $QNTL is launched through Pons. The points below describe the Pons v2 contracts 
 | pause transfers, or block a wallet? | No. The token has no owner, pause or blocklist. |
 | add a transfer tax? | No. There is none in the token. A creator tax on trades, if any, is set at launch and cannot be changed. |
 | upgrade or replace the contract? | No. It is not a proxy. |
-| take the liquidity? | No. It is locked in a contract with no withdrawal function. |
+| take the liquidity? | No. While the token trades on its Pons curve, the curve holds it. When the curve sells out it becomes a pool position locked in a contract with no withdrawal function. |
 | change the name, symbol or logo link? | No. The file behind the logo link can change unless its address is content-based. |
 | change who receives the creator fee? | **Yes**, at once. |
 | buy at launch? | **Yes**, in the launch transaction. Ours is listed above. |
+| let other wallets buy without the opening snipe tax? | **Yes**, up to 32 named in the launch transaction. Pons always exempts the launch wallet and the fee recipient. We will name no others, and the launch transaction shows it. |
+| turn buyback-and-lock on or off? | **Yes**, the creator fee recipient can, at any time. It is paid from the creator's own fees. What it buys is not burned: it is released over five years to the creator fee recipient and Pons. Pons can only turn it off. |
 
-**What Pons can do.** A Pons multi-signature wallet can redirect a launch's fees after a public 3-day delay, and can move a launch's reserves if it stays stuck between its curve and its pool for 7 days. Pons contracts had audits in progress and none completed when we last checked (Nov 24, 2026).
+**What Pons can do.** A Pons multi-signature wallet can redirect a launch's fees after a public 3-day delay, and can move a launch's reserves if it stays stuck between its curve and its pool for 7 days. Pons [discloses](https://blockworks.com/token-transparency/filing/pons) audits in progress and none completed, and [its docs](https://docs.ponsfamily.com/protocol/risks) say to treat the contracts as unaudited (checked Nov 24, 2026).
 
 ## What the token is for
 
-Burning $QNTL requests a public run of 1,000,000 futures on your own scenario. What is open today is on [Status](https://quintelagent.com/status). The token does not change the odds, is not a share of anything, and pays nothing.
+Burning $QNTL requests a public run of 1,000,000 futures on your own scenario. That works only once [Status](https://quintelagent.com/status) shows Burn-to-run as live: a burn made before then does not get a run, and no burn can be undone. The token does not change the odds, is not a share of anything, and pays nothing.
 
 ## Quintel
 
