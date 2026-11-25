@@ -12,6 +12,14 @@
 .btn:disabled { background: var(--line); color: var(--ink-2); cursor: not-allowed; }
 .icon-btn { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: var(--r-pill); flex: none; }
 
+.social { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.social-link { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-width: 44px; min-height: 44px; padding: 0 var(--s4); border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--card); color: var(--ink); font-size: 15px; font-weight: 500; text-decoration: none; transition: transform var(--t-press) var(--ease); }
+.social-link:active { transform: scale(0.97); }
+.social-compact { flex-wrap: nowrap; }
+.social-compact .social-link { padding: 0; }
+.social-compact span { display: none; }
+@media (min-width: 1100px) { .social-compact .social-link { padding: 0 var(--s4); } .social-compact span { display: inline; } }
+
 .pill { display: inline-flex; align-items: center; gap: 8px; min-height: 28px; padding: 0 var(--s3); border: 1px solid var(--line); border-radius: var(--r-pill); font: 500 var(--fs-label)/1.2 var(--mono); font-variant-numeric: tabular-nums; background: var(--card); width: fit-content; padding-block: 4px; }
 .pill-invert { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .pill-risk { background: var(--risk-soft); border-color: var(--risk); }

@@ -1,6 +1,6 @@
 import { Link } from '../../lib/router';
 import { FEATURES, flagOn } from '../../features';
-import { LINKS } from '../../lib/links';
+import { SocialLinks } from '../ui';
 import { MuteToggle, Wordmark } from './Header';
 
 /** pages of released features link themselves */
@@ -9,7 +9,6 @@ export function Footer() {
   const groups: { t: string; l: [string, string][] }[] = [
     { t: 'Product', l: [['/briefings', 'Briefings'], ['/verify', 'Verify'], ['/status', 'Status'], ['/changelog', 'Changelog'], ...released] },
     { t: 'Docs', l: [['/docs/readme', 'Readme'], ['/docs/methodology', 'Methodology'], ['/docs/proof', 'Proof'], ['/docs/limits', 'Limits'], ['/docs/security', 'Security'], ['/docs/trust', 'Trust'], ['/docs/deployments', 'Deployments'], ['/incidents', 'Incidents']] },
-    { t: 'Elsewhere', l: [[LINKS.x, 'X @quintelagent'], [LINKS.github, 'GitHub']] },
   ];
   return (
     <footer className="footer">
@@ -19,6 +18,7 @@ export function Footer() {
           {groups.map((g) => (
             <nav key={g.t} aria-label={g.t}><div className="label">{g.t}</div><ul>{g.l.map(([h, t]) => <li key={h}><Link href={h}>{t}</Link></li>)}</ul></nav>
           ))}
+          <nav aria-label="Elsewhere"><div className="label">Elsewhere</div><SocialLinks /></nav>
         </div>
         <MuteToggle />
         <p className="note">Not affiliated with Nvidia, Robinhood, Pons or Pump.fun. Not financial advice.</p>
