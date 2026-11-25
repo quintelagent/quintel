@@ -13,7 +13,7 @@ Let people add Quintel to Claude or Cursor in under a minute.
    - 2 "Add it to {app}" — exact config snippet / settings path for that app
    - 3 "Ask a question" — example prompt: "What are the odds NVDA is above $186.64 in a month?"
 4. "Tools" — Cards (DataTable on laptop): tool name (mono), one line, inputs. Use the real tool names from the server code.
-5. Note Card: "Read-only. Quintel never trades, never sees your wallet, and never stores your questions."
+5. Note Card: "Read-only. Quintel never trades, never sees your wallet, and never stores your questions." Then: "It can’t start a new run or recompute one. To check a run, open its Verify link. It can’t tell you what to buy or sell." Then: "Scenario odds, not advice."
 6. Link: "Server status" → /status.
 
 ## Layout — laptop

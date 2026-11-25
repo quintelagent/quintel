@@ -15,7 +15,7 @@ const SUPPORTED = [MODERN, ...LEGACY];
 const BATCH_VERSION = '2025-03-26'; // the only revision with batches
 const MAX_BODY = 64 * 1024, MAX_BATCH = 10;
 const META = 'io.modelcontextprotocol/';
-const INFO = { name: 'quintel', title: 'Quintel', version: '1.0.0', websiteUrl: 'https://quintelagent.com' };
+const INFO = { name: 'quintel', title: 'Quintel', version: '0.1.0', websiteUrl: 'https://quintelagent.com' };
 const INSTRUCTIONS = 'Quintel runs 1,000,000 futures of NVDA every 10 minutes while the market is open (30 minutes while it is closed) and publishes the odds. Report them as scenario odds from a model, with the run number and its time in Eastern. They are not advice. Every run can be verified at https://quintelagent.com/verify.';
 const TOO_MANY = { text: `Too many requests. Try again in a minute. ${ODDS_NOTE}`, isError: true as const };
 const CACHE = { ttlMs: 300_000, cacheScope: 'public' };

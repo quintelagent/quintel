@@ -135,7 +135,7 @@ export function Mcp() {
               <h2 id="mcp-tools">Tools</h2>
               <Tools />
             </section>
-            <Card><p>Read-only. Quintel never trades, never sees your wallet, and never stores your questions.</p><p className="note">Scenario odds, not advice.</p></Card>
+            <Card><p>Read-only. Quintel never trades, never sees your wallet, and never stores your questions.</p><p>It can’t start a new run or recompute one. To check a run, open its Verify link. It can’t tell you what to buy or sell.</p><p className="note">Scenario odds, not advice.</p></Card>
             <div className="row"><Button variant="secondary" href="/status">Server status</Button></div>
           </div>
         </div>
