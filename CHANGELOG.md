@@ -7,7 +7,7 @@ All notable changes, newest first, in the [Keep a Changelog](https://keepachange
 ## [0.3.0] - 2026-11-25
 
 ### Added
-- **Burn-to-run** · 12:52pm ET. Burn $QNTL to request a public custom run.
+- **Burn-to-run** · 12:54pm ET. Burn $QNTL to request a public custom run.
 
 ## [0.2.0] - 2026-11-25
 
