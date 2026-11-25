@@ -4,6 +4,7 @@ Anything that broke, what it affected and what was done. Every outage, wrong num
 
 | Date | What | Status |
 |---|---|---|
+| Nov 25, 2026 | [An analytics script was on the site](docs/incidents/2026-11-25-analytics-script.md) | Resolved |
 | Nov 24, 2026 | [Pixel graphics could be drawn black on slow Safari loads](docs/incidents/2026-11-24-safari-colors.md) | Resolved |
 | Nov 24, 2026 | [Latest-run answers failed under a load test](docs/incidents/2026-11-24-load-test.md) | Resolved |
 | Nov 24, 2026 | [Two hourly fingerprints were posted twice](docs/incidents/2026-11-24-double-fingerprint.md) | Resolved |
