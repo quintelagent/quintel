@@ -88,6 +88,11 @@ describe('posting a fingerprint', () => {
     const r = await sendFingerprintTx(c.env, H, [C], async () => { throw new Error('D1'); }, 0);
     expect(c.mined.map((m) => m.hash)).toEqual([r.tx]);
   });
+  it('signs on its own: no chain id request', async () => {
+    const c = chain(generatePrivateKey(), (_u, _n, accept) => accept());
+    await sendFingerprintTx(c.env, H, [], undefined, 0);
+    expect((globalThis.fetch as any).mock.calls.map((x: any) => JSON.parse(x[1].body).method)).not.toContain('eth_chainId');
+  });
   it('all nodes failing is reported per node', async () => {
     const c = chain(generatePrivateKey(), () => { throw new Error('down'); });
     await expect(sendFingerprintTx(c.env, H, [], undefined, 0)).rejects.toThrow(/primary RPC: .*\| public RPC: /s);

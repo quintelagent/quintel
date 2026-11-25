@@ -100,7 +100,7 @@ export async function sendFingerprintTx(env: Env, hash: string, earlier: string[
     let tx: `0x${string}` | null = null;
     try {
       const request = await n.wallet.prepareTransactionRequest({ to: account.address, value: 0n, data: hash as `0x${string}` });
-      const raw = await n.wallet.signTransaction(request as any) as `0x${string}`;
+      const raw = await account.signTransaction(request as any);
       tx = keccak256(raw);
       await onSigned(tx).catch(() => {});
       await n.wallet.sendRawTransaction({ serializedTransaction: raw });
