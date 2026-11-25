@@ -1,4 +1,5 @@
 import type { Env } from './config';
+import { workerFlag } from './flags';
 import { handleApi } from './api';
 import { tick } from './cron';
 import { safeError } from './redact';
@@ -10,6 +11,8 @@ export default {
       url.hostname = 'quintelagent.com';
       return Response.redirect(url.toString(), 301);
     }
+    // MCP clients look here for a sign-in. There is none, and the site's page must not answer in its place.
+    if (/^\/\.well-known\/(oauth-|openid-)/.test(url.pathname) && workerFlag(env, 'MCP_SERVER')) return new Response('Not found', { status: 404, headers: { 'access-control-allow-origin': '*' } });
     if (url.pathname.startsWith('/api/')) {
       return handleApi(req, env, ctx, (e, force) => tick(e, new Date(), { force }));
     }

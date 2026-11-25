@@ -4,6 +4,7 @@ import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
 import { workerFlag } from './flags';
 import { etParts, sessionAt, nextOpen } from './session';
+import { mcpRoute } from './mcp';
 import { spentToday } from './agent/openrouter';
 import { lockedFromDayOne } from './proof/fingerprint';
 import { redact, safeError } from './redact';
@@ -151,6 +152,13 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
   const url = new URL(req.url);
   const p = url.pathname.replace(/\/+$/, '');
 
+  if (p === '/api/mcp') {
+    return mcpRoute(req, env, async (path) => {
+      const r = await handleApi(new Request(url.origin + path), env, ctx, tickFn);
+      if (!r.ok && r.status !== 404) throw new Error('unavailable');
+      return r.ok ? r.json() : null;
+    });
+  }
   if (p === '/api/admin/tick' && req.method === 'POST') {
     const auth = req.headers.get('authorization') || '';
     if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: 'unauthorized' }, 0, 401);

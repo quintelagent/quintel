@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import type { Token, Tokens } from 'marked';
+import { featureByFlag, flagOn } from '../features';
 import { anchor, docHref, DOCS, editUrl, headings, parseDoc, plain, type Doc } from '../lib/docs';
 import { useMeta } from '../lib/meta';
 import { Link, navigate, scrollToId } from '../lib/router';
@@ -13,13 +14,15 @@ export function Docs({ slug }: { slug: string | null }) {
   return doc ? <Article key={slug} doc={doc} /> : <NotFound />;
 }
 
+const AI_CARD = { slug: 'mcp', title: 'Use from your AI', oneLine: featureByFlag('MCP_SERVER')!.oneLine, href: '/mcp' };
+
 function Hub() {
   useMeta('Docs · Quintel', 'How Quintel works, how to check it, and what it can’t do.');
   return (
     <div className="page wrap">
       <div className="page-head"><h1>Docs.</h1><p>How Quintel works, how to check it, and what it can’t do.</p></div>
       <div className="docs-hub">
-        {DOCS.map((d) => (
+        {[...DOCS, ...(flagOn('MCP_SERVER') ? [AI_CARD] : [])].map((d) => (
           <Card key={d.slug} as={Link} {...{ href: d.href }} className="docs-card card-link">
             <h2>{d.title}</h2>
             <p>{d.oneLine}</p>
