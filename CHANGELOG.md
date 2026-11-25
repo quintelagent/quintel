@@ -4,6 +4,16 @@ All notable changes, newest first, in the [Keep a Changelog](https://keepachange
 
 ## [Unreleased]
 
+### Added
+- The launch time, and a warning about fake addresses, in the token section.
+- The token section and FAQ say that burn-to-run is not open yet.
+- `/api/proof?all=1` lists every hourly fingerprint, and hash search on Verify covers all of them.
+- Trust, security policy and security review pages.
+
+### Fixed
+- A fingerprint whose send looked failed could be posted twice. Each one is now signed once, and the chain is asked before another is signed.
+- The public docs, after a line-by-line check against the code, the live API and the chain.
+
 ## [0.1.0] - 2026-11-24
 
 The first version, before tagged releases.

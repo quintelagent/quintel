@@ -3,7 +3,7 @@
 What Quintel can’t do, stated plainly.
 
 - **It can’t know the future.** The models are calibrated on past prices. A genuinely new kind of event can fall outside everything in the history.
-- **The scenario odds are model outputs.** “38% of scenarios end the month higher” means 38% of the simulated paths do. It is not a 38% chance in any objective sense, and the live scorecard is the only evidence of calibration. The scorecard starts empty and fills in as horizons mature.
+- **The scenario odds are model outputs.** “38% of scenarios end the month higher” means 38% of the simulated paths do. It is not a 38% chance in any objective sense, and the record of past odds against real closes ([`/api/scorecard`](https://quintelagent.com/api/scorecard)) is the only evidence of calibration. It starts empty and fills in as horizons mature.
 - **Five models aren’t the world.** No options-implied volatility, no order flow, no fundamentals, no cross-asset links (rates, semis index, other stocks).
 - **News is a single dial.** Headlines only feed a 0–1 intensity that raises jump odds and the Stress Level. The engine does not interpret what a headline means for direction.
 - **AI briefings can be wrong in wording.** Code checks that every number in a briefing comes from the run or a cited headline, and blocks banned phrases. It cannot check that the prose is the best framing. Sources are linked so you can check.

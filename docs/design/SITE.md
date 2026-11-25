@@ -16,7 +16,6 @@ Three.js and the 3D scenario cloud · Lenis · GSAP (replace with CSS + Intersec
 | `/incidents` | Incidents | 08 |
 | `/status` | Status | 06 |
 | `/changelog` | Changelog | — |
-| `/_design` | Living style guide (noindex) | SYSTEM.md §16 |
 | `*` | 404 | below |
 
 A route that is not live returns the 404 page. Planned items appear only on /status.
@@ -57,7 +56,7 @@ Home laptop layout: hero two columns; Wall Street vs Chain, briefing + feed, and
 Favicon + app icon (PixelMark, ink on paper) · apple-touch-icon · manifest theme color #F3F1EA · og.png 1200×630 (paper, "Does it hold?", PixelField) · unique title + description per route.
 
 ## Speed and quality
-SYSTEM.md §11 (phone bar) and §12 (speed). Pre-render `/`, `/verify`, `/briefings`, `/docs`, `/status`, `/incidents` at build time (e.g. vite-react-ssg or a build-time prerender step).
+SYSTEM.md §11 (phone bar) and §12 (speed). Pages are rendered in the browser; pre-rendered HTML is not built yet.
 
 ## Shipping
 Cloudflare preview URL first; production only after approval; old version stays deployable for one-click rollback.

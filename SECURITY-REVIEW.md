@@ -27,7 +27,7 @@ One operator holds the Cloudflare account, the repository and the fingerprint ke
 
 - Read only for visitors. The one write route needs a secret token.
 - Inputs are bounded, and extra query values cannot get around the cache.
-- Answers come from a cache that serves the last good copy while one request refreshes it, so a crowd never reaches the database. Tested with 500 visitors at once in `scripts/load-test.mjs`.
+- Answers come from a cache that serves the last good copy while one request refreshes it, so a crowd asking for the same thing rarely reaches the database. `/api/health` is never served stale. Tested with 500 visitors at once in `scripts/load-test.mjs`.
 
 ## The site
 
@@ -44,7 +44,7 @@ One operator holds the Cloudflare account, the repository and the fingerprint ke
 ## Known limits
 
 - One operator, one database, one hosting provider.
-- A fingerprint marked as posted means it was sent; the worker does not wait for a receipt. Verify reads the transaction from the chain.
+- A fingerprint marked as posted means it was sent; the worker does not wait for a receipt. If a node answers with an error, the chain is asked before anything is sent again. Verify reads the transaction from the chain.
 - Outside price and news sources can fail or be wrong. The worker cross-checks prices, and what went wrong is in [Incidents](INCIDENTS.md).
 - The site does not set a content security policy yet.
 
