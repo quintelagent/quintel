@@ -25,7 +25,7 @@ const tail = (e) => String(e.stdout || '').slice(-1200) + String(e.stderr || '')
 
 const dir = ROOT + `private/releases/${feature}.json`;
 if (!feature || !existsSync(dir)) die(`which feature? Ready: ${existsSync(ROOT + 'private/releases') ? readdirSync(ROOT + 'private/releases').map((x) => x.replace('.json', '')).join(', ') || 'none' : 'none'}`);
-const n = JSON.parse(readFileSync(dir, 'utf8')); // { flag, title, what, why, use, verify, media, smoke: { path, text }, x, mcp }
+const n = JSON.parse(readFileSync(dir, 'utf8')); // { flag, title, what, why, use, verify, media, smoke: { path, text }, x, mcp, needs: [vars], secrets: [names] }
 const prBody = ROOT + `private/prs/${feature}.md`, branch = `feature/${feature}`;
 if (!existsSync(prBody)) die(`no pull request description at private/prs/${feature}.md`);
 
@@ -65,6 +65,10 @@ try {
     const left = run('git', ['diff', '--name-only', '--diff-filter=U']).trim(); if (!left && git('rev-parse', '-q', '--verify', 'MERGE_HEAD')) git('commit', '--no-edit'); else { const c = run('git', ['diff', '--name-only', '--diff-filter=U']).trim(); try { run('git', ['merge', '--abort']); } catch { /* none */ } throw new Error(`merge conflicts in:\n${c}`); } }
   for (const [c, ...a] of [['npm', 'run', 'typecheck'], ['npm', 'test'], ['npm', 'run', 'build'], ['node', 'scripts/secret-scan.mjs', '--all']]) { run(c, a); console.log(`     ok: ${[c, ...a].join(' ')}`); }
 } catch (e) { cleanup(); die(`not ready to release.\n${e.stdout !== undefined ? tail(e) : e.message}`); }
+// a feature can need values that only the owner has: nothing is pushed before they are set
+const unset = (n.needs ?? []).filter((v) => !new RegExp(`"${v}"\\s*:\\s*"[^"]+"`).test(readFileSync(work + '/wrangler.jsonc', 'utf8')));
+const noSecret = (n.secrets ?? []).filter((v) => !run('npx', ['wrangler', 'secret', 'list']).includes(`"${v}"`));
+if (unset.length + noSecret.length) { const m = `not set yet: ${[...unset, ...noSecret].join(', ')}`; if (!dry) die(m); console.log('     ' + m + ' (a real release stops here)'); }
 const migrations = git('diff', '--name-only', '--diff-filter=A', 'main', 'HEAD', '--', 'worker/migrations').split('\n').filter(Boolean);
 
 // ---- 2. push, pull request, CI, merge
