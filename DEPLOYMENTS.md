@@ -1,6 +1,6 @@
 # Deployments
 
-Every contract, wallet and service Quintel uses, with a link to check it. If an address is not on this page, it is not ours.
+Every contract and wallet Quintel uses, with a link to check it, and the services it depends on. If an address is not on this page, it is not ours.
 
 ## Robinhood Chain (chain id 4663)
 
@@ -29,6 +29,10 @@ The fingerprint wallet only sends 0-value transactions to itself, with the hour'
 |---|---|
 | Site and API | [quintelagent.com](https://quintelagent.com) (Cloudflare Worker, D1 database, runs on a 10-minute schedule) |
 | Public API | [/api/latest](https://quintelagent.com/api/latest) · [/api/proof](https://quintelagent.com/api/proof) · [/api/health](https://quintelagent.com/api/health) · [/api/config](https://quintelagent.com/api/config) |
+| Monitoring | A second Cloudflare Worker that reads the public site and API and the fingerprint wallet's balance, and sends alerts through ntfy (`monitor/`) |
+| Prices, history and news | Alpaca, Finnhub and Yahoo. DexScreener for pool volume. DexScreener, then GeckoTerminal, as the last fallbacks for the token price |
+| AI models | OpenRouter |
+| Chain node used by the worker | A private Robinhood Chain node when set, then the public one |
 | Public chain node used by the browser check | `https://rpc.mainnet.chain.robinhood.com` |
 | Code | [github.com/quintelagent/quintel](https://github.com/quintelagent/quintel) |
 

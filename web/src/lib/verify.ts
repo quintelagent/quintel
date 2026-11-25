@@ -28,7 +28,7 @@ type Match = { run: number } | { hour: string } | null;
 /** A hash is looked up in the fingerprint list first, then in a week of runs. */
 async function findHash(h: string): Promise<Match> {
   const same = (x: string | null) => x?.toLowerCase() === h;
-  const { fingerprints } = await api<Proof>('/api/proof');
+  const { fingerprints } = await api<Proof>('/api/proof?all=1');
   const f = fingerprints.find((x) => same(x.hash) || same(x.tx));
   if (f) return { hour: f.hour };
   const since = new Date(Math.floor(Date.now() / HOUR) * HOUR - 7 * 24 * HOUR).toISOString();

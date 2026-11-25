@@ -4,6 +4,17 @@ All notable changes, newest first, in the [Keep a Changelog](https://keepachange
 
 ## [Unreleased]
 
+### Added
+- The launch time, and a warning about fake addresses, in the token section.
+- A note in the token section and FAQ: a burn gets a run only once Status shows Burn-to-run as live.
+- `/api/proof?all=1` lists every recorded hourly fingerprint, and hash search on Verify covers all of them.
+- Trust, security policy and security review pages.
+
+### Fixed
+- A fingerprint whose send looked failed could be posted twice. The chain is now asked whether an earlier one landed before an hour is tried again.
+- A missing file answers 404 instead of the app page.
+- The public docs, after a line-by-line check against the code, the live API and the chain.
+
 ## [0.1.0] - 2026-11-24
 
 The first version, before tagged releases.

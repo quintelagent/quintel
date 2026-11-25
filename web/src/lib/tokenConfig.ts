@@ -8,5 +8,5 @@ export interface TokenConfig {
   explorerUrl: string | null;
 }
 /** shown until an official address exists */
-export const BEFORE_LAUNCH = 'Launching on Pons, Wed Nov 25, 8:30am ET. Any CA you see before launch is fake.';
+export const BEFORE_LAUNCH = 'Launching on Pons, Wed Nov 25, 11:00am ET. Any CA you see before launch is fake.';
 export const TOKEN_CONFIG: TokenConfig = { ponsUrl: PONS_URL, pumpUrl: PUMP_URL, explorerUrl: EXPLORER_URL };

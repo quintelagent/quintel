@@ -1,7 +1,7 @@
 ---
 name: Idea
 about: Something that would make Quintel more useful or easier to check
-labels: idea
+labels: enhancement
 ---
 
 **What would it do**

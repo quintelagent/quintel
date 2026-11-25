@@ -200,7 +200,7 @@ Delayed means no new run for 20 min while the market is open, or 45 min while it
 
 ## 12. Speed
 
-- Pre-rendered HTML for every public route; live data hydrates after.
+- Pre-rendered HTML for every public route; live data hydrates after. (Not built yet.)
 - Initial JS < 150 KB gzipped; lazy-load below the fold and every flagged feature.
 - Lighthouse mobile: Performance ≥ 95, Accessibility ≥ 95, CLS < 0.02, LCP < 2s.
 
@@ -237,4 +237,4 @@ A script that fails the build if it finds:
 
 ## 16. Living style guide
 
-Route `/_design` (noindex, not linked): every token, component, pill, state and pixel graphic on one page, at phone and laptop width. New components are added here in the same PR.
+Not built yet. When it is: route `/_design` (noindex, not linked), every token, component, pill, state and pixel graphic on one page, at phone and laptop width. New components are added here in the same PR.

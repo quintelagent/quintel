@@ -16,7 +16,7 @@ Hourly fingerprints from 9pm ET on Nov 22 through Nov 23 were not posted when th
 ## What it means for the record
 
 - A fingerprint proves a run existed from the time it was posted, not from the time of the run.
-- The attempts and the final send time of each hour are public in [/api/proof](https://quintelagent.com/api/proof).
+- The attempts and the final send time of each hour are public in [/api/proof?all=1](https://quintelagent.com/api/proof?all=1).
 
 ## Where it stands
 
