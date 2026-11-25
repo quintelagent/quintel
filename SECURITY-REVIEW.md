@@ -1,6 +1,6 @@
 # Security review
 
-**This is an internal review, not an audit.** It was done by the people who build Quintel. No third party has audited the code. Last updated Nov 24, 2026.
+**This is an internal review, not an audit.** It was done by the people who build Quintel. No third party has audited the code. Last updated Nov 25, 2026.
 
 ## Secrets
 
@@ -25,14 +25,28 @@ One operator holds the Cloudflare account, the repository and the fingerprint ke
 
 ## The API
 
-- Read only for visitors. The one write route needs a secret token.
+- Read only for visitors, with one exception: `/api/burn/request` takes a signed scenario for a burn. The admin route needs a secret token.
+- The burn route takes at most 8 KB, refuses anything that is not exactly the expected fields, and is limited per visitor and overall. It stores nothing until the burn is confirmed on the chain and the signature matches the wallet that burned.
 - Inputs are bounded, and extra query values cannot get around the cache.
 - Answers come from a cache that serves the last good copy while one request refreshes it, so a crowd asking for the same thing rarely reaches the database. `/api/health` is never served stale. Tested with 500 visitors at once in `scripts/load-test.mjs`.
+
+## Burn-to-run
+
+| It can | It cannot |
+|---|---|
+| Read a transaction receipt and the current block from Robinhood Chain | Move, approve or return anyone's tokens |
+| Queue one public custom run for a confirmed burn | Give a run to a burn that is too small, too early, already used or signed by another wallet |
+| Run at the end of a tick, after everything official is stored | Change an official run, the odds or a fingerprint |
+
+- A burn can't be undone. A run that fails three times keeps its burn valid: it can be signed again.
+- The worker trusts the nodes it reads. A private node is asked first, then the public one, and both must be on the right chain.
+- Two confirmations are required. Robinhood Chain makes about ten blocks a second, so that is a fraction of a second. A deeper chain reorganization could remove a burn after its run.
 
 ## The site
 
 - No cookies, accounts, trackers or third-party scripts.
-- Tool inputs stay in the browser. Nothing asks for a wallet today.
+- Tool inputs stay in the browser, except a scenario sent to Burn-to-run. That page is the only one that uses a wallet.
+- The wallet is asked for one token transfer to the burn address, with no approval, and one plain signature. The page reads the token, amount and network again just before it opens the wallet, and stops if anything differs.
 - Markdown is rendered from parsed tokens, not injected as HTML.
 
 ## Repository
