@@ -23,7 +23,7 @@ $QNTL is launched through Pons. The points below describe the Pons v2 contracts 
 | change the name, symbol or logo link? | No. The file behind the logo link can change unless its address is content-based. |
 | change who receives the creator fee? | **Yes**, at once. |
 | buy at launch? | **Yes**, in the launch transaction. Ours is listed above. |
-| let other wallets buy without the opening snipe tax? | **Yes**, up to 32 named in the launch transaction, plus the launch wallet and the fee recipient. Ours: posted at launch. |
+| let other wallets buy without the opening snipe tax? | **Yes**, up to 32 named in the launch transaction. Pons always exempts the launch wallet and the fee recipient. We will name no others, and the launch transaction shows it. |
 | turn buyback-and-lock on or off? | **Yes**, the creator fee recipient can, at any time. It is paid from the creator's own fees. Pons can only turn it off. |
 
 **What Pons can do.** A Pons multi-signature wallet can redirect a launch's fees after a public 3-day delay, and can move a launch's reserves if it stays stuck between its curve and its pool for 7 days. Pons discloses audits in progress and none completed, and [its docs](https://docs.ponsfamily.com/protocol/risks) say to treat the contracts as unaudited (checked Nov 24, 2026).
