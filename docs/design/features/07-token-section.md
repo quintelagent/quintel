@@ -39,3 +39,4 @@ Section, Card, Pill, AddressChip, CopyButton, Toast, Button.
 - "View on Pons" and "View on Pump.fun" show once their links are set in web/src/lib/tokenConfig.ts; addresses come from the worker config.
 - Addresses and links come from launch.json only. Once it has a CA: the launch notice goes away, the CA bar shows on every page ("$QNTL CA … Only this one is real.", "Copy CA", "View on Pons", X and GitHub buttons, and a smaller Pump.fun line when set), the page head carries the address, and /token.json lists it. `scripts/set-launch.mjs` fills every place; `scripts/check-launch.mjs` confirms they match.
 - X and GitHub buttons (SocialLinks) also sit under the addresses in the "Official addresses" card.
+- The launch wallet and the dev-buy burn, each with an explorer link, show in the "Official addresses" card once launch.json has them.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Fills the official token values everywhere from one place (launch.json).
-//   node scripts/set-launch.mjs --ca 0x… [--pump <mint>] [--wallet 0x…] [--burn-tx 0x…] [--fee "1%"]
+//   node scripts/set-launch.mjs --ca 0x… [--pump <mint>] [--wallet 0x…] [--burn-tx 0x… --burned 1,234] [--fee "1%"]
 // Writes launch.json, wrangler.jsonc, README, DEPLOYMENTS and TRUST. The site, /token.json and the page head read launch.json when they build.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +14,7 @@ const L = JSON.parse(read('launch.json'));
 if (opt('ca')) L.ca = evm(opt('ca'), 'the CA');
 if (opt('wallet')) L.launchWallet = evm(opt('wallet'), 'the launch wallet');
 if (opt('burn-tx')) { if (!/^0x[0-9a-fA-F]{64}$/.test(opt('burn-tx'))) die('the burn transaction is not a transaction hash.'); L.devBuyBurnTx = opt('burn-tx'); }
+if (opt('burned')) { if (!/^\d{1,3}(,\d{3})*$/.test(opt('burned'))) die('write the burned amount like 1,234.'); L.devBuyBurned = opt('burned'); }
 if (opt('pump')) { if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(opt('pump'))) die('the Pump.fun mint is not a Solana address.'); L.pumpMint = opt('pump'); }
 if (opt('fee')) { if (!/^\d{1,2}(\.\d{1,2})?%$/.test(opt('fee'))) die('write the fee like 1% or 2.5%.'); L.creatorFee = opt('fee'); }
 if (!L.ca) die('no CA yet. Pass --ca 0x…');
@@ -33,6 +34,6 @@ const rows = (file, map) => { // table rows are found by their first cell, so th
 const token = `[\`${L.ca}\`](${EX}/token/${L.ca})`, wallet = L.launchWallet && `[\`${L.launchWallet}\`](${EX}/address/${L.launchWallet})`, burn = L.devBuyBurnTx && `[${L.devBuyBurnTx.slice(0, 10)}…](${EX}/tx/${L.devBuyBurnTx})`;
 rows('README.md', { '$QNTL on Pons': token });
 rows('DEPLOYMENTS.md', { '$QNTL contract (Pons)': token, '$QNTL page on Pons': `[ponsfamily.com](${pons})`, 'Launch wallet': wallet, 'Dev-buy burn transaction': burn, '$QNTL on Pump.fun': pump && `[\`${L.pumpMint}\`](${pump})` });
-rows('TRUST.md', { 'Contract address': token, 'Launch wallet': wallet, 'Dev buy, and the burn of it': burn && `Burned in ${burn}`, 'Creator fee': L.creatorFee && `${L.creatorFee}. It pays for the engine, the data and the AI` });
+rows('TRUST.md', { 'Contract address': token, 'Launch wallet': wallet, 'Dev buy, and the burn of it': burn && `${L.devBuyBurned ? `${L.devBuyBurned} $QNTL, burned` : 'Burned'} in ${burn}`, 'Creator fee': L.creatorFee && `${L.creatorFee}. It pays for the engine, the data and the AI` });
 writeFileSync(at('wrangler.jsonc'), read('wrangler.jsonc').replace(/"QNTL_TOKEN_PONS": "[^"]*"/, `"QNTL_TOKEN_PONS": "${L.ca}"`).replace(/"QNTL_TOKEN_SOLANA": "[^"]*"/, `"QNTL_TOKEN_SOLANA": "${L.pumpMint ?? ''}"`));
 console.log(`CA ${L.ca}\nFilled: launch.json, wrangler.jsonc, README.md, DEPLOYMENTS.md, TRUST.md`);

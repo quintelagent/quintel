@@ -1,7 +1,8 @@
 import { flagOn } from '../features';
 import { useData } from '../lib/data';
+import { addr } from '../lib/format';
 import { Link } from '../lib/router';
-import { BURN_TX, CA, PUMP_MINT } from '../lib/launch';
+import { BURN_TX, BURNED, CA, LAUNCH_WALLET, PUMP_MINT } from '../lib/launch';
 import { BEFORE_LAUNCH, TOKEN_CONFIG } from '../lib/tokenConfig';
 import { AddressChip, Button, Card, Section, SocialLinks } from '../components/ui';
 import './token.css';
@@ -27,7 +28,8 @@ export function Token() {
             <dl className="token-addrs">
                 {rows.map(([name, address]) => <div key={name}><dt className="label">{name}</dt><dd data-ca={address ?? undefined}><AddressChip address={address} /></dd></div>)}
             </dl>
-            {BURN_TX && <p><Link href={`https://robinhoodchain.blockscout.com/tx/${BURN_TX}`}>The dev buy was burned in this transaction.</Link></p>}
+            {LAUNCH_WALLET && <p>Launch wallet: <Link className="mono" href={`https://robinhoodchain.blockscout.com/address/${LAUNCH_WALLET}`} aria-label={`Launch wallet ${addr(LAUNCH_WALLET)}`}>{addr(LAUNCH_WALLET)}</Link></p>}
+            {BURN_TX && <p>Dev buy{BURNED ? `, ${BURNED} $QNTL` : ''}: <Link href={`https://robinhoodchain.blockscout.com/tx/${BURN_TX}`}>burned in this transaction</Link></p>}
             <p className="muted">Always check the address here before you trade.</p>
             <SocialLinks />
           </Card>

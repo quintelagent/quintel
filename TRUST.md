@@ -7,8 +7,8 @@ Plain answers about $QNTL and about Quintel itself. Values that exist only after
 | Question | Answer | Check it |
 |---|---|---|
 | Contract address | [`0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F`](https://robinhoodchain.blockscout.com/token/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) | [Deployments](DEPLOYMENTS.md) |
-| Launch wallet | Posted at launch | explorer link at launch |
-| Dev buy, and the burn of it | Posted at launch, with the transaction | explorer link at launch |
+| Launch wallet | [`0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459`](https://robinhoodchain.blockscout.com/address/0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459) | [Deployments](DEPLOYMENTS.md) |
+| Dev buy, and the burn of it | 6,810,442 $QNTL, burned in [0x3811204b…](https://robinhoodchain.blockscout.com/tx/0x3811204b40426281b1403018881c5caa9ae6390786853de687c00c9eb33505fe) | [Launch transaction](https://robinhoodchain.blockscout.com/tx/0x5cb5a8bf334ced60fbc109fbac90bdfb992a1ea9855b7526d30e8cf552d2adfa) |
 | Creator fee | Posted at launch: the rate, and that it pays for the engine, the data and the AI | [Pons fees](https://docs.ponsfamily.com) |
 
 $QNTL is launched through Pons. The points below describe the Pons v2 contracts as published ([verified source](https://sourcify.dev/server/v2/contract/4663/0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e?fields=sources)). They are checked again against the real token at launch, and this page is corrected if anything differs.

@@ -12,8 +12,8 @@ Every contract and wallet Quintel uses, with a link to check it, and the service
 | Chainlink NVDA price feed (read only: cross-check) | [`0x321A36e441DfBadA01Aa6f9884F14a344E133D1F`](https://robinhoodchain.blockscout.com/address/0x321A36e441DfBadA01Aa6f9884F14a344E133D1F) |
 | $QNTL contract (Pons) | [`0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F`](https://robinhoodchain.blockscout.com/token/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) |
 | $QNTL page on Pons | [ponsfamily.com](https://ponsfamily.com/launchpad/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) |
-| Launch wallet | Posted at launch |
-| Dev-buy burn transaction | Posted at launch |
+| Launch wallet | [`0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459`](https://robinhoodchain.blockscout.com/address/0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459) |
+| Dev-buy burn transaction | [0x3811204b…](https://robinhoodchain.blockscout.com/tx/0x3811204b40426281b1403018881c5caa9ae6390786853de687c00c9eb33505fe) |
 
 The fingerprint wallet only sends 0-value transactions to itself, with the hour's hash as data. It holds a small amount of ETH for gas and nothing else. Every fingerprint in [/api/proof](https://quintelagent.com/api/proof) was posted from it, and the worker refuses to post from any other.
 
