@@ -33,6 +33,7 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 | **Paper desk** | $100k virtual, published rules, every trade with a note. Losses are shown like gains. |
 | **Proof** | An hourly fingerprint on Robinhood Chain. Any run can be recomputed in the browser, byte for byte. |
 | **Use Quintel from your AI** | Scenario odds, briefings and proofs in Claude or Cursor. |
+| **Burn-to-run** | Burn $QNTL to request a public custom run. |
 | **Status, docs, incidents** | What is live, how it works, and anything that broke. |
 
 ## How it works

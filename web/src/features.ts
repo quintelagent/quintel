@@ -15,7 +15,7 @@ export const FEATURES: Feature[] = [
   { id: 'mcp', flag: 'MCP_SERVER', on: true, name: 'Use Quintel from your AI', oneLine: 'Scenario odds, briefings and proofs in Claude or Cursor.', status: 'live', releaseAt: null, shippedAt: '2026-11-25T16:43:14.954Z', route: '/mcp', doc: '11-mcp-page' },
   { id: 'scorecard', flag: 'DAILY_SCORECARD_PUBLIC', on: false, name: 'Daily scorecard', oneLine: 'How the odds bands did against each close, misses included.', status: 'planned', releaseAt: null, shippedAt: null, route: '/scorecard', doc: '13-daily-scorecard' },
   { id: 'ship-log', flag: 'SHIP_LOG', on: false, name: 'Ship log', oneLine: 'Every release with its time.', status: 'planned', releaseAt: null, shippedAt: null, route: '/changelog', doc: '14-ship-log' },
-  { id: 'burn', flag: 'BURN_TO_RUN', on: false, name: 'Burn-to-run', oneLine: 'Burn $QNTL to request a public custom run.', status: 'planned', releaseAt: null, shippedAt: null, route: '/burn', doc: '15-burn-to-run' },
+  { id: 'burn', flag: 'BURN_TO_RUN', on: true, name: 'Burn-to-run', oneLine: 'Burn $QNTL to request a public custom run.', status: 'live', releaseAt: null, shippedAt: '2026-11-25T17:52:01.861Z', route: '/burn', doc: '15-burn-to-run' },
   { id: 'chain-mode', flag: 'CHAIN_MODE_SPOTLIGHT', on: false, name: '24/7 chain mode spotlight', oneLine: 'The site follows the token while Wall Street is closed.', status: 'planned', releaseAt: null, shippedAt: null, route: '/', doc: '16-chain-mode-spotlight' },
 ];
 
