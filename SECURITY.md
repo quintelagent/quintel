@@ -4,7 +4,7 @@ How Quintel handles keys, contracts and reports.
 
 ## Keys
 
-- The site never asks for a private key or seed phrase, and never will. Nothing on it needs a wallet today.
+- The site never asks for a private key or seed phrase, and never will. Only [Burn-to-run](https://quintelagent.com/burn) uses a wallet, and nothing else on the site needs one.
 - One wallet does one job: the [fingerprint wallet](DEPLOYMENTS.md) sends 0-value transactions to itself. It holds a small amount of ETH for gas and nothing else, so losing its key could not move anyone's funds.
 - Keys are Cloudflare Worker secrets. They are not in the code, the database or the logs. Public errors and logs are stripped of URLs and secret values (`worker/src/redact.ts`).
 - The worker refuses to post a fingerprint if its key does not match the published wallet.
@@ -14,10 +14,19 @@ How Quintel handles keys, contracts and reports.
 
 Quintel has deployed no smart contracts of its own. It reads the contracts listed in [Deployments](DEPLOYMENTS.md).
 
+## Burn-to-run
+
+- A burn is a normal $QNTL transfer from your own wallet to `0x000000000000000000000000000000000000dEaD`. There is no approval, no contract of ours and no account. Then you sign a plain message with your scenario, which is free and moves nothing.
+- The worker reads the transaction's receipt and the current block from Robinhood Chain. It checks that the transfer succeeded, that the token, burn address and amount are right, that the block is at or after the opening block, and that the signature is from the wallet that burned. Each burn gets one run.
+- **A burn can't be undone.** Nobody can return burned tokens, including us.
+- A burn made before Burn-to-run opened, or below the amount on the page, gets no run.
+- A burn doesn't change the odds, is not a share of anything, and pays nothing.
+- Custom runs are kept apart from official runs and are not in any fingerprint. The address is shown shortened, or left out if you choose to be anonymous. The burn itself is always public on the chain.
+
 ## Your data
 
 - No accounts, no cookies, no trackers.
-- What you type into the tools stays in your browser. The watchlist is saved only on your device.
+- What you type into the tools stays in your browser. Burn-to-run is the exception: the scenario you sign is sent and published, and the full address, the burn and the signature are stored. The watchlist is saved only on your device.
 - The site loads its own files and its own API. Verify also reads one public Robinhood Chain node.
 
 ## What the proof does and does not show

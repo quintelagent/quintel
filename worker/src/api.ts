@@ -1,4 +1,5 @@
 import { DESK_RULES, SCHEDULE, type Env } from './config';
+import { burnGallery, burnRequestView, burnRunView, burnSummary, postBurn } from './burn/request';
 import { Busy, cachedBody } from './cache';
 import type { TokenVolume } from './data/chainToken';
 import { getMeta } from './db';
@@ -164,6 +165,9 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
     if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: 'unauthorized' }, 0, 401);
     return json(await tickFn(env, url.searchParams.get('force') === '1'), 0);
   }
+  const burn = p === '/api/burn' || p.startsWith('/api/burn/');
+  if (burn && !workerFlag(env, 'BURN_TO_RUN')) return json({ error: 'not found' }, 0, 404);
+  if (p === '/api/burn/request' && req.method === 'POST') { const a = await postBurn(req, env); return json(a.body, 0, a.status); }
   if (req.method !== 'GET') return json({ error: 'method not allowed' }, 0, 405);
 
   const int = (k: string, d: number, max: number) => { const n = Math.floor(Number(url.searchParams.get(k) || d)); return Number.isFinite(n) ? Math.min(max, Math.max(1, n)) : d; };
@@ -215,6 +219,11 @@ export async function handleApi(req: Request, env: Env, ctx: ExecutionContext, t
       });
     }
     if (p === '/api/scorecard') return await serve(p, 300, 600, () => scorecardSummary(env));
+    if (burn) {
+      if (p === '/api/burn') return await serve(p, 15, 0, () => burnSummary(env));
+      if (p === '/api/burn/gallery') { const sort = url.searchParams.get('sort') === 'extreme' ? 'extreme' : 'latest'; return await serve(`${p}?sort=${sort}`, 15, 0, () => burnGallery(env, sort)); }
+      if ((m = p.match(/^\/api\/burn\/(request|run)\/(\d{1,9})$/))) { const id = Number(m[2]); return await (m[1] === 'run' ? serve(`/api/burn/run/${id}`, 3600, 86400, () => burnRunView(env, id)) : serve(`/api/burn/request/${id}`, 5, 10, () => burnRequestView(env, id), 60)); }
+    }
     if (p === '/api/history') return await serve(p, 600, 1200, async () => (await all(env.DB.prepare('SELECT date, close FROM history_daily ORDER BY date DESC LIMIT 260'))).reverse());
     return json({ error: 'not found' }, 0, 404);
   } catch (e) {

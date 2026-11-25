@@ -26,6 +26,9 @@ export interface Env {
   QNTL_TOKEN_PONS?: string;
   QNTL_TOKEN_SOLANA?: string;
   FINGERPRINT_ADDRESS?: string;
+  /** burn-to-run: whole tokens per run, and the first block that counts. Unset means not open. */
+  BURN_AMOUNT?: string;
+  BURN_FROM_BLOCK?: string;
   /** preview and local only: flags to turn on, comma separated */
   PREVIEW_FLAGS?: string;
   SITE_URL?: string;
