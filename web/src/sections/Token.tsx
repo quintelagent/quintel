@@ -1,3 +1,4 @@
+import { flagOn } from '../features';
 import { useData } from '../lib/data';
 import { Link } from '../lib/router';
 import { BEFORE_LAUNCH, TOKEN_CONFIG } from '../lib/tokenConfig';
@@ -14,6 +15,7 @@ export function Token() {
     <Section id="token" title="$QNTL runs your own 1,000,000 futures." sub="Its job: burn it to run your own scenario as a public run.">
       <div className="token-stack">
         {!pons && <Card className="token-launch"><p>{BEFORE_LAUNCH}</p></Card>}
+        {!flagOn('BURN_TO_RUN') && <Card className="token-launch"><p>Burn-to-run is not open yet. A burn made before <Link href="/status">Status</Link> shows it as live does not get a run.</p></Card>}
         <div className="grid token-pair">
           <Card className="token-card">
             <div className="token-head"><h3>What it does</h3></div>
