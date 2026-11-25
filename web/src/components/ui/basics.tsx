@@ -95,7 +95,7 @@ export function CopyButton({ text, label = 'Copy', toast = 'Copied' }: { text: s
   const timer = useRef(0);
   useEffect(() => () => clearTimeout(timer.current), []);
   return (
-    <button type="button" className="copy" onClick={() => { navigator.clipboard?.writeText(text).then(() => { set(true); push({ text: toast }); clearTimeout(timer.current); timer.current = window.setTimeout(() => set(false), 1500); }, () => push({ text: 'Couldn’t copy. Select the text instead.' })); }}>
+    <button type="button" className="copy" onClick={() => { (navigator.clipboard?.writeText(text) ?? Promise.reject()).then(() => { set(true); push({ text: toast }); clearTimeout(timer.current); timer.current = window.setTimeout(() => set(false), 1500); }, () => push({ text: 'Couldn’t copy. Select the text instead.' })); }}>
       {done ? <Check size={16} strokeWidth={1.5} aria-hidden="true" /> : <Copy size={16} strokeWidth={1.5} aria-hidden="true" />}{label}
     </button>
   );

@@ -95,7 +95,7 @@ Secrets are set with `wrangler secret put`, or in `.dev.vars` locally (gitignore
 
 ## API
 
-`/api/latest` · `/api/run/:id` · `/api/runs?since=` · `/api/sample/:id` · `/api/output/:id` · `/api/briefings` · `/api/desk` · `/api/proof` (newest 48 hours, `?all=1` for every hour) · `/api/fingerprint/:hour` · `/api/scorecard` · `/api/health` · `/api/config`
+`/api/latest` · `/api/run/:id` · `/api/runs?since=` (newest 200, up to 45 days back) · `/api/sample/:id` · `/api/output/:id` · `/api/briefings` · `/api/news` · `/api/history` · `/api/desk` · `/api/proof` (newest 48 hours, `?all=1` for every hour) · `/api/fingerprint/:hour` · `/api/fingerprint-for-run?id=` · `/api/scorecard` · `/api/health` · `/api/config`
 
 ## Docs
 

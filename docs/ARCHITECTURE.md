@@ -24,6 +24,7 @@ One Cloudflare Worker serves the static site, the JSON API and the 10-minute cro
 4. Update the paper desk. Write a briefing every 30 minutes, or immediately on big news or a move over 3%.
 5. At the first tick of each hour, fingerprint the previous hour. Every tick retries up to three pending fingerprints, oldest first. Before an hour is tried again, the chain is asked whether an earlier transaction landed.
 6. At 00:30 ET, score matured horizons for the scorecard.
+7. Fetch the pool's 24-hour volume last, so it can never delay a run or a fingerprint. If it fails, the last figure is kept for up to two hours.
 
 ## AI cost control
 
