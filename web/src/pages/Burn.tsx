@@ -3,7 +3,7 @@ import { Check } from 'lucide-react';
 import { Answer, PriceBars } from '../sections/tool/DragTab';
 import { api, useApi, type Loaded, type SiteConfig } from '../lib/api';
 import {
-  aboveLine, BURN_HORIZONS, burnMessage, burnTransfer, DEAD_ADDRESS, errorText, isTxHash, parseScenario, priceInSpan, same, sendRequest, shockLine, SHOCK_BOUNDS, statsOf, waitMinutes, WALLET_TEXT, when,
+  aboveLine, BURN_HORIZONS, burnMessage, burnTransfer, DEAD_ADDRESS, errorText, isTxHash, parseScenario, priceInSpan, same, sendRequest, shockLine, SHOCK_BOUNDS, statsOf, waitMinutes, waitText, WALLET_TEXT, when,
   type BurnBodyJson, type BurnErrorCode, type BurnHorizon, type BurnRequestView, type BurnSummary, type GalleryItem, type Scenario,
 } from '../lib/burn';
 import { recheck } from '../lib/burnCheck';
@@ -104,6 +104,7 @@ function Closed() {
 
 function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: Loaded<BurnRequestView>; toRun: (id: number) => void }) {
   const { latest, config, configError, reloadConfig, online } = useData();
+  const now = useNow(30000);
   const spot = latest?.run?.spot ?? null;
   const [price, setPrice] = useState(''), [touched, setTouched] = useState(false);
   const [h, setH] = useState<`${BurnHorizon}`>('5');
@@ -164,7 +165,7 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
               </dl>
               <div className="burn-match">{official ? <><Check size={16} strokeWidth={1.5} aria-hidden="true" /><span className="note">The token is the official address.</span></> : <Skeleton h="1.5em" w="14em" />}</div>
               <p className="burn-warn"><i className="fall" aria-hidden="true" />Burns can’t be undone.</p>
-              <p className="note">A burn before that block, or below this amount, gets no run. One burn gives one run. Runs go one at a time, about one every 10 minutes, so yours may wait.</p>
+              <p className="note">A burn before that block, or below this amount, gets no run. One burn gives one run. Runs go one at a time, about one every 10 minutes. {s.queued ? `${int(s.queued)} in the queue now: a new burn waits ${waitText(waitMinutes(s.queued, now))}.` : `The queue is empty: a new burn waits ${waitText(waitMinutes(0, now))}.`}</p>
               <BurnStep s={s} wallet={wallet} wait={!online ? 'You are offline.' : official !== true ? 'Checking the official address.' : !good ? 'Choose a scenario first.' : !s.amountRaw ? 'Couldn’t read the token from the chain. Try again in a minute.' : null} tx={tx} onSent={(t) => { setTx(t); setHashText(t); setSentAt(Date.now()); }} clear={() => setTx('')} />
             </>
           )}
@@ -183,6 +184,7 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
 
 /** Connect, switch network, then one transfer the visitor confirms in the wallet. */
 function BurnStep({ s, wallet, wait, tx, onSent, clear }: { s: BurnSummary; wallet: Wallet; wait: string | null; tx: string; onSent: (tx: string) => void; clear: () => void }) {
+  const now = useNow(30000);
   const [review, setReview] = useState(false), [busy, setBusy] = useState(false), [note, setNote] = useState<string | null>(null);
   const run = async (f: () => Promise<unknown>) => { setBusy(true); setNote(null); try { await f(); } catch (e) { setNote(WALLET_TEXT[problemOf(e)]); } finally { setBusy(false); } };
   const burn = () => run(async () => {
@@ -225,6 +227,7 @@ function BurnStep({ s, wallet, wait, tx, onSent, clear }: { s: BurnSummary; wall
           <div><dt className="label">Network</dt><dd className="mono">Robinhood Chain, chain ID {s.chainId}</dd></div>
           <div><dt className="label">Kind</dt><dd className="mono">Transfer, no approval</dd></div>
         </dl>
+        <p>Estimated wait for your run: {waitText(waitMinutes(s.queued, now))}.</p>
         <p className="note">Check that your wallet shows the same token, amount and address before you confirm. The network fee is extra.</p>
         <div className="row"><Button disabled={busy} onClick={burn}>{busy ? 'Waiting for wallet' : 'Open wallet'}</Button><Button variant="secondary" onClick={() => setReview(false)}>Cancel</Button></div>
         <p className="note burn-note" role="status">{note}</p>
@@ -316,7 +319,7 @@ function Request({ id, data, error, status, reload }: Loaded<BurnRequestView> & 
       {!data ? (error ? (status === 404 ? <EmptyState text="No request has that number." action={<Button variant="secondary" href="/burn">Close</Button>} /> : <ErrorState text="Couldn’t load that request. Try again." onRetry={reload} />) : <div className="burn-load"><Skeleton h="1.5em" w="14em" /><Skeleton h={160} /></div>) : (
         <>
           <p className="note">{data.by ? `Requested by ${data.by}` : 'Requested anonymously'} · {etDateTime(data.createdAt)}<br />{usd(data.scenario.price)} {when(data.scenario.horizon)}{data.scenario.shock && <>. {shockLine(data.scenario.shock)}</>}</p>
-          {data.status === 'queued' && <div className="state"><p>Your run is queued. About {waitMinutes(data.ahead, now)} min.</p>{late && <Pill>Delayed · last run {etTime(ts)}</Pill>}<p className="note">Custom runs go one at a time, after the official run. You can close this page.</p></div>}
+          {data.status === 'queued' && <div className="state"><p>Number {int(data.ahead + 1)} in the queue. Estimated wait: {waitText(waitMinutes(data.ahead, now))}.</p>{late && <Pill>Delayed · last run {etTime(ts)}</Pill>}<p className="note">Custom runs go one at a time, after the official run, about one every 10 minutes. The wait is an estimate and can be longer. You can close this page and come back to this link.</p></div>}
           {data.status === 'running' && <><PixelField kept={null} n={64} label="Running 1,000,000 futures" /><p className="label">Running 1,000,000 futures</p></>}
           {data.status === 'failed' && <div className="state"><p>The run didn’t finish. The burn still counts: paste its transaction hash in step 3 and sign again.</p></div>}
           {data.status === 'done' && data.run && <Result data={data} run={data.run} />}

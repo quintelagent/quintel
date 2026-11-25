@@ -11,6 +11,8 @@ export const shockLine = (s: Scenario['shock']) => (s ? `Drift ${pctChange(s.dri
 export const aboveLine = (s: Scenario) => `of futures end above ${usd(s.price)} ${when(s.horizon)}`;
 /** Minutes until a queued run should start: the next ten-minute slot, then one per slot. */
 export const waitMinutes = (ahead: number, now: Date) => Math.ceil((600_000 - (now.getTime() % 600_000)) / 60_000) + 1 + ahead * 10;
+/** About 25 min, or about 5h 10m from an hour up. */
+export const waitText = (min: number) => (min < 60 ? `about ${min} min` : `about ${Math.floor(min / 60)}h${min % 60 ? ` ${min % 60}m` : ''}`);
 export const statsOf = (r: BurnResult, days: number) => ({ days, mean: r.mean, pct: r.pct, hist: r.hist }) as unknown as HorizonStats;
 
 /** The exact transfer, or null when anything read just now differs from what the page shows. */

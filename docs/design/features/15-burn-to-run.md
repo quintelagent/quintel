@@ -11,7 +11,7 @@ Anyone can burn $QNTL to request a custom 1,000,000-future run; every burn and r
 3. Request Card, here when the link names a request (`/burn?request=12`), otherwise after the steps.
 4. Steps (numbered Cards):
    - 1 "Choose your scenario": price Input, Horizon tabs (Next close · 1 week · 1 month), Shock tabs (No shock · Add a shock) with three Sliders. One line: "Odds of ending above $160.00, and at $160.00 or lower, in 1 week."
-   - 2 "Burn {amount} $QNTL": amount, token and burn address as AddressChips, "Counts from block", "A burn before that block, or below this amount, gets no run. One burn gives one run. Runs go one at a time, about one every 10 minutes, so yours may wait.", "The token is the official address.", "Burns can’t be undone." Buttons in turn: "Connect wallet", "Switch network", "Review burn". Review Sheet: amount, full token address, your full wallet address, full burn address, network, "Transfer, no approval", "Open wallet", "Cancel".
+   - 2 "Burn {amount} $QNTL": amount, token and burn address as AddressChips, "Counts from block", "A burn before that block, or below this amount, gets no run. One burn gives one run. Runs go one at a time, about one every 10 minutes, and the queue now: "{n} in the queue now: a new burn waits about {wait}.", "The token is the official address.", "Burns can’t be undone." Buttons in turn: "Connect wallet", "Switch network", "Review burn". Review Sheet: amount, full token address, your full wallet address, full burn address, network, "Transfer, no approval", "Open wallet", "Cancel".
    - 3 "Confirm": Input "Transaction hash", tabs "Short address" · "Anonymous", "Sign and check burn". Accordion "Sign in another wallet": the exact text, Input "Signature", "Check burn".
 5. Gallery: H2 "Gallery.", tabs "Latest" · "Most extreme" (furthest price from where the run started). Cards: who, big %, scenario line, the other side, PixelSpark of the futures, time, "Open", "Share".
 6. Disclaimer.
@@ -35,7 +35,7 @@ Steps left, request card right (it follows the page until it holds a result); ga
 - **Loading:** Skeletons; **Error:** "Couldn’t load burn-to-run. Try again."
 - **Address mismatch:** "The token address here doesn’t match the official one, so burning is turned off. Please don’t burn."
 - **Pending:** "Waiting for confirmation · 1 of 2" + PixelMeter.
-- **Verified:** inverted Pill "Burn verified" + "Your run is queued. About {n} min." With Delayed pill when the official run is late.
+- **Verified:** inverted Pill "Burn verified" + "Number {n} in the queue. Estimated wait: about {wait}." With Delayed pill when the official run is late.
 - **Running:** empty PixelField + "Running 1,000,000 futures".
 - **Done:** big %, PixelBars, the other side and the other horizons, "Recheck here", "Share", "View burn".
 - **Not finished:** "The run didn’t finish. The burn still counts: paste its transaction hash in step 3 and sign again."

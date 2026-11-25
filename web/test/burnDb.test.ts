@@ -150,10 +150,11 @@ describe('burn queue', () => {
     chain.receipts[TX] = receipt([log({ from: me.address }), log({ from: me.address, index: 1 })]);
     await send(); await send(me, { scenario: { ...SCENARIO, price: 170 }, anonymous: true });
     const before = tables();
+    expect((await burnSummary(env)).queued).toBe(2);
     expect(await burnRequestView(env, 2)).toMatchObject({ status: 'queued', ahead: 1, by: null, tx: null, run: null });
     await processBurns(env, tick(), at(), quick);
     expect([row(1).status, row(2).status]).toEqual(['done', 'queued']);
-    expect((await burnRequestView(env, 2))!.ahead).toBe(0);
+    expect((await burnRequestView(env, 2))!.ahead).toBe(0); expect((await burnSummary(env)).queued).toBe(1);
     await processBurns(env, tick(), at(), quick);
     expect(row(2).status).toBe('done');
     expect(await processBurns(env, tick(), at(), quick)).toEqual([]);

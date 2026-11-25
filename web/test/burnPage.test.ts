@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { burnCalldata, hexText, isContractWallet, problemOf, sendBurn, signText, switchChain, WalletError } from '../src/lib/wallet';
-import { burnTransfer, DEAD_ADDRESS, errorText, sendRequest, type BurnSummary, shockLine, waitMinutes, when } from '../src/lib/burn';
+import { burnTransfer, DEAD_ADDRESS, errorText, sendRequest, type BurnSummary, shockLine, waitMinutes, waitText, when } from '../src/lib/burn';
 
 const TOKEN = '0x1111111111111111111111111111111111111111', ME = '0x2222222222222222222222222222222222222222';
 const stub = (f: (m: string, p?: unknown[]) => unknown) => { const calls: [string, unknown[] | undefined][] = []; vi.stubGlobal('ethereum', { request: async ({ method, params }: { method: string; params?: unknown[] }) => { calls.push([method, params]); return f(method, params); } }); return calls; };
@@ -46,13 +46,14 @@ describe('wallet', () => {
 
 describe('burn page', () => {
   it('sends only what the page shows', () => {
-    const s: BurnSummary = { open: true, status: 'Open', domain: 'x', chainId: 4663, explorer: '', burnAddress: DEAD_ADDRESS, confirmations: 2, token: TOKEN, amount: 1000, decimals: 6, amountRaw: '1000000000', fromBlock: 1, burned: 0, requests: 0 };
+    const s: BurnSummary = { open: true, status: 'Open', domain: 'x', chainId: 4663, explorer: '', burnAddress: DEAD_ADDRESS, confirmations: 2, token: TOKEN, amount: 1000, decimals: 6, amountRaw: '1000000000', fromBlock: 1, burned: 0, requests: 0, queued: 0 };
     const official = { token: TOKEN, chainId: 4663 };
     expect(burnTransfer(s, s, official)).toEqual({ token: TOKEN, raw: 1_000_000_000n, chainId: 4663, decimals: 6 });
     for (const x of [{ open: false }, { token: ME }, { token: null }, { amount: 2000, amountRaw: '2000000000' }, { amountRaw: '1000000001' }, { amountRaw: null }, { decimals: null }, { decimals: 18 }, { chainId: 1 }, { burnAddress: ME }]) expect(burnTransfer(s, { ...s, ...x }, official), JSON.stringify(x)).toBeNull();
     for (const o of [{ token: ME, chainId: 4663 }, { token: null, chainId: 4663 }, { token: TOKEN, chainId: 1 }]) expect(burnTransfer(s, s, o)).toBeNull();
     expect(burnTransfer({ ...s, burnAddress: ME }, s, official)).toBeNull();
   });
+  it('a long wait reads in hours', () => { expect([25, 59, 60, 310].map(waitText)).toEqual(['about 25 min', 'about 59 min', 'about 1h', 'about 5h 10m']); });
   it('wait is the next slot, then one slot per run ahead', () => {
     const t = new Date('2026-11-24T15:04:00Z');
     expect([waitMinutes(0, t), waitMinutes(2, t)]).toEqual([7, 27]);
