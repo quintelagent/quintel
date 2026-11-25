@@ -10,8 +10,8 @@ Every contract and wallet Quintel uses, with a link to check it, and the service
 | NVDA stock token (read only: price source while the market is closed) | [`0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC`](https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC) |
 | NVDA/USDG Uniswap V3 pool (read only) | [`0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3`](https://robinhoodchain.blockscout.com/address/0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3) |
 | Chainlink NVDA price feed (read only: cross-check) | [`0x321A36e441DfBadA01Aa6f9884F14a344E133D1F`](https://robinhoodchain.blockscout.com/address/0x321A36e441DfBadA01Aa6f9884F14a344E133D1F) |
-| $QNTL contract (Pons) | Posted at launch |
-| $QNTL page on Pons | Posted at launch |
+| $QNTL contract (Pons) | [`0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F`](https://robinhoodchain.blockscout.com/token/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) |
+| $QNTL page on Pons | [ponsfamily.com](https://ponsfamily.com/launchpad/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) |
 | Launch wallet | Posted at launch |
 | Dev-buy burn transaction | Posted at launch |
 

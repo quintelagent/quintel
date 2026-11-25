@@ -1,16 +1,17 @@
 import { flagOn } from '../features';
 import { useData } from '../lib/data';
 import { Link } from '../lib/router';
+import { BURN_TX, CA, PUMP_MINT } from '../lib/launch';
 import { BEFORE_LAUNCH, TOKEN_CONFIG } from '../lib/tokenConfig';
-import { AddressChip, Button, Card, ErrorState, Section, Skeleton } from '../components/ui';
+import { AddressChip, Button, Card, Section, SocialLinks } from '../components/ui';
 import './token.css';
 
 export function Token() {
-  const { config, configError: failed, reloadConfig } = useData();
+  const { config } = useData();
   const { ponsUrl, pumpUrl, explorerUrl } = TOKEN_CONFIG;
-  const pons = config?.tokens.pons ?? null;
+  const pons = CA; // launch.json, so it can never differ from the bar
   const explorer = explorerUrl ?? (config ? (pons ? `${config.explorer}/token/${pons}` : config.explorer) : null);
-  const rows: [string, string | null][] = [['Robinhood Chain · Pons', pons], ['Solana · Pump.fun', config?.tokens.solana ?? null]];
+  const rows: [string, string | null][] = [['Robinhood Chain · Pons', pons], ['Solana · Pump.fun', PUMP_MINT]];
   return (
     <Section id="token" title="$QNTL runs your own 1,000,000 futures." sub="Its job: burn it to run your own scenario as a public run.">
       <div className="token-stack">
@@ -23,15 +24,15 @@ export function Token() {
           </Card>
           <Card className="token-card">
             <div className="token-head"><h3>Official addresses</h3></div>
-            {failed ? <ErrorState text="Couldn’t load the addresses. Try again." onRetry={reloadConfig} /> : (
-              <dl className="token-addrs">
-                {rows.map(([name, address]) => <div key={name}><dt className="label">{name}</dt><dd>{config ? <AddressChip address={address} /> : <Skeleton h={44} w={160} />}</dd></div>)}
-              </dl>
-            )}
+            <dl className="token-addrs">
+                {rows.map(([name, address]) => <div key={name}><dt className="label">{name}</dt><dd data-ca={address ?? undefined}><AddressChip address={address} /></dd></div>)}
+            </dl>
+            {BURN_TX && <p><Link href={`https://robinhoodchain.blockscout.com/tx/${BURN_TX}`}>The dev buy was burned in this transaction.</Link></p>}
             <p className="muted">Always check the address here before you trade.</p>
+            <SocialLinks />
           </Card>
         </div>
-        {(ponsUrl || pumpUrl || explorer || !failed) && <div className="row token-links">
+        {(ponsUrl || pumpUrl || explorer) && <div className="row token-links">
           {ponsUrl && <Button variant="secondary" href={ponsUrl}>View on Pons</Button>}
           {pumpUrl && <Button variant="secondary" href={pumpUrl}>View on Pump.fun</Button>}
           {explorer && <Button variant="secondary" href={explorer}>Explorer</Button>}

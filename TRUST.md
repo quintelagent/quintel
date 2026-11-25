@@ -6,7 +6,7 @@ Plain answers about $QNTL and about Quintel itself. Values that exist only after
 
 | Question | Answer | Check it |
 |---|---|---|
-| Contract address | Posted at launch | [Deployments](DEPLOYMENTS.md) |
+| Contract address | [`0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F`](https://robinhoodchain.blockscout.com/token/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) | [Deployments](DEPLOYMENTS.md) |
 | Launch wallet | Posted at launch | explorer link at launch |
 | Dev buy, and the burn of it | Posted at launch, with the transaction | explorer link at launch |
 | Creator fee | Posted at launch: the rate, and that it pays for the engine, the data and the AI | [Pons fees](https://docs.ponsfamily.com) |
