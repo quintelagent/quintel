@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { burnCalldata, hexText, problemOf, sendBurn, signText, switchChain, WalletError } from '../src/lib/wallet';
+import { burnCalldata, hexText, isContractWallet, problemOf, sendBurn, signText, switchChain, WalletError } from '../src/lib/wallet';
 import { burnTransfer, DEAD_ADDRESS, errorText, sendRequest, type BurnSummary, shockLine, waitMinutes, when } from '../src/lib/burn';
 
 const TOKEN = '0x1111111111111111111111111111111111111111', ME = '0x2222222222222222222222222222222222222222';
@@ -12,6 +12,16 @@ describe('wallet', () => {
     const calls = stub(() => '0xabc');
     await sendBurn(ME, TOKEN, 5n, 4663);
     expect(calls).toEqual([['eth_sendTransaction', [{ from: ME, to: TOKEN, value: '0x0', data: burnCalldata(5n), chainId: '0x1237' }]]]);
+  });
+  it('knows a contract wallet, which could burn but never sign', async () => {
+    for (const [code, is] of [['0x', false], ['0xef0100' + '1'.repeat(40), false], ['0x6080', true]] as const) { stub(() => code); expect(await isContractWallet(ME)).toBe(is); }
+    stub(() => null); await expect(isContractWallet(ME)).rejects.toThrow('failed');
+  });
+  it('adds the network when a wallet does not know it, and never after a refusal', async () => {
+    const calls = stub((m) => { if (m === 'wallet_switchEthereumChain') throw { code: -32603 }; return null; });
+    await switchChain(4663, 'https://x'); expect(calls.map((c) => c[0])).toEqual(['wallet_switchEthereumChain', 'wallet_addEthereumChain']);
+    const no = stub(() => { throw { code: 4001 }; });
+    await expect(switchChain(4663, 'https://x')).rejects.toThrow('rejected'); expect(no.length).toBe(1);
   });
   it('signs plain text, unicode included', async () => {
     const calls = stub(() => '0x1');

@@ -15,7 +15,7 @@ import { useMeta } from '../lib/meta';
 import { axisOf, NO_SHOCK, parseAmount } from '../lib/odds';
 import { Link, useRoute } from '../lib/router';
 import { DEFAULT_SYMBOL } from '../lib/symbols';
-import { problemOf, readBalance, readDecimals, sendBurn, signText, switchChain, useWallet, walletChain, type Wallet } from '../lib/wallet';
+import { problemOf, readBalance, readDecimals, isContractWallet, sendBurn, signText, switchChain, useWallet, walletChain, type Wallet } from '../lib/wallet';
 import { Accordion, AddressChip, Button, Card, CodeBlock, CopyButton, EmptyState, ErrorState, Input, NumberRoll, Pill, SegmentedTabs, Sheet, Skeleton, Slider, Stat } from '../components/ui';
 import { PixelField, PixelMeter, PixelSpark } from '../components/pixel';
 import './burn.css';
@@ -160,9 +160,11 @@ function Open({ s, id, req, toRun }: { s: BurnSummary; id: number | null; req: L
                 <div><dt className="label">Amount</dt><dd className="burn-amount"><span className="mono">{amount} $QNTL</span></dd></div>
                 <div><dt className="label">Token</dt><dd><AddressChip address={s.token} /></dd></div>
                 <div><dt className="label">Burn address</dt><dd><AddressChip address={DEAD_ADDRESS} /></dd></div>
+                <div><dt className="label">Counts from block</dt><dd className="burn-amount"><span className="mono">{int(s.fromBlock)}</span></dd></div>
               </dl>
               <div className="burn-match">{official ? <><Check size={16} strokeWidth={1.5} aria-hidden="true" /><span className="note">The token is the official address.</span></> : <Skeleton h="1.5em" w="14em" />}</div>
               <p className="burn-warn"><i className="fall" aria-hidden="true" />Burns can’t be undone.</p>
+              <p className="note">A burn before that block, or below this amount, gets no run. One burn gives one run. Runs go one at a time, about one every 10 minutes, so yours may wait.</p>
               <BurnStep s={s} wallet={wallet} wait={!online ? 'You are offline.' : official !== true ? 'Checking the official address.' : !good ? 'Choose a scenario first.' : !s.amountRaw ? 'Couldn’t read the token from the chain. Try again in a minute.' : null} tx={tx} onSent={(t) => { setTx(t); setHashText(t); setSentAt(Date.now()); }} clear={() => setTx('')} />
             </>
           )}
@@ -194,6 +196,7 @@ function BurnStep({ s, wallet, wait, tx, onSent, clear }: { s: BurnSummary; wall
     if ((await walletChain()) !== b.chainId) return setNote('Your wallet is on another network. Nothing was sent.');
     if ((await readDecimals(b.token)) !== b.decimals) return setNote('The token on this network doesn’t match. Nothing was sent.');
     if ((await readBalance(b.token, from)) < b.raw) return setNote(`This wallet holds less than ${int(s.amount)} $QNTL. Nothing was sent.`);
+    if (await isContractWallet(from)) return setNote('This is a contract wallet, so it can’t sign step 3. Nothing was sent.');
     const t = await sendBurn(from, b.token, b.raw, b.chainId);
     setReview(false);
     if (isTxHash(t)) onSent(t.toLowerCase()); else setNote('Your wallet didn’t return a transaction hash. Find it there and paste it in step 3.');
@@ -207,8 +210,8 @@ function BurnStep({ s, wallet, wait, tx, onSent, clear }: { s: BurnSummary; wall
   const wrongChain = wallet.account && wallet.chain !== s.chainId;
   return (
     <div className="burn-do">
-      {!wallet.present ? <p className="note">No wallet found in this browser. Send the burn from your own wallet with the details above, then paste its transaction hash in step 3.</p>
-        : !wallet.account ? <div className="row"><Button disabled={busy} onClick={() => run(wallet.connect)}>Connect wallet</Button><span className="note">Or burn from any wallet and paste the hash in step 3.</span></div>
+      {!wallet.present ? <p className="note">No wallet found in this browser. Before you burn, open this page in your wallet app’s own browser, or on a computer with your wallet. Step 3 needs its signature.</p>
+        : !wallet.account ? <div className="row"><Button disabled={busy} onClick={() => run(wallet.connect)}>Connect wallet</Button><span className="note">Use the wallet that holds your $QNTL. Step 3 needs its signature.</span></div>
         : wrongChain ? <div className="row"><Button disabled={busy} onClick={() => run(async () => { await switchChain(s.chainId, s.explorer); await wallet.refresh(); })}>Switch network</Button><span className="note">To Robinhood Chain, chain ID {s.chainId}.</span></div>
         : <div className="row"><Button disabled={!!wait || busy} onClick={() => { setNote(null); setReview(true); }}>Review burn</Button><span className="note">{wait ?? `From ${addr(wallet.account)}.`}</span></div>}
       <p className="note burn-note" role="status">{!review && note}</p>
@@ -266,7 +269,7 @@ function ConfirmStep({ s, wallet, scenario, hashText, setHashText, anon, setAnon
         <SegmentedTabs items={[{ id: 'address', label: 'Short address' }, { id: 'anonymous', label: 'Anonymous' }]} value={anon} onChange={setAnon} label="Name in the gallery" />
         <p className="note">The burn itself stays public on the chain either way.</p>
       </div>
-      <div className="row"><Button disabled={busy || !online || !scenario || !wallet.present} onClick={sign}>Sign and check burn</Button><span className="note">{!online ? 'You are offline.' : !scenario ? 'Choose a scenario first.' : !wallet.present && 'No wallet found in this browser. Use the option below.'}</span></div>
+      <div className="row"><Button disabled={busy || !online || !scenario || !wallet.present} onClick={sign}>Sign and check burn</Button><span className="note">{!online ? 'You are offline.' : !scenario ? 'Choose a scenario first.' : !wallet.present && 'No wallet found in this browser. Open this page in your wallet app’s own browser, or use the option below.'}</span></div>
       <Accordion items={[{ q: 'Sign in another wallet', a: (
         <div className="burn-manual">
           <p className="note">Sign this exact text as a plain message (EIP-191) with the wallet that burned, then paste the signature.</p>

@@ -11,7 +11,7 @@ Anyone can burn $QNTL to request a custom 1,000,000-future run; every burn and r
 3. Request Card, here when the link names a request (`/burn?request=12`), otherwise after the steps.
 4. Steps (numbered Cards):
    - 1 "Choose your scenario": price Input, Horizon tabs (Next close · 1 week · 1 month), Shock tabs (No shock · Add a shock) with three Sliders. One line: "Odds of ending above $160.00, and at $160.00 or lower, in 1 week."
-   - 2 "Burn {amount} $QNTL": amount, token and burn address as AddressChips, "The token is the official address.", "Burns can’t be undone." Buttons in turn: "Connect wallet", "Switch network", "Review burn". Review Sheet: amount, full token address, your full wallet address, full burn address, network, "Transfer, no approval", "Open wallet", "Cancel".
+   - 2 "Burn {amount} $QNTL": amount, token and burn address as AddressChips, "Counts from block", "A burn before that block, or below this amount, gets no run. One burn gives one run. Runs go one at a time, about one every 10 minutes, so yours may wait.", "The token is the official address.", "Burns can’t be undone." Buttons in turn: "Connect wallet", "Switch network", "Review burn". Review Sheet: amount, full token address, your full wallet address, full burn address, network, "Transfer, no approval", "Open wallet", "Cancel".
    - 3 "Confirm": Input "Transaction hash", tabs "Short address" · "Anonymous", "Sign and check burn". Accordion "Sign in another wallet": the exact text, Input "Signature", "Check burn".
 5. Gallery: H2 "Gallery.", tabs "Latest" · "Most extreme" (furthest price from where the run started). Cards: who, big %, scenario line, the other side, PixelSpark of the futures, time, "Open", "Share".
 6. Disclaimer.
@@ -42,7 +42,7 @@ Steps left, request card right (it follows the page until it holds a result); ga
 - **Not found:** "We couldn’t find that burn. Check the transaction hash and network."
 - **Too small:** "This burn is below {amount} $QNTL, so it can’t start a run."
 - **Other refusals:** one line each for a reverted transaction, another token, another recipient, an early block, another signer, a used burn and a price out of range.
-- **Wallet:** none found, closed, busy, another account, another network, too few tokens. One line each; before the wallet sends, it says that nothing was sent.
+- **Wallet:** none found (says to open the page in the wallet app’s own browser or on a computer before burning), closed, busy, another account, another network, too few tokens, a contract wallet. One line each; before the wallet sends, it says that nothing was sent.
 - **Offline:** site banner, buttons off, "You are offline." next to them.
 - **Gallery empty:** "No runs yet. The first burn starts the gallery."
 - **Flag off:** /burn is the 404 page; every /api/burn endpoint is 404; the token card has no link.
@@ -60,7 +60,7 @@ Card, Input, Slider, AddressChip, CopyButton, CodeBlock, Accordion, NumberRoll, 
 - Horizons replace "By date": the engine has only these three.
 - "Share" copies the request's link.
 - The running grid is the still, empty PixelField: a run takes seconds, so there is nothing to fill.
-- Exchanges and contract wallets can't sign step 3 (EIP-191 from the burning address only); step 2 says so before the burn.
+- Exchanges and contract wallets can't sign step 3 (EIP-191 from the burning address only); step 2 says so before the burn, and the page refuses to open a contract wallet (accounts with EIP-7702 code can still sign).
 - Just before the wallet opens, the page reads `/api/burn` and `/api/config` again and works out the raw amount itself. Anything that differs from the screen stops it, and so does another account, network, token decimals or too small a balance. The transaction names the chain.
 - The counter and the gallery are at most about 35 seconds old.
 - Drift is the engine's log drift, the same control as the what-if tool: −30% moves the middle price by about −26%.

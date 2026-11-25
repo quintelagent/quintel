@@ -34,12 +34,20 @@ const readNumber = async (to: string, data: string) => {
 export const readDecimals = async (token: string) => Number(await readNumber(token, '0x313ce567'));
 export const readBalance = (token: string, owner: string) => readNumber(token, '0x70a08231' + word(owner));
 
+/** A contract wallet can't make the plain signature step 3 needs. An account with EIP-7702 code (0xef0100…) still can. */
+export async function isContractWallet(account: string): Promise<boolean> {
+  const code = await ask<unknown>('eth_getCode', [account, 'latest']);
+  if (typeof code !== 'string' || !code.startsWith('0x')) throw new WalletError('failed');
+  return !/^0x0*$/.test(code) && !/^0xef0100/i.test(code);
+}
+
 const chainHex = (id: number) => '0x' + id.toString(16);
 export const walletChain = async () => Number(await ask<string>('eth_chainId'));
 export async function switchChain(id: number, explorer: string) {
   try { await injected()!.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: chainHex(id) }] }); } catch (e) {
-    const code = (e as { code?: unknown } | null)?.code, inner = (e as { data?: { originalError?: { code?: unknown } } } | null)?.data?.originalError?.code;
-    if (code !== 4902 && inner !== 4902) throw new WalletError(problemOf(e));
+    // wallets name an unknown network in different ways: anything but a refusal or an open request tries to add it
+    const p = problemOf(e);
+    if (p === 'rejected' || p === 'busy') throw new WalletError(p);
     await ask('wallet_addEthereumChain', [{ chainId: chainHex(id), chainName: 'Robinhood Chain', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://rpc.mainnet.chain.robinhood.com'], blockExplorerUrls: [explorer] }]);
   }
 }
