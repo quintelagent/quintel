@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Menu } from 'lucide-react';
 import { Link, navigate } from '../../lib/router';
 import { useStored } from '../../lib/hooks';
-import { Button, Sheet } from '../ui';
+import { Button, Sheet, SocialLinks } from '../ui';
 import { PixelMark } from '../pixel';
 
 export const MUTE_KEY = 'q-mute-live';
@@ -26,6 +26,7 @@ export function Header({ path }: { path: string }) {
           {LINKS.map(([h, t]) => <Link key={h} href={h} aria-current={cur(h)}>{t}</Link>)}
           <Button href="/#position">Check my position</Button>
         </nav>
+        <SocialLinks compact />
         <button type="button" className="icon-btn menu-btn" aria-label="Open menu" aria-haspopup="dialog" onClick={() => set(true)}><Menu size={24} strokeWidth={1.5} /></button>
       </div>
       <Sheet full open={open} onClose={() => set(false)} title="Menu">

@@ -21,11 +21,11 @@ Three.js and the 3D scenario cloud · Lenis · GSAP (replace with CSS + Intersec
 A route that is not live returns the 404 page. Planned items appear only on /status.
 
 ## Global chrome
-- **Header** — phone: PixelMark + "quintel", menu button → full-screen MobileMenu sheet (links + "Check my position"). Laptop: PixelMark + wordmark · Briefings · Verify · Docs · Status · pill "Check my position".
+- **Header** — phone: PixelMark + "quintel", X and GitHub icon buttons, menu button → full-screen MobileMenu sheet (links + "Check my position"). Laptop: PixelMark + wordmark · Briefings · Verify · Docs · Status · pill "Check my position" · X and GitHub buttons with labels. Both open in a new tab.
 - **Banners slot** (top, below header, one at a time, priority order): Delayed. Height reserved only when a banner shows; it pushes content, never overlays.
 - **StickyBar** (phone only, appears after the hero): "Check my position" (primary) + "Verify" (secondary). Hidden on laptop.
 - **LiveToasts** (feature 05).
-- **Footer** — PixelMark + wordmark, link groups (Product: Briefings, Verify, Status, Changelog · Docs: README, Methodology, Proof, Limits, Security, Deployments, Incidents · Elsewhere: X @quintelagent, GitHub), "Mute live updates" toggle, disclaimer, © 2026 Quintel.
+- **Footer** — PixelMark + wordmark, link groups (Product: Briefings, Verify, Status, Changelog · Docs: README, Methodology, Proof, Limits, Security, Deployments, Incidents · Elsewhere: X and GitHub buttons), "Mute live updates" toggle, disclaimer, © 2026 Quintel.
 
 ## Home — section order
 1. **Hero** → features/01-hero.md

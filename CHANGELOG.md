@@ -8,6 +8,7 @@ All notable changes, newest first, in the [Keep a Changelog](https://keepachange
 - The launch time, and a warning about fake addresses, in the token section.
 - A note in the token section and FAQ: a burn gets a run only once Status shows Burn-to-run as live.
 - `/api/proof?all=1` lists every recorded hourly fingerprint, and hash search on Verify covers all of them.
+- X and GitHub buttons in the header and footer.
 - Trust, security policy and security review pages.
 
 ### Fixed
