@@ -12,7 +12,18 @@ export function burnConfig(env: Pick<Env, 'QNTL_TOKEN_PONS' | 'BURN_AMOUNT' | 'B
 }
 export const rawAmount = (whole: number, decimals: number) => BigInt(whole) * 10n ** BigInt(decimals);
 
+/** A busy node answers 429: wait a moment and ask again, twice at most. */
+const WAITS = [400, 1200];
 async function call(url: string, method: string, params: unknown[]): Promise<unknown> {
+  for (let i = 0; ; i++) {
+    try { return await callOnce(url, method, params); } catch (e) {
+      if (i >= WAITS.length || (e as Error).message !== 'RPC HTTP 429') throw e;
+      await new Promise((f) => setTimeout(f, WAITS[i]));
+    }
+  }
+}
+
+async function callOnce(url: string, method: string, params: unknown[]): Promise<unknown> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 8000);
   try {

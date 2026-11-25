@@ -21,14 +21,14 @@ export function burnDomain(env: Pick<Env, 'SITE_URL'>): string {
 
 export async function burnSummary(env: Env): Promise<BurnSummary> {
   const cfg = burnConfig(env);
-  const sum = await env.DB.prepare('SELECT COUNT(*) AS n, COALESCE(SUM(tokens), 0) AS t FROM burn_requests').first<{ n: number; t: number }>();
+  const sum = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(tokens), 0) AS t, COALESCE(SUM(status IN ('queued', 'running')), 0) AS q FROM burn_requests").first<{ n: number; t: number; q: number }>();
   const decimals = cfg ? await Promise.race([tokenDecimals(env, cfg.token).catch(() => null), new Promise<null>((f) => setTimeout(() => f(null), DECIMALS_WAIT))]) : null;
   return {
     open: !!cfg, status: cfg ? 'Open' : NOT_OPEN,
     domain: burnDomain(env), chainId: Number(env.CHAIN_ID || 4663), explorer: env.CHAIN_EXPLORER, burnAddress: DEAD_ADDRESS, confirmations: CONFIRMATIONS,
     token: cfg?.token ?? null, amount: cfg?.amount ?? null, decimals,
     amountRaw: cfg && decimals !== null ? rawAmount(cfg.amount, decimals).toString() : null, fromBlock: cfg?.fromBlock ?? null,
-    burned: sum?.t ?? 0, requests: sum?.n ?? 0,
+    burned: sum?.t ?? 0, requests: sum?.n ?? 0, queued: sum?.q ?? 0,
   };
 }
 

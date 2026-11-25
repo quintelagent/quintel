@@ -117,6 +117,14 @@ describe('burn chain reads', () => {
     s.down = true;
     await expect(fetchBurn(env(), TX, TOKEN)).rejects.toThrow();
   });
+  it('a busy node is asked again, three times at most', async () => {
+    let n = 0; const busy = (until: number) => vi.stubGlobal('fetch', async () => (++n <= until ? new Response('', { status: 429 }) : new Response(JSON.stringify({ jsonrpc: '2.0', id: 1, result: '0x1237' }))));
+    vi.useFakeTimers();
+    try {
+      resetChain(); busy(2); const a = rpc(env(), 'eth_chainId', []); await vi.advanceTimersByTimeAsync(5000); expect(await a).toBe('0x1237');
+      resetChain(); n = 0; busy(99); const b = rpc(env(), 'eth_chainId', []).catch((e) => e.message); await vi.advanceTimersByTimeAsync(5000); expect(await b).toBe('RPC HTTP 429'); expect(n).toBe(3);
+    } finally { vi.useRealTimers(); }
+  });
   it('falls back to the public node, and skips a node on another chain', async () => {
     const urls: string[] = [], good = fakeRpc({ receipts: {}, head: 7 }), wrong = fakeRpc({ receipts: {}, head: 9, chainId: 1 });
     vi.stubGlobal('fetch', async (u: string, i: any) => { urls.push(u); return u.includes('first') ? wrong(u, i) : good(u, i); });

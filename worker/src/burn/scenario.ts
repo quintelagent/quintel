@@ -86,6 +86,8 @@ export interface BurnSummary {
   domain: string; chainId: number; explorer: string; burnAddress: string; confirmations: number;
   token: string | null; amount: number | null; decimals: number | null; amountRaw: string | null; fromBlock: number | null;
   burned: number; requests: number;
+  /** runs waiting or running now: a new burn waits behind these */
+  queued: number;
 }
 export type BurnStatus = 'queued' | 'running' | 'done' | 'failed';
 export interface HorizonOdds { days: number; above: number; atOrBelow: number }
