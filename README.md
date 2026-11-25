@@ -64,7 +64,7 @@ What is **not** proven: that the odds are right. See [Limits](docs/LIMITS.md). T
 | What | Robinhood Chain (chain id 4663) |
 |---|---|
 | Fingerprint wallet | [`0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47`](https://robinhoodchain.blockscout.com/address/0xdF2E620aa0A91F23C39eD31345CD0a548E02bB47) |
-| $QNTL on Pons | Posted at launch |
+| $QNTL on Pons | [`0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F`](https://robinhoodchain.blockscout.com/token/0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F) |
 
 The full list is in [Deployments](DEPLOYMENTS.md). Quintel never asks for a private key, a seed phrase or a token approval.
 
