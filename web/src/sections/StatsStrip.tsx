@@ -21,7 +21,7 @@ function LastFingerprint() {
   const day = sent && etShortDate(sent) !== etShortDate(now) ? `, ${etShortDate(sent)}` : '';
   const note = late ? <Pill>Delayed</Pill> : proof && !sent ? 'None posted yet' : !proof && proofError ? 'Couldn’t load yet' : null;
   return (
-    <Link href="/verify" className="stats-link" aria-label={`Last fingerprint${sent ? `${day}, ${etTime(sent)}` : proof && !late ? ', none posted yet' : ''}${late ? ', delayed' : ''}. Verify a run`}>
+    <Link href="/verify" className="stats-link" aria-label={`Last fingerprint${sent ? `${day}, ${etTime(sent)}` : proof && !late ? ', none posted yet' : !proof && proofError && !late ? ', couldn’t load yet' : ''}${late ? ', delayed' : ''}. Verify a run`}>
       <Stat label={<u>last fingerprint{day}</u>} note={note}>{proof || proofError ? etTime(sent) : <Skeleton h="1.2em" w="100%" />}</Stat>
     </Link>
   );
