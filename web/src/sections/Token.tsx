@@ -21,7 +21,7 @@ export function Token() {
         <div className="grid token-pair">
           <Card className="token-card">
             <div className="token-head"><h3>What it does</h3></div>
-            <p className="muted">Burning $QNTL requests a run on your own scenario. The burn and the result are public. What is open today is on <Link href="/status">Status</Link>.</p>
+            <p className="muted">Burning $QNTL requests a run on your own scenario. The burn and the result are public. {flagOn('BURN_TO_RUN') ? 'A burn can’t be undone, doesn’t change the odds and pays nothing.' : <>What is open today is on <Link href="/status">Status</Link>.</>}</p>
             {flagOn('BURN_TO_RUN') && <div className="row"><Button variant="secondary" href="/burn">Burn to run</Button></div>}
           </Card>
           <Card className="token-card">
