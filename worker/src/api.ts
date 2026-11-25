@@ -80,7 +80,7 @@ async function runById(env: Env, id: number) {
   return { ...withStress({ ...run, summary: JSON.parse(run.summary) }), inputs: JSON.parse(o.inputs), output: JSON.parse(o.output) };
 }
 
-/** The newest 48 hours, or every hour since the first run. */
+/** The newest 48 hours, or every recorded hour. */
 async function proof(env: Env, every: boolean) {
   const fps = await env.DB.prepare(`SELECT hour, hash, tx, status, attempts, created_at, sent_at, error FROM fingerprints ORDER BY hour DESC${every ? '' : ' LIMIT 48'}`).all();
   const all = (await env.DB.prepare('SELECT hour, status, sent_at FROM fingerprints').all<{ hour: string; status: string; sent_at: string | null }>()).results || [];

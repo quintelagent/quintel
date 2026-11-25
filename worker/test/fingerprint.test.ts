@@ -4,7 +4,7 @@ import { keccak256, parseTransaction } from 'viem';
 import { processFingerprints, sendFingerprintTx } from '../src/proof/fingerprint';
 
 /** A small fake chain behind fetch. `broadcast` decides what each node does with a signed transaction. */
-function chain(key: `0x${string}`, broadcast: (url: string, n: number, accept: () => void) => void, lookupDown = () => false) {
+function chain(key: `0x${string}`, broadcast: (url: string, n: number, accept: () => void) => void, lookupDown = () => false, behind: (url: string) => number = () => 0) {
   const me = privateKeyToAccount(key).address;
   const mined: { hash: string; input: string; nonce: number }[] = [];
   let sends = 0;
@@ -15,7 +15,7 @@ function chain(key: `0x${string}`, broadcast: (url: string, n: number, accept: (
     const find = (h: string) => mined.find((m) => m.hash === h);
     switch (body.method) {
       case 'eth_chainId': return reply('0x1237');
-      case 'eth_getTransactionCount': return reply('0x' + mined.length.toString(16));
+      case 'eth_getTransactionCount': return reply('0x' + (mined.length - behind(String(url))).toString(16));
       case 'eth_estimateGas': return reply('0x5208');
       case 'eth_maxPriorityFeePerGas': return reply('0x1');
       case 'eth_gasPrice': return reply('0x1');
@@ -46,41 +46,52 @@ const H = ('0x' + 'ab'.repeat(32)) as `0x${string}`;
 const AT = new Date(0x69000000 * 1000).toISOString();
 afterEach(() => vi.unstubAllGlobals());
 
-describe('a fingerprint is posted once', () => {
+const C = '0x' + 'cd'.repeat(32);
+describe('posting a fingerprint', () => {
   it('plain send', async () => {
     const c = chain(generatePrivateKey(), (_u, _n, accept) => accept());
-    let signed = '';
-    const r = await sendFingerprintTx(c.env, H, null, async (t) => { signed = t; }, 0);
+    const signed: string[] = [];
+    const r = await sendFingerprintTx(c.env, H, [], async (t) => { signed.push(t); }, 0);
     expect(c.mined.map((m) => [m.hash, m.input])).toEqual([[r.tx, H]]);
-    expect(signed).toBe(r.tx);
+    expect(signed).toEqual([r.tx]);
   });
   it('a node that accepts it and then answers with an error is not a failure', async () => {
     const c = chain(generatePrivateKey(), (_u, _n, accept) => { accept(); throw new Error('timeout'); });
-    const r = await sendFingerprintTx(c.env, H, null, undefined, 0);
+    const r = await sendFingerprintTx(c.env, H, [], undefined, 0);
     expect(c.mined).toHaveLength(1);
     expect(r).toEqual({ tx: c.mined[0].hash, at: AT });
   });
-  it('the second node gets the same signed bytes', async () => {
+  it('the second node takes over when the first is down', async () => {
     const c = chain(generatePrivateKey(), (u, _n, accept) => { if (u.includes('one.test')) throw new Error('down'); accept(); });
-    const r = await sendFingerprintTx(c.env, H, null, undefined, 0);
+    const r = await sendFingerprintTx(c.env, H, [], undefined, 0);
     expect(c.mined.map((m) => m.hash)).toEqual([r.tx]);
   });
-  it('an earlier transaction that landed is recorded with its block time, and nothing is sent', async () => {
-    const c = chain(generatePrivateKey(), () => { throw new Error('must not send'); });
-    c.mined.push({ hash: '0x' + 'cd'.repeat(32), input: H, nonce: 0 });
-    expect(await sendFingerprintTx(c.env, H, '0x' + 'cd'.repeat(32), undefined, 0)).toEqual({ tx: '0x' + 'cd'.repeat(32), at: AT });
+  it('the second node takes over when the first is behind', async () => {
+    const c = chain(generatePrivateKey(), (_u, _n, accept) => accept(), undefined, (u) => u.includes('one.test') ? 1 : 0);
+    c.mined.push({ hash: C, input: '0x', nonce: 0 }, { hash: '0x' + 'ce'.repeat(32), input: '0x', nonce: 1 });
+    const r = await sendFingerprintTx(c.env, H, [], undefined, 0);
+    expect(c.mined[2]).toMatchObject({ hash: r.tx, input: H, nonce: 2 });
   });
-  it('an earlier transaction with other data does not count', async () => {
+  it('one that landed earlier is recorded with its block time, and nothing is sent', async () => {
+    const c = chain(generatePrivateKey(), () => { throw new Error('must not send'); });
+    c.mined.push({ hash: C, input: H, nonce: 0 });
+    expect(await sendFingerprintTx(c.env, H, ['0x' + '99'.repeat(32), C], undefined, 0)).toEqual({ tx: C, at: AT });
+  });
+  it('an earlier one with other data does not count', async () => {
     const c = chain(generatePrivateKey(), (_u, _n, accept) => accept());
-    c.mined.push({ hash: '0x' + 'cd'.repeat(32), input: '0x' + '00'.repeat(32), nonce: 0 });
-    const r = await sendFingerprintTx(c.env, H, '0x' + 'cd'.repeat(32), undefined, 0);
+    c.mined.push({ hash: C, input: '0x' + '00'.repeat(32), nonce: 0 });
+    const r = await sendFingerprintTx(c.env, H, [C], undefined, 0);
     expect(c.mined[1].hash).toBe(r.tx);
   });
-  it('sends nothing while no node can say what happened to the earlier one', async () => {
-    const c = chain(generatePrivateKey(), () => { throw new Error('must not send'); }, () => true);
-    await expect(sendFingerprintTx(c.env, H, '0x' + 'cd'.repeat(32), undefined, 0)).rejects.toThrow(/node down/);
-    expect(c.mined).toHaveLength(0);
-  }, 20000);
+  it('the check never blocks posting: no answer about an earlier one, and a note that cannot be saved', async () => {
+    const c = chain(generatePrivateKey(), (_u, _n, accept) => accept(), () => true);
+    const r = await sendFingerprintTx(c.env, H, [C], async () => { throw new Error('D1'); }, 0);
+    expect(c.mined.map((m) => m.hash)).toEqual([r.tx]);
+  });
+  it('all nodes failing is reported per node', async () => {
+    const c = chain(generatePrivateKey(), () => { throw new Error('down'); });
+    await expect(sendFingerprintTx(c.env, H, [], undefined, 0)).rejects.toThrow(/primary RPC: .*\| public RPC: /s);
+  });
 });
 
 describe('across ticks', () => {
@@ -103,20 +114,25 @@ describe('across ticks', () => {
     });
     return { DB: { prepare: (sql: string) => stmt(sql) }, meta };
   }
-  it('an hour whose send looked failed but landed is not sent again, and later hours wait for it', async () => {
-    let lookupDown = true;
-    const c = chain(generatePrivateKey(), (_u, n, accept) => { accept(); if (n < 4) throw new Error('timeout'); }, () => lookupDown);
-    const rows = [1, 2].map((i) => ({ hour: `2026-11-24T0${i}:00:00.000Z`, hash: '0x' + `a${i}`.repeat(32), attempts: 0, status: 'pending' } as any));
-    const d = db(rows);
-    const env = { ...c.env, DB: d.DB };
+  const rows = () => [1, 2].map((i) => ({ hour: `2026-11-24T0${i}:00:00.000Z`, hash: '0x' + `a${i}`.repeat(32), attempts: 0, status: 'pending' } as any));
+  it('an hour whose send looked failed but landed is not sent again', async () => {
+    let down = true;
+    const c = chain(generatePrivateKey(), (_u, n, accept) => { if (n === 0) accept(); if (down) throw new Error('timeout'); if (n) accept(); }, () => down);
+    const r = rows(), d = db(r), env = { ...c.env, DB: d.DB };
     await processFingerprints(env, new Date('2026-11-24T03:00:30Z'));
-    expect(c.mined).toHaveLength(1);
-    expect(rows.map((r) => r.status)).toEqual(['pending', 'pending']);
-    lookupDown = false;
+    expect(c.mined.map((m) => m.input)).toEqual([r[0].hash]);
+    expect(r.map((x) => x.status)).toEqual(['pending', 'pending']);
+    down = false;
     await processFingerprints(env, new Date('2026-11-24T03:10:30Z'));
-    expect(c.mined.map((m) => m.input)).toEqual(rows.map((r) => r.hash));
-    expect(rows.map((r) => [r.status, r.tx])).toEqual(c.mined.map((m) => ['sent', m.hash]));
-    expect(rows[0].sent_at).toBe(AT);
-    expect(JSON.parse(d.meta.get('fingerprint_signed')!)).toEqual({});
+    expect(c.mined.map((m) => m.input)).toEqual(r.map((x) => x.hash));
+    expect(r.map((x) => [x.status, x.tx])).toEqual(c.mined.map((m) => ['sent', m.hash]));
+    expect(r[0].sent_at).toBe(AT);
   }, 30000);
+  it('an hour that cannot be sent does not stop the next one', async () => {
+    const r = rows();
+    const c = chain(generatePrivateKey(), (_u, _n, accept) => accept());
+    r[0].hash = 'not hex';
+    await processFingerprints({ ...c.env, DB: db(r).DB }, new Date('2026-11-24T03:00:30Z'));
+    expect(r.map((x) => x.status)).toEqual(['pending', 'sent']);
+  });
 });
