@@ -81,6 +81,7 @@ Headlines and labels are **sentence case**. No ALL CAPS anywhere.
 
 ### Icons
 Lucide only, outline, 1.5px stroke, 20px default (16px inline, 24px max). No emoji anywhere.
+One exception: the X and GitHub marks in `SocialLinks`, 16px solid inline SVG in `currentColor`.
 
 ---
 
@@ -125,7 +126,7 @@ No other illustration style is allowed. No photos, no 3D, no stock art, no netwo
 
 ## 6. Components (src/components/ui — every page uses these, none builds its own)
 
-Header · Footer · MobileMenu (full-screen sheet) · StickyBar (phone only) · Section (eyebrow + H2 + sub) · Card · Button (primary = ink fill, secondary = line outline, ghost) · Pill (Live, Soon + date, Planned, Delayed, Up, Down, Inside band, Outside band, Shipped) · SegmentedTabs · Slider · Input (numeric uses `inputmode="decimal"`, 16px+) · Stat (label + mono number) · NumberRoll · DataTable (turns into stacked cards on phone) · Accordion · CodeBlock · CopyButton · AddressChip (0x12…ab + copy, tap to expand) · Toast + LiveToasts · Sheet (bottom sheet on phone, centered dialog on laptop) · Skeleton · EmptyState · ErrorState · LockedState · Countdown · plus all Pixel components.
+Header · Footer · MobileMenu (full-screen sheet) · StickyBar (phone only) · Section (eyebrow + H2 + sub) · Card · Button (primary = ink fill, secondary = line outline, ghost) · Pill (Live, Soon + date, Planned, Delayed, Up, Down, Inside band, Outside band, Shipped) · SegmentedTabs · Slider · Input (numeric uses `inputmode="decimal"`, 16px+) · Stat (label + mono number) · NumberRoll · DataTable (turns into stacked cards on phone) · Accordion · CodeBlock · CopyButton · AddressChip (0x12…ab + copy, tap to expand) · Toast + LiveToasts · Sheet (bottom sheet on phone, centered dialog on laptop) · Skeleton · EmptyState · ErrorState · LockedState · Countdown · SocialLinks (X and GitHub buttons: header, footer, CA) · plus all Pixel components.
 
 Adding a component: only if no existing one fits. Add it to this list with a one-line purpose in the same PR.
 
@@ -200,7 +201,7 @@ Delayed means no new run for 20 min while the market is open, or 45 min while it
 
 ## 12. Speed
 
-- Pre-rendered HTML for every public route; live data hydrates after.
+- Pre-rendered HTML for every public route; live data hydrates after. (Not built yet.)
 - Initial JS < 150 KB gzipped; lazy-load below the fold and every flagged feature.
 - Lighthouse mobile: Performance ≥ 95, Accessibility ≥ 95, CLS < 0.02, LCP < 2s.
 
@@ -237,4 +238,4 @@ A script that fails the build if it finds:
 
 ## 16. Living style guide
 
-Route `/_design` (noindex, not linked): every token, component, pill, state and pixel graphic on one page, at phone and laptop width. New components are added here in the same PR.
+Not built yet. When it is: route `/_design` (noindex, not linked), every token, component, pill, state and pixel graphic on one page, at phone and laptop width. New components are added here in the same PR.

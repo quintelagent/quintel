@@ -1,0 +1,11 @@
+{
+  "name": "Quintel",
+  "symbol": "QNTL",
+  "chainId": 4663,
+  "ca": "0x6997C0690DDE8e0d08e4D20A562f5d2817b54c5F",
+  "pumpMint": null,
+  "launchWallet": "0xF5aa17C15a48Ab2B5F20935f04f7858aafD46459",
+  "devBuyBurnTx": "0x3811204b40426281b1403018881c5caa9ae6390786853de687c00c9eb33505fe",
+  "devBuyBurned": "6,810,442",
+  "creatorFee": null
+}

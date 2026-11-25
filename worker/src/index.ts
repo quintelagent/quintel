@@ -16,7 +16,12 @@ export default {
     if (url.pathname.startsWith('/api/')) {
       return handleApi(req, env, ctx, (e, force) => tick(e, new Date(), { force }));
     }
-    return env.ASSETS.fetch(req);
+    const res = await env.ASSETS.fetch(req);
+    // a file that does not exist is a 404, not the app page
+    if (res.status === 200 && /\.[a-z0-9]{2,11}$/i.test(url.pathname) && !/\.html$/i.test(url.pathname) && (res.headers.get('content-type') ?? '').startsWith('text/html')) {
+      return new Response('Not found', { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
+    }
+    return res;
   },
 
   async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext) {

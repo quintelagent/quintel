@@ -80,7 +80,7 @@ export function Verify() {
         {result.kind === 'missing' && (
           <Card className="verify-none">
             <EmptyState
-              text={<>No run matches that ID. Check it and try again.{result.byHash && <span className="note verify-range">Hash search covers the last 7 days of runs and the last 48 hourly fingerprints.</span>}</>}
+              text={<>No run matches that ID. Check it and try again.{result.byHash && <span className="note verify-range">Hash search covers the last 7 days of runs and every hourly fingerprint.</span>}</>}
               action={latest?.run ? <Button variant="secondary" href={link(latest.run.id)}>Verify run {latest.run.id}</Button> : !latest && <Skeleton h={48} w={160} />}
             />
           </Card>
