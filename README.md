@@ -32,6 +32,7 @@ An AI research agent and five quant models simulate NVDA’s possible paths, tur
 | **Briefings** | An AI research agent every 30 minutes. Code rejects any number that isn't in the run or the news, and any advice wording. |
 | **Paper desk** | $100k virtual, published rules, every trade with a note. Losses are shown like gains. |
 | **Proof** | An hourly fingerprint on Robinhood Chain. Any run can be recomputed in the browser, byte for byte. |
+| **Use Quintel from your AI** | Scenario odds, briefings and proofs in Claude or Cursor. |
 | **Status, docs, incidents** | What is live, how it works, and anything that broke. |
 
 ## How it works
