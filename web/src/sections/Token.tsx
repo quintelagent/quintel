@@ -3,7 +3,7 @@ import { useData } from '../lib/data';
 import { Link } from '../lib/router';
 import { BURN_TX, CA, PUMP_MINT } from '../lib/launch';
 import { BEFORE_LAUNCH, TOKEN_CONFIG } from '../lib/tokenConfig';
-import { AddressChip, Button, Card, Section } from '../components/ui';
+import { AddressChip, Button, Card, Section, SocialLinks } from '../components/ui';
 import './token.css';
 
 export function Token() {
@@ -29,6 +29,7 @@ export function Token() {
             </dl>
             {BURN_TX && <p><Link href={`https://robinhoodchain.blockscout.com/tx/${BURN_TX}`}>The dev buy was burned in this transaction.</Link></p>}
             <p className="muted">Always check the address here before you trade.</p>
+            <SocialLinks />
           </Card>
         </div>
         {(ponsUrl || pumpUrl || explorer) && <div className="row token-links">
